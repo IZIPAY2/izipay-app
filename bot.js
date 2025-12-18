@@ -41,10 +41,10 @@ const adminId = '7897252945';
 // Проверка команды /start
 bot.onText(/\/start/, (msg) => {
     console.log(`Команда /start получена от ${msg.chat.id}`);
-    bot.sendMessage(msg.chat.id, 'Добро пожаловать в IZIPAY!', {
+    bot.sendMessage(msg.chat.id, 'Welcome to IZIPAY!', {
         reply_markup: {
             inline_keyboard: [[{ 
-                text: 'Открыть кошелек', 
+                text: 'Open wallet', 
                 web_app: { url: 'https://izipay2.github.io/izipay-app/' } 
             }]]
         }
