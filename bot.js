@@ -2,7 +2,7 @@ const TelegramBot = require('node-telegram-bot-api');
 const http = require('http');
 const admin = require('firebase-admin');
 
-// 1. Настройка Firebase Admin
+// 1. Настройка Firebase (убедись, что переменные среды в Render заполнены)
 const serviceAccount = {
   "type": "service_account",
   "project_id": process.env.FIREBASE_PROJECT_ID,
@@ -25,81 +25,54 @@ if (!admin.apps.length) {
 }
 const db = admin.database();
 
-// 2. Сервер для Render
-http.createServer((req, res) => { res.end('IZIPAY Bot Live'); }).listen(process.env.PORT || 3000);
+// 2. Веб-сервер и Само-пинг (чтобы не засыпал)
+const PORT = process.env.PORT || 3000;
+const MY_URL = "https://izipay-app.onrender.com";
 
-// 3. Настройка Telegram бота
+const server = http.createServer((req, res) => { 
+  res.end('IZIPAY Bot is Active'); 
+});
+
+server.listen(PORT, () => {
+  console.log(`Server listening on port ${PORT}`);
+});
+
+// Каждые 10 минут пингуем сами себя
+setInterval(() => {
+  http.get(MY_URL, (res) => {
+    console.log('Self-ping successful');
+  }).on('error', (e) => console.log('Self-ping failed:', e.message));
+}, 600000);
+
+// 3. Telegram бот
 const token = '8383398356:AAFJRxBGmhL2edF72kCcfStO-ho01tGhdUk';
 const bot = new TelegramBot(token, { polling: true });
 const adminId = '7897252945'; 
 
-// Команда /start
 bot.onText(/\/start/, (msg) => {
-    bot.sendMessage(msg.chat.id, 'Welcome to IZIPAY Wallet!', {
+    bot.sendMessage(msg.chat.id, 'Welcome to IZIPAY!', {
         reply_markup: {
-            inline_keyboard: [
-                [{ text: 'Open Wallet', web_app: { url: 'https://izipay2.github.io/izipay-app/' } }]
-            ]
-        }
-    }).catch(err => console.error("Ошибка /start:", err.message));
-});
-
-// 4. Уведомление КЛИЕНТА о транзакции (сплошной текст)
-db.ref('users').on('child_added', (userSnap) => {
-    const userId = userSnap.key;
-    db.ref(`users/${userId}/history`).on('child_added', (histSnap) => {
-        const tx = histSnap.val();
-        // Отправляем, только если notified: false
-        if (tx && tx.notified === false) {
-            const msg = `🔔 New Transaction!\n\n${tx.details}`;
-            bot.sendMessage(userId, msg)
-                .then(() => {
-                    db.ref(`users/${userId}/history/${histSnap.key}`).update({ notified: true });
-                })
-                .catch(e => console.error("Ошибка уведомления юзера:", e.message));
+            inline_keyboard: [[{ text: 'Open wallet', web_app: { url: 'https://izipay2.github.io/izipay-app/' } }]]
         }
     });
 });
 
-// 5. Уведомления АДМИНУ
-db.ref('users').on('child_changed', (snapshot) => {
-    const user = snapshot.val();
-    const userId = snapshot.key;
-    if (!user) return;
-
-    // Уведомление о КАРТЕ 
-    // Сработает, только если статус pending И поле notified_card еще не создано/false
-    if (user.status === 'pending' && user.pending_request && !user.notified_card) {
-        const cardText = `💳 НОВАЯ ЗАЯВКА НА КАРТУ\n\n👤 Имя: ${user.name || 'User'}\n🆔 ID: ${userId}\n💰 Цена: $${user.request_price}`;
-        
-        bot.sendMessage(adminId, cardText).then(() => {
-            // Ставим метку именно для КАРТЫ, чтобы не писать повторно
-            db.ref(`users/${userId}`).update({ notified_card: true });
-        }).catch(e => console.error("Ошибка админу:", e.message));
-    }
-
-    // Уведомление о ВЫВОДЕ
-    if (user.withdraw_request && user.withdraw_request.status === 'pending' && !user.withdraw_request.notified) {
-        const w = user.withdraw_request;
-        const withdrawText = `💰 ЗАПРОС НА ВЫВОД\n\n👤 Имя: ${user.name}\n🆔 ID: ${userId}\n💵 Сумма: $${w.amount}\n💳 Кошелек: ${w.wallet}`;
-        
-        bot.sendMessage(adminId, withdrawText).then(() => {
-            db.ref(`users/${userId}/withdraw_request`).update({ notified: true });
-        });
-    }
-
-    // Уведомление о ПОПОЛНЕНИИ
-    if (user.deposit_request && user.deposit_request.status === 'pending' && !user.deposit_request.notified) {
-        const d = user.deposit_request;
-        bot.sendMessage(adminId, `💵 ЗАПРОС НА ПОПОЛНЕНИЕ\n\n👤 Имя: ${user.name}\n💰 Сумма: $${d.amount}`).then(() => {
-            db.ref(`users/${userId}/deposit_request`).update({ notified: true });
-        });
-    }
+// Слушатель истории (без Markdown, чтобы не было ошибки 400)
+db.ref('users').on('child_added', (userSnap) => {
+    const userId = userSnap.key;
+    db.ref(`users/${userId}/history`).on('child_added', (histSnap) => {
+        const tx = histSnap.val();
+        if (tx && tx.notified === false) {
+            bot.sendMessage(userId, `🔔 New Transaction!\n\n${tx.details}`)
+                .then(() => db.ref(`users/${userId}/history/${histSnap.key}`).update({ notified: true }))
+                .catch(e => console.log("Notify error:", e.message));
+        }
+    });
 });
 
 // Глушим ошибку 409 Conflict
 bot.on('polling_error', (err) => {
-    if (!err.message.includes('409 Conflict')) console.error("TG Error:", err.message);
+    if (!err.message.includes('409')) console.error("TG:", err.message);
 });
 
-console.log('🚀 Бот запущен.');
+console.log('🚀 Бот запущен в режиме 24/7');
