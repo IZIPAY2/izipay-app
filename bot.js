@@ -2,7 +2,7 @@ const TelegramBot = require('node-telegram-bot-api');
 const http = require('http');
 const admin = require('firebase-admin');
 
-// 1. Безопасная настройка Firebase Admin
+// 1. Настройка Firebase Admin
 const serviceAccount = {
   "type": "service_account",
   "project_id": process.env.FIREBASE_PROJECT_ID,
@@ -38,9 +38,8 @@ const token = '8383398356:AAFJRxBGmhL2edF72kCcfStO-ho01tGhdUk';
 const bot = new TelegramBot(token, { polling: true });
 const adminId = '7897252945'; 
 
-// Проверка команды /start
+// Команда /start
 bot.onText(/\/start/, (msg) => {
-    console.log(`Команда /start получена от ${msg.chat.id}`);
     bot.sendMessage(msg.chat.id, 'Welcome to IZIPAY!', {
         reply_markup: {
             inline_keyboard: [[{ 
@@ -51,31 +50,83 @@ bot.onText(/\/start/, (msg) => {
     }).catch(err => console.error("Ошибка /start:", err.message));
 });
 
-// 4. Следим за изменениями (ИСПРАВЛЕНО: используем child_added и child_changed)
+// 4. Мониторинг базы данных
 const usersRef = db.ref('users');
 
-const handleUserRequest = (snapshot) => {
+usersRef.on('child_changed', (snapshot) => {
     const user = snapshot.val();
     const userId = snapshot.key;
 
-    if (user && user.status === 'pending' && user.pending_request) {
-        console.log(`🔔 Новая или измененная заявка от ${userId}`);
-        const text = `🔔 **НОВАЯ ЗАЯВКА НА КАРТУ**\n\n` +
-                     `👤 Имя: ${user.name || 'Неизвестно'}\n` +
-                     `🆔 ID: \`${userId}\`\n` +
-                     `💳 Тип: *${user.pending_request}*\n` +
-                     `💰 Цена: *$${user.request_price}*\n\n` +
-                     `✅ Зайди в Firebase!`;
+    if (!user) return;
 
-        bot.sendMessage(adminId, text, { parse_mode: 'Markdown' })
-            .then(() => console.log("✅ Сообщение отправлено админу"))
-            .catch(err => console.error("❌ Ошибка ТГ:", err.message));
+    // --- УВЕДОМЛЕНИЕ О ЗАЯВКЕ НА КАРТУ ---
+    if (user.status === 'pending' && user.pending_request) {
+        console.log(`🔔 Новая заявка на карту от ${userId}`);
+        const cardText = `💳 **НОВАЯ ЗАЯВКА НА КАРТУ**\n\n` +
+                         `👤 Имя: ${user.name || 'Неизвестно'}\n` +
+                         `🆔 ID: \`${userId}\`\n` +
+                         `Тип: *${user.pending_request}*\n` +
+                         `💰 Цена: *$${user.request_price}*`;
+
+        bot.sendMessage(adminId, cardText, { 
+            parse_mode: 'Markdown',
+            reply_markup: {
+                inline_keyboard: [[{ text: 'OPEN APP', web_app: { url: 'https://izipay2.github.io/izipay-app/' } }]]
+            }
+        });
     }
-};
 
-// Слушаем и новые записи, и изменения в старых
-usersRef.on('child_added', handleUserRequest);
-usersRef.on('child_changed', handleUserRequest);
+    // --- УВЕДОМЛЕНИЕ О ВЫВОДЕ СРЕДСТВ ---
+    if (user.withdraw_request && user.withdraw_request.status === 'pending') {
+        console.log(`💰 Новый запрос на вывод от ${userId}`);
+        const withdraw = user.withdraw_request;
+        const withdrawText = `💰 **ЗАПРОС НА ВЫВОД**\n\n` +
+                             `👤 Имя: ${user.name || 'Неизвестно'}\n` +
+                             `🆔 ID: \`${userId}\`\n` +
+                             `💵 Сумма: **$${withdraw.amount}**\n` +
+                             `🪙 Монета: ${withdraw.coin} (${withdraw.network})\n` +
+                             `💳 Кошелек: \`${withdraw.wallet}\``;
+
+        bot.sendMessage(adminId, withdrawText, {
+            parse_mode: 'Markdown',
+            reply_markup: {
+                inline_keyboard: [
+                    [
+                        { text: '✅ Выполнено', callback_data: `approve_out_${userId}` },
+                        { text: '❌ Отклонить', callback_data: `reject_out_${userId}` }
+                    ]
+                ]
+            }
+        });
+    }
+});
+
+// Обработка кнопок (callback_query)
+bot.on('callback_query', (query) => {
+    if (query.from.id.toString() !== adminId) return;
+
+    const [action, type, targetId] = query.data.split('_');
+
+    if (type === 'out') {
+        if (action === 'approve') {
+            // При нажатии "Выполнено" — просто удаляем или меняем статус в базе
+            db.ref(`users/${targetId}/withdraw_request`).update({ status: 'completed' });
+            bot.editMessageText(query.message.text + "\n\n✅ **ВЫПОЛНЕНО**", {
+                chat_id: adminId,
+                message_id: query.message.message_id,
+                parse_mode: 'Markdown'
+            });
+        } else if (action === 'reject') {
+            db.ref(`users/${targetId}/withdraw_request`).update({ status: 'rejected' });
+            bot.editMessageText(query.message.text + "\n\n❌ **ОТКЛОНЕНО**", {
+                chat_id: adminId,
+                message_id: query.message.message_id,
+                parse_mode: 'Markdown'
+            });
+        }
+    }
+    bot.answerCallbackQuery(query.id);
+});
 
 bot.on('polling_error', (err) => {
     if (!err.message.includes('409 Conflict')) {
@@ -83,4 +134,4 @@ bot.on('polling_error', (err) => {
     }
 });
 
-console.log('🚀 Мониторинг базы запущен (added + changed)...');
+console.log('🚀 Бот запущен. Мониторинг Карт и Выводов активен.');
