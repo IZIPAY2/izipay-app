@@ -43,7 +43,7 @@ http.createServer((req, res) => {
 }).listen(process.env.PORT || 3000);
 
 // 3. Настройка Telegram бота
-const token = '8383398356:AAEgAuC_P3yuKy8ohR3up93E19MPaV_lzFU';
+const token = '8383398356:AAFJRxBGmhL2edF72kCcfStO-ho01tGhdUk';
 // Добавляем параметры, чтобы избежать ошибки 409 Conflict
 const bot = new TelegramBot(token, {
     polling: {
