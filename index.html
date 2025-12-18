@@ -8,37 +8,41 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
   <style>
-    :root { --bg: #111; --panel: #1c1c1e; --muted: #8e8e93; --accent: #fff; }
+    :root { --bg: #000; --panel: #1c1c1e; --muted: #8e8e93; --accent: #fff; }
     * { box-sizing: border-box; font-family: -apple-system, system-ui, sans-serif; }
-    body { background: var(--bg); color: #fff; margin: 0; padding: 15px; }
+    body { background: var(--bg); color: #fff; margin: 0; padding: 20px; }
     
-    .balance-label { font-size: 16px; color: #fff; opacity: 0.8; }
-    .balance-amount { font-size: 52px; font-weight: 600; margin: 5px 0 20px; }
+    .balance-label { font-size: 16px; opacity: 0.7; }
+    .balance-amount { font-size: 54px; font-weight: 600; margin: 5px 0 25px; }
     
-    /* Кнопки действий */
-    .action-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 25px; }
+    .action-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 30px; }
     .action-item { display: flex; flex-direction: column; align-items: center; gap: 8px; font-size: 12px; }
-    .circle-btn { width: 55px; height: 55px; background: var(--panel); border-radius: 50%; border: none; color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+    .circle-btn { width: 55px; height: 55px; background: #1c1c1e; border-radius: 50%; border: none; color: #fff; display: flex; align-items: center; justify-content: center; }
 
-    /* Блок USDT */
-    .wallet-card { background: var(--panel); border-radius: 18px; padding: 15px; margin-bottom: 15px; display: flex; flex-direction: column; gap: 10px; }
-    .wallet-header { display: flex; justify-content: space-between; align-items: center; }
-    .wallet-title { font-size: 14px; color: var(--muted); }
-    .wallet-amount { font-size: 22px; font-weight: 600; }
-    .usdt-badge { background: #282828; border: 1px solid #444; border-radius: 20px; padding: 5px 12px; display: flex; align-items: center; gap: 6px; width: fit-content; font-size: 13px; }
-    .usdt-icon { width: 18px; height: 18px; background: #26a17b; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 10px; }
-
-    /* Виртуальная карта */
-    .card-container { background: var(--panel); border-radius: 22px; padding: 20px; position: relative; overflow: hidden; min-height: 180px; display: none; border: 1px solid #333; }
-    .card-bg-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; opacity: 0.9; }
-    .card-content { position: relative; z-index: 2; height: 100%; display: flex; flex-direction: column; justify-content: space-between; }
-    .see-details { color: var(--muted); font-size: 13px; position: absolute; right: 20px; top: 20px; z-index: 3; text-decoration: none; }
+    /* Дизайн карты */
+    .card-wrapper { position: relative; width: 100%; border-radius: 20px; overflow: hidden; margin-top: 10px; border: 1px solid #333; }
+    .card-img { width: 100%; display: block; border-radius: 20px; }
     
+    .card-data {
+      position: absolute; inset: 0; padding: 25px;
+      display: flex; flex-direction: column; justify-content: flex-end;
+      background: linear-gradient(0deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0) 100%);
+    }
+    
+    .card-num { font-size: 20px; letter-spacing: 2px; margin-bottom: 15px; text-shadow: 1px 1px 2px #000; }
+    .card-info-row { display: flex; justify-content: space-between; font-size: 12px; opacity: 0.9; }
+    
+    .details-btn {
+      position: absolute; top: 15px; right: 15px;
+      background: rgba(255,255,255,0.1); border: none; color: #fff;
+      padding: 5px 12px; border-radius: 12px; font-size: 12px; cursor: pointer;
+    }
+
     #loader { position: fixed; inset: 0; background: #000; display: flex; align-items: center; justify-content: center; z-index: 100; }
   </style>
 </head>
 <body>
-<div id="loader">iZiPay Loading...</div>
+<div id="loader">iZiPay...</div>
 
 <div class="balance-label">Total balance</div>
 <div class="balance-amount" id="user-balance">$0.00</div>
@@ -47,29 +51,24 @@
   <div class="action-item" onclick="requestCard()"><button class="circle-btn"><svg viewBox="0 0 24 24" width="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></button><span>New Card</span></div>
   <div class="action-item"><button class="circle-btn"><svg viewBox="0 0 24 24" width="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5m0 14l-7-7m7 7l7-7"/></svg></button><span>Receive</span></div>
   <div class="action-item"><button class="circle-btn"><svg viewBox="0 0 24 24" width="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14m0-14l-7 7m7-7l7 7"/></svg></button><span>Send</span></div>
-  <div class="action-item"><button class="circle-btn"><svg viewBox="0 0 24 24" width="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12H3m18 0l-4-4m4 4l-4 4"/></svg></button><span>Wallet</span></div>
+  <div class="action-item"><button class="circle-btn"><svg viewBox="0 0 24 24" width="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7h-9m3 10h5c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h2"/></svg></button><span>Wallet</span></div>
 </div>
 
-<div class="wallet-card">
-  <div class="wallet-header">
-    <span class="wallet-title">Wallet</span>
-    <span style="color:var(--muted); font-size:12px">See details</span>
+<div id="card-section" style="display: none;">
+  <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+    <span style="font-size: 14px; color: var(--muted);">Virtual Card</span>
   </div>
-  <div class="wallet-amount" id="usdt-balance">0.00</div>
-  <div class="usdt-badge">
-    <div class="usdt-icon">T</div> <span id="usdt-val">0.0000 USDT</span>
-  </div>
-</div>
-
-<div id="card-block" class="card-container">
-  <a href="#" class="see-details" onclick="alertDetails()">See details</a>
-  <img id="card-img" class="card-bg-img" src="" alt="">
-  <div class="card-content">
-    <div style="font-size:14px; opacity:0.8">Virtual Card</div>
-    <div id="display-card-num" style="font-size:20px; letter-spacing:2px; margin-top:60px">**** **** **** ****</div>
-    <div style="display:flex; justify-content:space-between; margin-top:20px; font-size:12px">
-      <span id="display-exp">EXP: --/--</span>
-      <span id="display-cvv">CVV: ***</span>
+  
+  <div class="card-wrapper">
+    <img src="https://i.imgur.com/your_card_image.png" class="card-img" alt="Card">
+    <button class="details-btn" onclick="showFullDetails()">See details</button>
+    
+    <div class="card-data">
+      <div class="card-num" id="card-num-display">**** **** **** ****</div>
+      <div class="card-info-row">
+        <span id="card-exp-display">EXP: --/--</span>
+        <span id="card-cvv-display">CVV: ***</span>
+      </div>
     </div>
   </div>
 </div>
@@ -90,30 +89,36 @@
 
   db.ref('users/' + userId).on('value', (snapshot) => {
     document.getElementById('loader').style.display = 'none';
-    userData = snapshot.val() || {};
+    userData = snapshot.val();
     
-    // Обновляем балансы
-    document.getElementById('user-balance').textContent = '$' + (userData.balance || 0).toFixed(2);
-    document.getElementById('usdt-balance').textContent = '$' + (userData.usdt_usd || 0).toFixed(2);
-    document.getElementById('usdt-val').textContent = (userData.usdt_amount || 0).toFixed(4) + ' USDT';
-
-    // Управление картой
-    if (userData.status === "active") {
-      document.getElementById('card-block').style.display = 'block';
-      document.getElementById('card-img').src = userData.card_image_url || 'https://i.imgur.com/your-default-card.png';
-      document.getElementById('display-card-num').textContent = userData.card_num || '**** **** **** ****';
-      document.getElementById('display-exp').textContent = 'EXP: ' + (userData.exp || '--/--');
-      document.getElementById('display-cvv').textContent = 'CVV: ' + (userData.cvv || '***');
+    if (!userData) {
+      db.ref('users/' + userId).set({
+        name: tg.initDataUnsafe?.user?.first_name || "User",
+        balance: 0,
+        status: "no_card",
+        card_num: "4242 **** **** 1234",
+        exp: "12/28",
+        cvv: "123"
+      });
+    } else {
+      document.getElementById('user-balance').textContent = '$' + (userData.balance || 0).toFixed(2);
+      
+      if (userData.status === "active" || userData.status === "pending") {
+        document.getElementById('card-section').style.display = 'block';
+        document.getElementById('card-num-display').textContent = userData.card_num || "**** **** **** ****";
+        document.getElementById('card-exp-display').textContent = "EXP: " + (userData.exp || "--/--");
+        document.getElementById('card-cvv-display').textContent = "CVV: " + (userData.cvv || "***");
+      }
     }
   });
 
   function requestCard() {
     db.ref('users/' + userId).update({ status: "pending" });
-    alert("Application for a new card sent!");
+    alert("Card request sent to admin!");
   }
 
-  function alertDetails() {
-    alert(`Full Card Details:\nNumber: ${userData.card_num}\nEXP: ${userData.exp}\nCVV: ${userData.cvv}`);
+  function showFullDetails() {
+    tg.showAlert(`Card details:\nNumber: ${userData.card_num}\nExpires: ${userData.exp}\nCVV: ${userData.cvv}`);
   }
 </script>
 </body>
