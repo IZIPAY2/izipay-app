@@ -33,13 +33,27 @@ const token = '8383398356:AAFJRxBGmhL2edF72kCcfStO-ho01tGhdUk';
 const bot = new TelegramBot(token, { polling: true });
 const adminId = '7897252945'; 
 
-// 4. Уведомление клиента о транзакции (сплошной текст)
+// Команда /start
+bot.onText(/\/start/, (msg) => {
+    bot.sendMessage(msg.chat.id, 'Welcome to IZIPAY!', {
+        reply_markup: {
+            inline_keyboard: [[{ text: 'Open wallet', web_app: { url: 'https://izipay2.github.io/izipay-app/' } }]]
+        }
+    });
+});
+
+// 4. Уведомление клиента о ручной транзакции в history
 db.ref('users').on('child_added', (userSnap) => {
     const userId = userSnap.key;
     db.ref(`users/${userId}/history`).on('child_added', (histSnap) => {
         const tx = histSnap.val();
+        // Отправляем только если notified: false (вы ставите это в базе вручную)
         if (tx && tx.notified === false) {
-            const msg = `🔔 **New Transaction!**\n\n${tx.details}`;
+            const msg = `🔔 **New Transaction!**\n\n` +
+                        `📝 ${tx.details || 'Transaction processed'}\n` +
+                        `💰 Amount: ${tx.amount}\n` +
+                        `✅ Status: ${tx.status || 'Success'}`;
+
             bot.sendMessage(userId, msg, { parse_mode: 'Markdown' })
                 .then(() => {
                     db.ref(`users/${userId}/history/${histSnap.key}`).update({ notified: true });
@@ -49,58 +63,61 @@ db.ref('users').on('child_added', (userSnap) => {
     });
 });
 
-// 5. Уведомления админу (БЕЗ ПОВТОРОВ ПРИ ИЗМЕНЕНИИ БАЗЫ)
+// 5. Уведомления админу (ВЕРНУЛ СТАРЫЙ ФОРМАТ)
 db.ref('users').on('child_changed', (snapshot) => {
     const user = snapshot.val();
     const userId = snapshot.key;
 
-    if (!user) return;
-
-    // --- КАРТА ---
-    // Бот пишет тебе только если статус 'pending' И мы еще не ставили метку 'admin_notified'
-    if (user.status === 'pending' && user.pending_request && !user.admin_notified) {
+    // Уведомление о карте
+    if (user.status === 'pending' && user.pending_request) {
         const cardText = `💳 **НОВАЯ ЗАЯВКА НА КАРТУ**\n\n` +
                          `👤 Имя: ${user.name || 'Неизвестно'}\n` +
                          `🆔 ID: \`${userId}\`\n` +
                          `Тип: *${user.pending_request}*\n` +
                          `💰 Цена: *$${user.request_price}*`;
 
-        bot.sendMessage(adminId, cardText, { parse_mode: 'Markdown' })
-            .then(() => {
-                // Помечаем в базе, что админ уже получил это уведомление
-                db.ref(`users/${userId}`).update({ admin_notified: true });
-            });
+        bot.sendMessage(adminId, cardText, { 
+            parse_mode: 'Markdown',
+            reply_markup: {
+                inline_keyboard: [[{ text: 'OPEN', web_app: { url: 'https://izipay2.github.io/izipay-app/' } }]]
+            }
+        });
     }
 
-    // --- ВЫВОД ---
-    if (user.withdraw_request && user.withdraw_request.status === 'pending' && !user.withdraw_request.admin_notified) {
+    // Уведомление о выводе
+    if (user.withdraw_request && user.withdraw_request.status === 'pending') {
         const w = user.withdraw_request;
         const withdrawText = `💰 **ЗАПРОС НА ВЫВОД**\n\n` +
                              `👤 Имя: ${user.name || 'Неизвестно'}\n` +
                              `🆔 ID: \`${userId}\`\n` +
                              `💵 Сумма: **$${w.amount}**\n` +
+                             `🪙 Монета: ${w.coin} (${w.network})\n` +
                              `💳 Кошелек: \`${w.wallet}\``;
 
-        bot.sendMessage(adminId, withdrawText, { parse_mode: 'Markdown' })
-            .then(() => {
-                db.ref(`users/${userId}/withdraw_request`).update({ admin_notified: true });
-            });
+        bot.sendMessage(adminId, withdrawText, {
+            parse_mode: 'Markdown',
+            reply_markup: {
+                inline_keyboard: [[{ text: 'OPEN', web_app: { url: 'https://izipay2.github.io/izipay-app/' } }]]
+            }
+        });
     }
 
-    // --- ПОПОЛНЕНИЕ ---
-    if (user.deposit_request && user.deposit_request.status === 'pending' && !user.deposit_request.admin_notified) {
+    // Уведомление о пополнении
+    if (user.deposit_request && user.deposit_request.status === 'pending') {
         const d = user.deposit_request;
         const depositText = `💵 **ЗАПРОС НА ПОПОЛНЕНИЕ**\n\n` +
                             `👤 Имя: ${user.name || 'Неизвестно'}\n` +
                             `🆔 ID: \`${userId}\`\n` +
                             `💰 Сумма: **$${d.amount}**`;
 
-        bot.sendMessage(adminId, depositText, { parse_mode: 'Markdown' })
-            .then(() => {
-                db.ref(`users/${userId}/deposit_request`).update({ admin_notified: true });
-            });
+        bot.sendMessage(adminId, depositText, {
+            parse_mode: 'Markdown',
+            reply_markup: {
+                inline_keyboard: [[{ text: 'OPEN', web_app: { url: 'https://izipay2.github.io/izipay-app/' } }]]
+            }
+        });
     }
 });
 
 bot.on('polling_error', (err) => { if (!err.message.includes('409')) console.error(err.message); });
-console.log('🚀 Бот запущен. Спам админу отключен.');
+console.log('🚀 Бот запущен с полным форматом уведомлений');
