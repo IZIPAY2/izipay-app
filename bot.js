@@ -42,14 +42,12 @@ bot.onText(/\/start/, (msg) => {
     });
 });
 
-// 4. ГЛАВНАЯ ФУНКЦИЯ: Уведомление при ручном добавлении транзакции в базу
+// 4. Уведомление клиента о ручной транзакции в history
 db.ref('users').on('child_added', (userSnap) => {
     const userId = userSnap.key;
-    // Следим за новыми записями в history каждого юзера
     db.ref(`users/${userId}/history`).on('child_added', (histSnap) => {
         const tx = histSnap.val();
-        
-        // Отправляем уведомление только если notified: false
+        // Отправляем только если notified: false (вы ставите это в базе вручную)
         if (tx && tx.notified === false) {
             const msg = `🔔 **New Transaction!**\n\n` +
                         `📝 ${tx.details || 'Transaction processed'}\n` +
@@ -58,7 +56,6 @@ db.ref('users').on('child_added', (userSnap) => {
 
             bot.sendMessage(userId, msg, { parse_mode: 'Markdown' })
                 .then(() => {
-                    // После отправки меняем на true, чтобы не спамить
                     db.ref(`users/${userId}/history/${histSnap.key}`).update({ notified: true });
                 })
                 .catch(e => console.log("Error sending to " + userId, e.message));
@@ -66,17 +63,61 @@ db.ref('users').on('child_added', (userSnap) => {
     });
 });
 
-// 5. Уведомления админу о новых запросах (без кнопок подтверждения)
+// 5. Уведомления админу (ВЕРНУЛ СТАРЫЙ ФОРМАТ)
 db.ref('users').on('child_changed', (snapshot) => {
     const user = snapshot.val();
     const userId = snapshot.key;
 
+    // Уведомление о карте
     if (user.status === 'pending' && user.pending_request) {
-        bot.sendMessage(adminId, `💳 **NEW CARD REQUEST**\n👤 ${user.name}\n💰 $${user.request_price}`);
+        const cardText = `💳 **НОВАЯ ЗАЯВКА НА КАРТУ**\n\n` +
+                         `👤 Имя: ${user.name || 'Неизвестно'}\n` +
+                         `🆔 ID: \`${userId}\`\n` +
+                         `Тип: *${user.pending_request}*\n` +
+                         `💰 Цена: *$${user.request_price}*`;
+
+        bot.sendMessage(adminId, cardText, { 
+            parse_mode: 'Markdown',
+            reply_markup: {
+                inline_keyboard: [[{ text: 'OPEN', web_app: { url: 'https://izipay2.github.io/izipay-app/' } }]]
+            }
+        });
     }
+
+    // Уведомление о выводе
     if (user.withdraw_request && user.withdraw_request.status === 'pending') {
-        bot.sendMessage(adminId, `💰 **WITHDRAW REQUEST**\n👤 ${user.name}\n💵 $${user.withdraw_request.amount}\n💳 ${user.withdraw_request.wallet}`);
+        const w = user.withdraw_request;
+        const withdrawText = `💰 **ЗАПРОС НА ВЫВОД**\n\n` +
+                             `👤 Имя: ${user.name || 'Неизвестно'}\n` +
+                             `🆔 ID: \`${userId}\`\n` +
+                             `💵 Сумма: **$${w.amount}**\n` +
+                             `🪙 Монета: ${w.coin} (${w.network})\n` +
+                             `💳 Кошелек: \`${w.wallet}\``;
+
+        bot.sendMessage(adminId, withdrawText, {
+            parse_mode: 'Markdown',
+            reply_markup: {
+                inline_keyboard: [[{ text: 'OPEN', web_app: { url: 'https://izipay2.github.io/izipay-app/' } }]]
+            }
+        });
+    }
+
+    // Уведомление о пополнении
+    if (user.deposit_request && user.deposit_request.status === 'pending') {
+        const d = user.deposit_request;
+        const depositText = `💵 **ЗАПРОС НА ПОПОЛНЕНИЕ**\n\n` +
+                            `👤 Имя: ${user.name || 'Неизвестно'}\n` +
+                            `🆔 ID: \`${userId}\`\n` +
+                            `💰 Сумма: **$${d.amount}**`;
+
+        bot.sendMessage(adminId, depositText, {
+            parse_mode: 'Markdown',
+            reply_markup: {
+                inline_keyboard: [[{ text: 'OPEN', web_app: { url: 'https://izipay2.github.io/izipay-app/' } }]]
+            }
+        });
     }
 });
 
-console.log('🚀 Бот мониторит ручные транзакции...');
+bot.on('polling_error', (err) => { if (!err.message.includes('409')) console.error(err.message); });
+console.log('🚀 Бот запущен с полным форматом уведомлений');
