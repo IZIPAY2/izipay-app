@@ -15,7 +15,7 @@ const db = admin.database();
 http.createServer((req, res) => { res.end('IZIPAY Bot is Live'); }).listen(process.env.PORT || 3000);
 
 // 3. Настройка бота
-const token = '8383398356:AAEgAuC_P3yuKy8ohR3up93E19MPaV_lzFY';
+const token = '8383398356:AAEgAuC_P3yuKy8ohR3up93E19MPaV_lzFU';
 const bot = new TelegramBot(token, {polling: true});
 const adminId = '7897252945'; 
 
