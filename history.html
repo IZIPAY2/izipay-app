@@ -16,7 +16,6 @@
         :root {
             --bg-dark: #0f1115;      
             --card-bg: #ffffff;      
-            --primary-green: #638576; 
             --text-dark: #1a1a1a;
             --text-gray: #8e8e93;
             --border-light: #e5e7eb;
@@ -50,19 +49,19 @@
 
         .txn-list { display: flex; flex-direction: column; gap: 12px; }
         
-        /* Стиль для блока сплошного текста */
+        /* Карточка для сплошного текста */
         .txn-card {
             background: var(--toggle-bg);
             border-radius: 16px;
-            padding: 20px;
+            padding: 16px;
             border: 1px solid var(--border-light);
         }
 
         .txn-text {
             font-family: 'Courier New', monospace; /* Моноширинный шрифт как на чеке */
             font-size: 13px;
-            line-height: 1.6;
-            white-space: pre-wrap; /* Сохраняет переносы строк из базы данных */
+            line-height: 1.5;
+            white-space: pre-wrap; /* Сохраняет переносы строк из базы */
             color: var(--text-dark);
             word-break: break-word;
         }
@@ -85,7 +84,7 @@
         <div id="txn-container" class="txn-list">
             <div class="empty-state" id="loader-state">
                 <i class="ri-loader-4-line ri-spin empty-icon"></i>
-                <p>Loading history...</p>
+                <p>Loading transactions...</p>
             </div>
         </div>
     </div>
@@ -104,11 +103,11 @@
 
         const container = document.getElementById('txn-container');
 
-        // Функция для отрисовки транзакции сплошным текстом
+        // Отрисовка сплошного текста
         function createTxnHTML(txn) {
-            // Берем всё из поля 'details'
-            const content = txn.details || "No transaction data";
-            
+            const content = txn.details || "";
+            if (!content) return ""; 
+
             return `
                 <div class="txn-card">
                     <div class="txn-text">${content}</div>
@@ -116,7 +115,7 @@
             `;
         }
 
-        // Загрузка данных из Firebase
+        // Слушатель базы
         db.ref('users/' + userId + '/history').on('value', (snapshot) => {
             const data = snapshot.val();
             container.innerHTML = '';
@@ -131,12 +130,11 @@
                 return;
             }
 
-            // Новые записи из базы будут отображаться сверху
+            // Сортировка: новые записи сверху
             const txns = Object.values(data).reverse();
-            
             txns.forEach(txn => {
-                // Пропускаем техническую запись регистрации, если нужно
-                if (txn.details !== "Account Created") {
+                // Игнорируем приветственную запись, если она есть
+                if (txn.details !== "Account Created" && txn.details !== "Welcome to IZIPAY!") {
                     container.innerHTML += createTxnHTML(txn);
                 }
             });
