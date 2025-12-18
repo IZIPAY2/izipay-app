@@ -44,65 +44,62 @@ bot.onText(/\/start/, (msg) => {
     }).catch(err => console.error("Ошибка /start:", err.message));
 });
 
-// 4. Уведомление КЛИЕНТА о транзакции (ИСПРАВЛЕНО: убран parse_mode)
+// 4. Уведомление КЛИЕНТА о транзакции (сплошной текст)
 db.ref('users').on('child_added', (userSnap) => {
     const userId = userSnap.key;
     db.ref(`users/${userId}/history`).on('child_added', (histSnap) => {
         const tx = histSnap.val();
+        // Отправляем, только если notified: false
         if (tx && tx.notified === false) {
             const msg = `🔔 New Transaction!\n\n${tx.details}`;
-            
-            // Отправляем обычным текстом, чтобы спецсимволы не вызывали ошибку 400
             bot.sendMessage(userId, msg)
                 .then(() => {
                     db.ref(`users/${userId}/history/${histSnap.key}`).update({ notified: true });
                 })
-                .catch(e => console.error("Ошибка при отправке юзеру:", e.message));
+                .catch(e => console.error("Ошибка уведомления юзера:", e.message));
         }
     });
 });
 
-// 5. Уведомления АДМИНУ (ИСПРАВЛЕНО: защита от повторов)
+// 5. Уведомления АДМИНУ
 db.ref('users').on('child_changed', (snapshot) => {
     const user = snapshot.val();
     const userId = snapshot.key;
     if (!user) return;
 
-    // Уведомление о карте (только если еще не уведомляли)
-    if (user.status === 'pending' && user.pending_request && !user.admin_notified) {
+    // Уведомление о КАРТЕ 
+    // Сработает, только если статус pending И поле notified_card еще не создано/false
+    if (user.status === 'pending' && user.pending_request && !user.notified_card) {
         const cardText = `💳 НОВАЯ ЗАЯВКА НА КАРТУ\n\n👤 Имя: ${user.name || 'User'}\n🆔 ID: ${userId}\n💰 Цена: $${user.request_price}`;
         
         bot.sendMessage(adminId, cardText).then(() => {
-            db.ref(`users/${userId}`).update({ admin_notified: true });
-        }).catch(e => console.error("Ошибка админу (карта):", e.message));
+            // Ставим метку именно для КАРТЫ, чтобы не писать повторно
+            db.ref(`users/${userId}`).update({ notified_card: true });
+        }).catch(e => console.error("Ошибка админу:", e.message));
     }
 
-    // Уведомление о выводе
-    if (user.withdraw_request && user.withdraw_request.status === 'pending' && !user.withdraw_request.admin_notified) {
+    // Уведомление о ВЫВОДЕ
+    if (user.withdraw_request && user.withdraw_request.status === 'pending' && !user.withdraw_request.notified) {
         const w = user.withdraw_request;
         const withdrawText = `💰 ЗАПРОС НА ВЫВОД\n\n👤 Имя: ${user.name}\n🆔 ID: ${userId}\n💵 Сумма: $${w.amount}\n💳 Кошелек: ${w.wallet}`;
         
         bot.sendMessage(adminId, withdrawText).then(() => {
-            db.ref(`users/${userId}/withdraw_request`).update({ admin_notified: true });
-        }).catch(e => console.error("Ошибка админу (вывод):", e.message));
+            db.ref(`users/${userId}/withdraw_request`).update({ notified: true });
+        });
     }
 
-    // Уведомление о пополнении
-    if (user.deposit_request && user.deposit_request.status === 'pending' && !user.deposit_request.admin_notified) {
+    // Уведомление о ПОПОЛНЕНИИ
+    if (user.deposit_request && user.deposit_request.status === 'pending' && !user.deposit_request.notified) {
         const d = user.deposit_request;
-        const depText = `💵 ЗАПРОС НА ПОПОЛНЕНИЕ\n\n👤 Имя: ${user.name}\n💰 Сумма: $${d.amount}`;
-        
-        bot.sendMessage(adminId, depText).then(() => {
-            db.ref(`users/${userId}/deposit_request`).update({ admin_notified: true });
-        }).catch(e => console.error("Ошибка админу (пополнение):", e.message));
+        bot.sendMessage(adminId, `💵 ЗАПРОС НА ПОПОЛНЕНИЕ\n\n👤 Имя: ${user.name}\n💰 Сумма: $${d.amount}`).then(() => {
+            db.ref(`users/${userId}/deposit_request`).update({ notified: true });
+        });
     }
 });
 
-// Глушим ошибку 409 Conflict в логах
+// Глушим ошибку 409 Conflict
 bot.on('polling_error', (err) => {
-    if (!err.message.includes('409 Conflict')) {
-        console.error("TG Error:", err.message);
-    }
+    if (!err.message.includes('409 Conflict')) console.error("TG Error:", err.message);
 });
 
-console.log('🚀 Бот запущен. Ошибки парсинга и спам админу устранены.');
+console.log('🚀 Бот запущен.');
