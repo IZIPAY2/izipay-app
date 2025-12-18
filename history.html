@@ -84,6 +84,7 @@
     <div class="content-sheet">
         <div id="txn-container" class="txn-list">
             <div class="empty-state" id="loader-state">
+                <i class="ri-loader-4-line ri-spin empty-icon"></i>
                 <p>Loading transactions...</p>
             </div>
         </div>
@@ -103,21 +104,21 @@
 
         const container = document.getElementById('txn-container');
 
-        // Функция для отрисовки одной транзакции
+        // Функция для создания HTML одной транзакции
         function createTxnHTML(txn) {
-            const isPositive = (txn.type === 'top_up' || txn.type === 'bonus');
+            // Код теперь проверяет 'type' (Deposit/Withdraw) для выбора цвета
+            const isPositive = (txn.type === 'Deposit' || txn.type === 'top_up' || txn.type === 'bonus');
+            
             let icon = 'ri-exchange-dollar-line';
-            let label = 'Transaction';
+            let label = txn.details || 'Transaction';
 
-            switch(txn.type) {
-                case 'top_up': icon = 'ri-arrow-left-down-line'; label = 'Deposit'; break;
-                case 'withdraw': icon = 'ri-arrow-right-up-line'; label = 'Withdrawal'; break;
-                case 'payment': icon = 'ri-shopping-bag-3-line'; label = 'Payment'; break;
-                case 'card_issue': icon = 'ri-bank-card-line'; label = 'Card Issue'; break;
-                case 'bonus': icon = 'ri-gift-line'; label = 'Bonus'; break;
-            }
+            // Иконки в зависимости от типа
+            if (txn.type === 'Deposit' || txn.type === 'top_up') icon = 'ri-arrow-left-down-line';
+            else if (txn.type === 'Withdraw' || txn.type === 'withdraw') icon = 'ri-arrow-right-up-line';
+            else if (txn.type === 'card_issue') icon = 'ri-bank-card-line';
 
-            const date = new Date(txn.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+            // Используем дату из базы, если она есть, иначе текущую
+            const dateStr = txn.date || new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
             return `
                 <div class="txn-item">
@@ -125,20 +126,20 @@
                         <div class="txn-icon"><i class="${icon}"></i></div>
                         <div class="txn-info">
                             <h3>${label}</h3>
-                            <p>${date}</p>
+                            <p>${dateStr}</p>
                         </div>
                     </div>
                     <div class="txn-amount ${isPositive ? 'plus' : 'minus'}">
-                        ${isPositive ? '+' : '-'}$${parseFloat(txn.amount).toFixed(2)}
+                        ${txn.amount}
                     </div>
                 </div>
             `;
         }
 
-        // Загрузка данных из Firebase (папка users/ID/transactions)
-        db.ref('users/' + userId + '/transactions').orderByChild('timestamp').on('value', (snapshot) => {
-            container.innerHTML = '';
+        // Загрузка данных из Firebase (папка users/ID/history)
+        db.ref('users/' + userId + '/history').on('value', (snapshot) => {
             const data = snapshot.val();
+            container.innerHTML = '';
 
             if (!data) {
                 container.innerHTML = `
@@ -150,7 +151,7 @@
                 return;
             }
 
-            // Превращаем объект в массив и сортируем (новые сверху)
+            // Превращаем в массив, разворачиваем (новые сверху) и отрисовываем
             const txns = Object.values(data).reverse();
             txns.forEach(txn => {
                 container.innerHTML += createTxnHTML(txn);
