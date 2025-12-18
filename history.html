@@ -4,14 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>History | IZIPAY</title>
-    
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
-    
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
-    
     <style>
         :root {
             --bg-dark: #0f1115;      
@@ -21,9 +18,7 @@
             --border-light: #e5e7eb;
             --toggle-bg: #f3f4f6;
         }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Inter', sans-serif;
             background-color: var(--bg-dark);
@@ -32,10 +27,8 @@
             display: flex;
             flex-direction: column;
         }
-
         .mobile-header { padding: 24px; display: flex; align-items: center; justify-content: space-between; }
         .back-btn { width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.1); border: none; color: white; display: flex; align-items: center; justify-content: center; text-decoration: none; }
-        
         .content-sheet {
             background: var(--card-bg);
             flex-grow: 1;
@@ -43,52 +36,40 @@
             border-top-right-radius: 32px;
             padding: 32px 24px;
             color: var(--text-dark);
-            animation: slideUp 0.5s ease;
             overflow-y: auto;
         }
-
-        .txn-list { display: flex; flex-direction: column; gap: 12px; }
-        
-        /* Карточка для сплошного текста */
         .txn-card {
             background: var(--toggle-bg);
             border-radius: 16px;
             padding: 16px;
             border: 1px solid var(--border-light);
+            margin-bottom: 12px;
         }
-
         .txn-text {
-            font-family: 'Courier New', monospace; /* Моноширинный шрифт как на чеке */
+            font-family: 'Courier New', monospace;
             font-size: 13px;
             line-height: 1.5;
-            white-space: pre-wrap; /* Сохраняет переносы строк из базы */
+            white-space: pre-wrap; /* Это позволяет вставлять текст сплошным блоком */
             color: var(--text-dark);
-            word-break: break-word;
         }
-
         .empty-state { text-align: center; padding: 60px 0; color: var(--text-gray); }
         .empty-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.3; }
-
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
     </style>
 </head>
 <body>
-
     <div class="mobile-header">
         <a href="index.html" class="back-btn"><i class="ri-arrow-left-line"></i></a>
         <h3>History</h3>
         <div style="width:40px"></div>
     </div>
-
     <div class="content-sheet">
-        <div id="txn-container" class="txn-list">
-            <div class="empty-state" id="loader-state">
+        <div id="txn-container">
+            <div class="empty-state">
                 <i class="ri-loader-4-line ri-spin empty-icon"></i>
-                <p>Loading transactions...</p>
+                <p>Loading...</p>
             </div>
         </div>
     </div>
-
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyBTpsS1kStrz8EA1EO0F4v3YkdENnxGHsM",
@@ -103,41 +84,35 @@
 
         const container = document.getElementById('txn-container');
 
-        // Отрисовка сплошного текста
-        function createTxnHTML(txn) {
-            const content = txn.details || "";
-            if (!content) return ""; 
-
-            return `
-                <div class="txn-card">
-                    <div class="txn-text">${content}</div>
-                </div>
-            `;
-        }
-
-        // Слушатель базы
         db.ref('users/' + userId + '/history').on('value', (snapshot) => {
             const data = snapshot.val();
             container.innerHTML = '';
 
-            if (!data) {
+            // Если в базе нет записей или папки history — пишем, что транзакций нет
+            if (!data || Object.keys(data).length === 0) {
                 container.innerHTML = `
                     <div class="empty-state">
                         <i class="ri-file-list-3-line empty-icon"></i>
-                        <p>No history yet</p>
-                    </div>
-                `;
+                        <p>No transactions yet</p>
+                    </div>`;
                 return;
             }
 
-            // Сортировка: новые записи сверху
             const txns = Object.values(data).reverse();
             txns.forEach(txn => {
-                // Игнорируем приветственную запись, если она есть
-                if (txn.details !== "Account Created" && txn.details !== "Welcome to IZIPAY!") {
-                    container.innerHTML += createTxnHTML(txn);
+                // Выводим ТОЛЬКО если есть поле details и оно не пустое
+                if (txn.details && txn.details !== "") {
+                    container.innerHTML += `
+                        <div class="txn-card">
+                            <div class="txn-text">${txn.details}</div>
+                        </div>`;
                 }
             });
+
+            // Если после цикла всё равно пусто (например, были только пустые записи)
+            if (container.innerHTML === "") {
+                container.innerHTML = '<div class="empty-state"><p>No transactions yet</p></div>';
+            }
         });
     </script>
 </body>
