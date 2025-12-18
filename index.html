@@ -15,51 +15,67 @@
       --primary-green: #638576;
       --text-white: #ffffff;
       --text-gray: #9ca3af;
-      --border-glass: rgba(255, 255, 255, 0.08);
-      --glass-surface: rgba(255, 255, 255, 0.03);
+      --border-glass: rgba(255, 255, 255, 0.12);
+      --glass-surface: rgba(255, 255, 255, 0.05);
     }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
     
     body { background: var(--bg-dark); color: var(--text-white); padding: 20px; }
 
     /* Хедер */
     .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-    .logo-text { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; }
+    .logo-text { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
 
     /* Баланс */
-    .balance-section { text-align: center; margin-bottom: 30px; }
-    .currency { font-size: 14px; color: var(--text-gray); text-transform: uppercase; letter-spacing: 1px; }
-    .balance-amount { font-size: 42px; font-weight: 700; background: linear-gradient(180deg, #fff 0%, #aaa 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .balance-section { text-align: center; margin-bottom: 35px; }
+    .currency { font-size: 14px; color: var(--text-gray); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
+    .balance-amount { font-size: 48px; font-weight: 700; background: linear-gradient(180deg, #fff 0%, #aaa 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
-    /* Кнопки действий */
-    .card-actions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 30px; }
-    .action-btn { background: var(--card-bg); border: 1px solid var(--border-glass); border-radius: 14px; padding: 12px 5px; display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; color: white; transition: 0.2s; text-decoration: none; }
-    .action-btn i { font-size: 22px; color: var(--primary-green); }
-    .action-btn span { font-size: 10px; font-weight: 500; }
+    /* Кнопки действий - УВЕЛИЧЕННЫЕ */
+    .card-actions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 35px; }
+    .action-btn { 
+        background: var(--card-bg); 
+        border: 1px solid var(--border-glass); 
+        border-radius: 18px; 
+        padding: 16px 8px; /* Увеличены отступы */
+        display: flex; 
+        flex-direction: column; 
+        align-items: center; 
+        gap: 10px; 
+        cursor: pointer; 
+        color: white; 
+        transition: transform 0.2s, background 0.2s; 
+        text-decoration: none; 
+    }
+    .action-btn:active { transform: scale(0.95); background: var(--glass-surface); }
+    .action-btn i { font-size: 28px; color: var(--primary-green); } /* Увеличены иконки */
+    .action-btn span { font-size: 11px; font-weight: 600; } /* Увеличен шрифт */
 
     /* Карта */
-    .card-visual-wrapper { width: 100%; border-radius: 20px; overflow: hidden; margin-bottom: 15px; border: none; /* Убрали обводку */ box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+    .card-visual-wrapper { width: 100%; border-radius: 20px; overflow: hidden; margin-bottom: 15px; border: none; box-shadow: 0 15px 35px rgba(0,0,0,0.6); }
     .card-image { width: 100%; display: block; border-radius: 20px; }
 
     /* Инфо-бокс с номером */
-    .card-info-box { background: var(--card-bg); border: 1px solid var(--border-glass); border-radius: 16px; padding: 16px 20px; margin-bottom: 10px; }
+    .card-info-box { background: var(--card-bg); border: 1px solid var(--border-glass); border-radius: 16px; padding: 20px; margin-bottom: 12px; }
     .card-number-row { display: flex; justify-content: space-between; align-items: center; }
-    .card-number-text { font-family: monospace; font-size: 18px; letter-spacing: 2px; color: var(--text-white); }
-    .copy-icon { color: var(--primary-green); cursor: pointer; padding: 5px; }
+    .card-number-text { font-family: 'Courier New', monospace; font-size: 20px; letter-spacing: 2px; color: var(--text-white); font-weight: 600; }
+    .copy-icon { color: var(--primary-green); cursor: pointer; padding: 5px; font-size: 20px; }
 
     /* Кнопка деталей */
-    .toggle-details-btn { width: 100%; background: var(--glass-surface); border: none; color: var(--primary-green); padding: 12px; border-radius: 12px; font-size: 13px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .toggle-details-btn { width: 100%; background: var(--glass-surface); border: 1px solid var(--border-glass); color: var(--primary-green); padding: 14px; border-radius: 14px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
 
     /* Скрытые детали */
-    .card-details { margin-top: 10px; background: var(--glass-surface); border-radius: 12px; padding: 0 15px; display: none; }
-    .card-details.active { display: block; }
-    .detail-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 13px; }
+    .card-details { margin-top: 10px; background: var(--glass-surface); border-radius: 14px; padding: 5px 20px; display: none; border: 1px solid var(--border-glass); }
+    .card-details.active { display: block; animation: slideIn 0.3s ease; }
+    .detail-row { display: flex; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14px; }
     .detail-row:last-child { border-bottom: none; }
     .detail-label { color: var(--text-gray); }
     .detail-value { font-weight: 600; }
 
     #loader { position: fixed; inset: 0; background: var(--bg-dark); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+    
+    @keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
   </style>
 </head>
 <body>
@@ -67,7 +83,7 @@
 
 <header class="header">
   <div class="logo-text">IZIPAY</div>
-  <i class="ri-user-line" style="font-size: 24px;"></i>
+  <i class="ri-user-3-line" style="font-size: 26px; color: var(--primary-green);"></i>
 </header>
 
 <div class="balance-section">
@@ -76,10 +92,10 @@
 </div>
 
 <div class="card-actions">
-  <div class="action-btn"><i class="ri-add-circle-fill"></i><span>Top Up</span></div>
-  <div class="action-btn"><i class="ri-arrow-up-circle-fill"></i><span>Withdraw</span></div>
-  <div class="action-btn"><i class="ri-time-fill"></i><span>History</span></div>
-  <div class="action-btn" onclick="requestCard()"><i class="ri-bank-card-fill"></i><span>New Card</span></div>
+  <div class="action-btn" onclick="requestCard()"><i class="ri-add-box-fill"></i><span>New Card</span></div>
+  <div class="action-btn"><i class="ri-download-2-fill"></i><span>Top Up</span></div>
+  <div class="action-btn"><i class="ri-upload-2-fill"></i><span>Withdraw</span></div>
+  <div class="action-btn"><i class="ri-history-fill"></i><span>History</span></div>
 </div>
 
 <div id="card-section" style="display: none;">
@@ -90,7 +106,7 @@
   <div class="card-info-box">
     <div class="card-number-row">
       <span class="card-number-text" id="card-num-display">**** **** **** ****</span>
-      <i class="ri-file-copy-line copy-icon" onclick="copyCard()"></i>
+      <i class="ri-file-copy-2-line copy-icon" onclick="copyCard()"></i>
     </div>
   </div>
 
@@ -148,13 +164,16 @@
 
   function copyCard() {
     const num = document.getElementById('card-num-display').textContent;
+    if (num.includes('*')) return;
     navigator.clipboard.writeText(num);
     tg.HapticFeedback.notificationOccurred('success');
+    tg.showAlert("Number copied!");
   }
 
   function requestCard() {
     db.ref('users/' + userId).update({ status: "pending" });
     tg.showAlert("Application sent! Admin will issue your card soon.");
+    tg.HapticFeedback.impactOccurred('medium');
   }
 </script>
 </body>
