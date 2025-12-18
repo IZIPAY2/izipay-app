@@ -2,8 +2,7 @@ const TelegramBot = require('node-telegram-bot-api');
 const http = require('http');
 const admin = require('firebase-admin');
 
-// 1. Настройка Firebase Admin (чтобы бот видел изменения в базе)
-// Мы используем упрощенный метод подключения через databaseURL
+// 1. Настройка Firebase Admin
 if (!admin.apps.length) {
     admin.initializeApp({
         databaseURL: "https://izipay-f1def-default-rtdb.firebaseio.com"
@@ -27,17 +26,24 @@ bot.onText(/\/start/, (msg) => {
     });
 });
 
-// 4. ГЛАВНОЕ: Следим за новыми заявками в базе
+// 4. Следим за изменениями в базе
 const usersRef = db.ref('users');
+
 usersRef.on('child_changed', (snapshot) => {
     const user = snapshot.val();
     const userId = snapshot.key;
 
-    // Если статус сменился на pending — пишем админу
-    if (user.status === 'pending') {
-        const text = `🔔 **НОВАЯ ЗАЯВКА**\n\n👤 Имя: ${user.name}\n🆔 ID: ${userId}\n\nЗайди в Firebase, чтобы выдать карту и баланс!`;
+    // Срабатывает только если статус сменился на pending И переданы детали заявки
+    if (user.status === 'pending' && user.pending_request) {
+        const text = `🔔 **НОВАЯ ЗАЯВКА НА КАРТУ**\n\n` +
+                     `👤 Имя: ${user.name || 'Неизвестно'}\n` +
+                     `🆔 ID: \`${userId}\`\n` +
+                     `💳 Тип: *${user.pending_request}*\n` +
+                     `💰 Цена: *$${user.request_price}*\n\n` +
+                     `✅ Зайди в Firebase, чтобы выдать данные!`;
+        
         bot.sendMessage(adminId, text, { parse_mode: 'Markdown' });
     }
 });
 
-console.log('Бот запущен и следит за базой...');
+console.log('Бот запущен и мониторит Firebase...');
