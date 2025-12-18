@@ -21,8 +21,6 @@
             --text-gray: #8e8e93;
             --border-light: #e5e7eb;
             --toggle-bg: #f3f4f6;
-            --income: #10b981;
-            --expense: #ef4444;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -50,22 +48,24 @@
             overflow-y: auto;
         }
 
-        .txn-list { display: flex; flex-direction: column; gap: 16px; }
-        .txn-item { display: flex; align-items: center; justify-content: space-between; padding-bottom: 16px; border-bottom: 1px solid var(--border-light); }
-        .txn-left { display: flex; align-items: center; gap: 16px; }
+        .txn-list { display: flex; flex-direction: column; gap: 12px; }
         
-        .txn-icon {
-            width: 48px; height: 48px; border-radius: 16px;
+        /* Стиль для блока сплошного текста */
+        .txn-card {
             background: var(--toggle-bg);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 24px; color: var(--text-dark);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid var(--border-light);
         }
 
-        .txn-info h3 { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
-        .txn-info p { font-size: 12px; color: var(--text-gray); }
-        .txn-amount { font-size: 15px; font-weight: 700; }
-        .txn-amount.plus { color: var(--income); }
-        .txn-amount.minus { color: var(--text-dark); }
+        .txn-text {
+            font-family: 'Courier New', monospace; /* Моноширинный шрифт как на чеке */
+            font-size: 13px;
+            line-height: 1.6;
+            white-space: pre-wrap; /* Сохраняет переносы строк из базы данных */
+            color: var(--text-dark);
+            word-break: break-word;
+        }
 
         .empty-state { text-align: center; padding: 60px 0; color: var(--text-gray); }
         .empty-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.3; }
@@ -85,7 +85,7 @@
         <div id="txn-container" class="txn-list">
             <div class="empty-state" id="loader-state">
                 <i class="ri-loader-4-line ri-spin empty-icon"></i>
-                <p>Loading transactions...</p>
+                <p>Loading history...</p>
             </div>
         </div>
     </div>
@@ -104,39 +104,19 @@
 
         const container = document.getElementById('txn-container');
 
-        // Функция для создания HTML одной транзакции
+        // Функция для отрисовки транзакции сплошным текстом
         function createTxnHTML(txn) {
-            // Код теперь проверяет 'type' (Deposit/Withdraw) для выбора цвета
-            const isPositive = (txn.type === 'Deposit' || txn.type === 'top_up' || txn.type === 'bonus');
+            // Берем всё из поля 'details'
+            const content = txn.details || "No transaction data";
             
-            let icon = 'ri-exchange-dollar-line';
-            let label = txn.details || 'Transaction';
-
-            // Иконки в зависимости от типа
-            if (txn.type === 'Deposit' || txn.type === 'top_up') icon = 'ri-arrow-left-down-line';
-            else if (txn.type === 'Withdraw' || txn.type === 'withdraw') icon = 'ri-arrow-right-up-line';
-            else if (txn.type === 'card_issue') icon = 'ri-bank-card-line';
-
-            // Используем дату из базы, если она есть, иначе текущую
-            const dateStr = txn.date || new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-
             return `
-                <div class="txn-item">
-                    <div class="txn-left">
-                        <div class="txn-icon"><i class="${icon}"></i></div>
-                        <div class="txn-info">
-                            <h3>${label}</h3>
-                            <p>${dateStr}</p>
-                        </div>
-                    </div>
-                    <div class="txn-amount ${isPositive ? 'plus' : 'minus'}">
-                        ${txn.amount}
-                    </div>
+                <div class="txn-card">
+                    <div class="txn-text">${content}</div>
                 </div>
             `;
         }
 
-        // Загрузка данных из Firebase (папка users/ID/history)
+        // Загрузка данных из Firebase
         db.ref('users/' + userId + '/history').on('value', (snapshot) => {
             const data = snapshot.val();
             container.innerHTML = '';
@@ -145,16 +125,20 @@
                 container.innerHTML = `
                     <div class="empty-state">
                         <i class="ri-file-list-3-line empty-icon"></i>
-                        <p>No transactions yet</p>
+                        <p>No history yet</p>
                     </div>
                 `;
                 return;
             }
 
-            // Превращаем в массив, разворачиваем (новые сверху) и отрисовываем
+            // Новые записи из базы будут отображаться сверху
             const txns = Object.values(data).reverse();
+            
             txns.forEach(txn => {
-                container.innerHTML += createTxnHTML(txn);
+                // Пропускаем техническую запись регистрации, если нужно
+                if (txn.details !== "Account Created") {
+                    container.innerHTML += createTxnHTML(txn);
+                }
             });
         });
     </script>
