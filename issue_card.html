@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Issue Card | IZIPAY</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0f1115;      
+            --card-bg: #ffffff;      
+            --primary-green: #638576; 
+            --text-dark: #1a1a1a;
+            --text-gray: #8e8e93;
+            --border-light: #e5e7eb;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background-color: var(--bg-dark); color: white; min-height: 100vh; display: flex; flex-direction: column; }
+        .mobile-header { padding: 20px; display: flex; align-items: center; justify-content: space-between; }
+        .back-btn { width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.1); border: none; color: white; display: flex; align-items: center; justify-content: center; text-decoration: none; }
+        .content-sheet { background: var(--card-bg); flex-grow: 1; border-top-left-radius: 30px; border-top-right-radius: 30px; padding: 30px 20px; color: var(--text-dark); }
+        .card-options { display: flex; flex-direction: column; gap: 12px; margin-bottom: 30px; }
+        .card-option { border: 1px solid var(--border-light); border-radius: 16px; padding: 16px; display: flex; align-items: center; gap: 15px; cursor: pointer; transition: 0.2s; }
+        .card-option.active { border: 2px solid var(--primary-green); background: #f0fdf4; }
+        .card-icon { width: 45px; height: 45px; background: #f3f4f6; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+        .card-info { flex: 1; }
+        .card-title { font-weight: 600; display: block; }
+        .card-price { font-weight: 700; color: var(--primary-green); }
+        .btn-primary { width: 100%; height: 55px; background: var(--primary-green); color: white; border: none; border-radius: 100px; font-weight: 600; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="mobile-header">
+        <a href="index.html" class="back-btn"><i class="ri-arrow-left-line"></i></a>
+        <h3>New Card</h3>
+        <div style="width:40px"></div>
+    </div>
+    <div class="content-sheet">
+        <h4 style="margin-bottom:20px">Select Card Type</h4>
+        <div class="card-options">
+            <div class="card-option active" onclick="selectType('regular', 39.99, this)">
+                <div class="card-icon"><i class="ri-bank-card-line"></i></div>
+                <div class="card-info">
+                    <span class="card-title">Regular Virtual</span>
+                    <span style="font-size:12px; color:var(--text-gray)">Instant issue</span>
+                </div>
+                <span class="card-price">$39.99</span>
+            </div>
+            <div class="card-option" onclick="selectType('physical', 149.00, this)">
+                <div class="card-icon"><i class="ri-vip-crown-line"></i></div>
+                <div class="card-info">
+                    <span class="card-title">Physical Metal</span>
+                    <span style="font-size:12px; color:var(--text-gray)">Delivery 24h</span>
+                </div>
+                <span class="card-price">$149.00</span>
+            </div>
+        </div>
+        <button class="btn-primary" onclick="proceed()">Continue to Payment</button>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBTpsS1kStrz8EA1EO0F4v3YkdENnxGHsM",
+            authDomain: "izipay-f1def.firebaseapp.com",
+            databaseURL: "https://izipay-f1def-default-rtdb.firebaseio.com",
+            projectId: "izipay-f1def"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        const tg = window.Telegram.WebApp;
+
+        let selected = { type: 'regular', price: 39.99 };
+
+        function selectType(type, price, el) {
+            selected = { type, price };
+            document.querySelectorAll('.card-option').forEach(opt => opt.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        function proceed() {
+            const userId = tg.initDataUnsafe?.user?.id || "7897252945";
+            db.ref('users/' + userId).update({ 
+                pending_request: selected.type,
+                request_price: selected.price,
+                status: "pending"
+            }).then(() => {
+                window.location.href = "top_up.html";
+            });
+        }
+    </script>
+</body>
+</html>
