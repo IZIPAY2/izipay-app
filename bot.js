@@ -38,7 +38,7 @@ bot.onText(/\/start/, (msg) => {
     bot.sendMessage(msg.chat.id, 'Welcome to IZIPAY Wallet!', {
         reply_markup: {
             inline_keyboard: [
-                [{ text: ' Open Wallet', web_app: { url: 'https://izipay2.github.io/izipay-app/' } }]
+                [{ text: 'Open Wallet', web_app: { url: 'https://izipay2.github.io/izipay-app/' } }]
             ]
         }
     }).catch(err => console.error("Ошибка /start:", err.message));
