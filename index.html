@@ -17,25 +17,41 @@
     
     .action-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 30px; }
     .action-item { display: flex; flex-direction: column; align-items: center; gap: 8px; font-size: 12px; }
-    .circle-btn { width: 55px; height: 55px; background: #1c1c1e; border-radius: 50%; border: none; color: #fff; display: flex; align-items: center; justify-content: center; }
+    .circle-btn { width: 55px; height: 55px; background: #1c1c1e; border-radius: 50%; border: none; color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; }
 
     /* Дизайн карты */
-    .card-wrapper { position: relative; width: 100%; border-radius: 20px; overflow: hidden; margin-top: 10px; border: 1px solid #333; }
+    .card-wrapper { position: relative; width: 100%; border-radius: 20px; overflow: hidden; margin-top: 10px; border: 1px solid #333; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
     .card-img { width: 100%; display: block; border-radius: 20px; }
     
     .card-data {
       position: absolute; inset: 0; padding: 25px;
       display: flex; flex-direction: column; justify-content: flex-end;
-      background: linear-gradient(0deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0) 100%);
+      /* Затемнение снизу, чтобы белый текст читался на светлой карте */
+      background: linear-gradient(0deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 50%);
     }
     
-    .card-num { font-size: 20px; letter-spacing: 2px; margin-bottom: 15px; text-shadow: 1px 1px 2px #000; }
-    .card-info-row { display: flex; justify-content: space-between; font-size: 12px; opacity: 0.9; }
+    .card-num { 
+      font-size: 22px; 
+      letter-spacing: 2px; 
+      margin-bottom: 45px; 
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.8); 
+      font-family: 'Courier New', monospace;
+      color: #fff;
+    }
+    
+    .card-info-row { 
+      display: flex; 
+      justify-content: space-between; 
+      font-size: 14px; 
+      opacity: 1; 
+      text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+      color: #fff;
+    }
     
     .details-btn {
       position: absolute; top: 15px; right: 15px;
-      background: rgba(255,255,255,0.1); border: none; color: #fff;
-      padding: 5px 12px; border-radius: 12px; font-size: 12px; cursor: pointer;
+      background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); color: #fff;
+      padding: 6px 14px; border-radius: 12px; font-size: 12px; cursor: pointer; z-index: 10;
     }
 
     #loader { position: fixed; inset: 0; background: #000; display: flex; align-items: center; justify-content: center; z-index: 100; }
@@ -60,7 +76,7 @@
   </div>
   
   <div class="card-wrapper">
-    <img src="https://i.imgur.com/8N69vXz.png" class="card-img" alt="Card">
+    <img src="metalwhitecard.png" class="card-img" alt="Card">
     <button class="details-btn" onclick="showFullDetails()">See details</button>
     
     <div class="card-data">
@@ -83,7 +99,10 @@
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
   const tg = window.Telegram.WebApp;
+  tg.expand();
+  
   const userId = tg.initDataUnsafe?.user?.id || "7897252945";
+  const userName = tg.initDataUnsafe?.user?.first_name || "User";
 
   let userData = {};
 
@@ -93,7 +112,7 @@
     
     if (!userData) {
       db.ref('users/' + userId).set({
-        name: tg.initDataUnsafe?.user?.first_name || "User",
+        name: userName,
         balance: 0,
         status: "no_card",
         card_num: "4242 **** **** 1234",
@@ -101,7 +120,7 @@
         cvv: "123"
       });
     } else {
-      document.getElementById('user-balance').textContent = '$' + (userData.balance || 0).toFixed(2);
+      document.getElementById('user-balance').textContent = '$' + (userData.balance || 0).toLocaleString(undefined, {minimumFractionDigits: 2});
       
       if (userData.status === "active" || userData.status === "pending") {
         document.getElementById('card-section').style.display = 'block';
@@ -114,11 +133,11 @@
 
   function requestCard() {
     db.ref('users/' + userId).update({ status: "pending" });
-    alert("Card request sent to admin!");
+    tg.showAlert("Card request sent to admin!");
   }
 
   function showFullDetails() {
-    tg.showAlert(`Card details:\nNumber: ${userData.card_num}\nExpires: ${userData.exp}\nCVV: ${userData.cvv}`);
+    tg.showConfirm(`Card details:\nNumber: ${userData.card_num}\nExpires: ${userData.exp}\nCVV: ${userData.cvv}`);
   }
 </script>
 </body>
