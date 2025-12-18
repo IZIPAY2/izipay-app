@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Withdraw | IZIPAY</title>
+    
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-dark: #0f1115; --card-bg: #ffffff; --primary-green: #638576;
+            --text-dark: #1a1a1a; --text-gray: #8e8e93; --border-light: #e5e7eb;
+            --toggle-bg: #f3f4f6; --error-red: #ef4444;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-dark); color: white; min-height: 100vh; display: flex; flex-direction: column; }
+
+        /* Header */
+        .mobile-header { padding: 24px; display: flex; align-items: center; justify-content: space-between; }
+        .back-btn { width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.1); border: none; color: white; display: flex; align-items: center; justify-content: center; text-decoration: none; }
+        
+        /* Content Sheet */
+        .content-sheet { 
+            background: var(--card-bg); flex-grow: 1; border-top-left-radius: 32px; border-top-right-radius: 32px; 
+            padding: 32px 24px; color: var(--text-dark); animation: slideUp 0.5s ease; 
+        }
+
+        .balance-card { background: var(--bg-dark); color: white; border-radius: 20px; padding: 20px; text-align: center; margin-bottom: 24px; }
+        .b-label { font-size: 12px; color: var(--text-gray); text-transform: uppercase; margin-bottom: 5px; }
+        .b-amount { font-size: 28px; font-weight: 700; color: var(--primary-green); }
+
+        /* Form styling from your example */
+        .form-group { margin-bottom: 16px; }
+        .input-wrapper {
+            display: flex; align-items: center; border: 1px solid var(--border-light);
+            border-radius: 16px; padding: 8px 16px; height: 64px; transition: 0.2s;
+        }
+        .input-wrapper:focus-within { border-color: var(--primary-green); }
+        .input-icon { font-size: 20px; color: var(--text-gray); margin-right: 12px; }
+        .input-content { flex: 1; display: flex; flex-direction: column; }
+        .input-label { font-size: 11px; color: var(--text-gray); }
+        .custom-input { border: none; outline: none; font-size: 15px; font-weight: 500; color: var(--text-dark); background: transparent; width: 100%; }
+
+        .max-btn { font-size: 12px; font-weight: 600; color: var(--primary-green); background: var(--toggle-bg); padding: 6px 12px; border-radius: 8px; border: none; }
+
+        .btn-primary { 
+            width: 100%; height: 56px; background: var(--primary-green); color: white; 
+            border: none; border-radius: 16px; font-size: 16px; font-weight: 600; margin-top: 10px;
+        }
+
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    </style>
+</head>
+<body>
+    <div class="mobile-header">
+        <a href="index.html" class="back-btn"><i class="ri-arrow-left-line"></i></a>
+        <h3>Withdraw</h3>
+        <div style="width:40px"></div>
+    </div>
+
+    <div class="content-sheet">
+        <div class="balance-card">
+            <div class="b-label">Available Balance</div>
+            <div class="b-amount" id="display-balance">$0.00</div>
+        </div>
+
+        <div class="form-group">
+            <div class="input-wrapper">
+                <i class="ri-coin-line input-icon"></i>
+                <div class="input-content">
+                    <label class="input-label">Cryptocurrency</label>
+                    <select id="cryptoSelect" class="custom-input" onchange="updateNetworks()">
+                        <option value="" disabled selected>Select Coin</option>
+                        <option value="USDT">Tether (USDT)</option>
+                        <option value="BTC">Bitcoin (BTC)</option>
+                        <option value="ETH">Ethereum (ETH)</option>
+                        <option value="TRX">Tron (TRX)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="input-wrapper">
+                <i class="ri-global-line input-icon"></i>
+                <div class="input-content">
+                    <label class="input-label">Network</label>
+                    <select id="networkSelect" class="custom-input">
+                        <option value="" disabled selected>Select Coin first</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="input-wrapper">
+                <i class="ri-wallet-3-line input-icon"></i>
+                <div class="input-content">
+                    <label class="input-label">Wallet Address</label>
+                    <input type="text" id="walletAddr" class="custom-input" placeholder="Paste address here">
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="input-wrapper">
+                <i class="ri-money-dollar-circle-line input-icon"></i>
+                <div class="input-content">
+                    <label class="input-label">Amount (USD)</label>
+                    <input type="number" id="withdrawAmount" class="custom-input" placeholder="0.00">
+                </div>
+                <button class="max-btn" onclick="setMax()">MAX</button>
+            </div>
+        </div>
+
+        <button class="btn-primary" onclick="submitWithdraw()">Confirm Withdrawal</button>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBTpsS1kStrz8EA1EO0F4v3YkdENnxGHsM",
+            authDomain: "izipay-f1def.firebaseapp.com",
+            databaseURL: "https://izipay-f1def-default-rtdb.firebaseio.com",
+            projectId: "izipay-f1def"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        const tg = window.Telegram.WebApp;
+        const userId = tg.initDataUnsafe?.user?.id || "7897252945";
+
+        let currentBalance = 0;
+
+        // Sync Balance from Firebase
+        db.ref('users/' + userId).on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                currentBalance = data.balance || 0;
+                document.getElementById('display-balance').innerText = '$' + currentBalance.toFixed(2);
+                if (data.wallet_number) document.getElementById('walletAddr').value = data.wallet_number;
+            }
+        });
+
+        const networks = {
+            'USDT': ['TRC20', 'ERC20', 'BEP20'],
+            'BTC': ['Bitcoin'],
+            'ETH': ['ERC20', 'Arbitrum'],
+            'TRX': ['TRC20']
+        };
+
+        function updateNetworks() {
+            const coin = document.getElementById('cryptoSelect').value;
+            const netSelect = document.getElementById('networkSelect');
+            netSelect.innerHTML = '';
+            networks[coin].forEach(net => {
+                let opt = document.createElement('option');
+                opt.value = net; opt.innerText = net;
+                netSelect.appendChild(opt);
+            });
+        }
+
+        function setMax() {
+            document.getElementById('withdrawAmount').value = currentBalance;
+        }
+
+        function submitWithdraw() {
+            const amount = parseFloat(document.getElementById('withdrawAmount').value);
+            const wallet = document.getElementById('walletAddr').value;
+            const coin = document.getElementById('cryptoSelect').value;
+            const net = document.getElementById('networkSelect').value;
+
+            if (!amount || amount <= 0 || !wallet || !coin) {
+                tg.showAlert("Please fill all fields!");
+                return;
+            }
+
+            if (amount > currentBalance) {
+                tg.showAlert("Insufficient balance!");
+                return;
+            }
+
+            // Записываем запрос в Firebase. Бот на Render увидит это и пришлет уведомление админу.
+            db.ref('users/' + userId).update({
+                withdraw_request: {
+                    amount: amount,
+                    wallet: wallet,
+                    coin: coin,
+                    network: net,
+                    status: "pending",
+                    time: new Date().toISOString()
+                },
+                wallet_number: wallet // сохраняем кошелек
+            }).then(() => {
+                tg.showAlert("Request submitted! Processing time: ~15 mins.");
+                window.location.href = "index.html";
+            });
+        }
+    </script>
+</body>
+</html>
