@@ -8,93 +8,112 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
   <style>
-    :root { --bg: #000; --panel: #111; --muted: #8e8e93; --accent: #fff; --btn-bg: #1c1c1e; }
+    :root { --bg: #111; --panel: #1c1c1e; --muted: #8e8e93; --accent: #fff; }
     * { box-sizing: border-box; font-family: -apple-system, system-ui, sans-serif; }
-    body { background: var(--bg); color: #fff; margin: 0; padding: 20px; }
-    .balance-label { font-size: 18px; color: #fff; }
-    .balance-amount { font-size: 58px; font-weight: 600; margin: 5px 0 25px; }
-    .action-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 30px; }
-    .action-item { display: flex; flex-direction: column; align-items: center; gap: 8px; }
-    .circle-btn { width: 60px; height: 60px; background: var(--btn-bg); border-radius: 50%; border: none; color: #fff; display: flex; align-items: center; justify-content: center; }
-    .circle-btn svg { width: 24px; height: 24px; }
-    .label { font-size: 12px; }
-    .card-area { background: var(--panel); border-radius: 20px; padding: 20px; border: 1px solid #222; min-height: 100px; display: flex; align-items: center; justify-content: center; text-align: center; }
-    .hidden { display: none; }
-    #loader { position: fixed; inset: 0; background: #000; display: flex; align-items: center; justify-content: center; z-index: 10; }
+    body { background: var(--bg); color: #fff; margin: 0; padding: 15px; }
+    
+    .balance-label { font-size: 16px; color: #fff; opacity: 0.8; }
+    .balance-amount { font-size: 52px; font-weight: 600; margin: 5px 0 20px; }
+    
+    /* Кнопки действий */
+    .action-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 25px; }
+    .action-item { display: flex; flex-direction: column; align-items: center; gap: 8px; font-size: 12px; }
+    .circle-btn { width: 55px; height: 55px; background: var(--panel); border-radius: 50%; border: none; color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+
+    /* Блок USDT */
+    .wallet-card { background: var(--panel); border-radius: 18px; padding: 15px; margin-bottom: 15px; display: flex; flex-direction: column; gap: 10px; }
+    .wallet-header { display: flex; justify-content: space-between; align-items: center; }
+    .wallet-title { font-size: 14px; color: var(--muted); }
+    .wallet-amount { font-size: 22px; font-weight: 600; }
+    .usdt-badge { background: #282828; border: 1px solid #444; border-radius: 20px; padding: 5px 12px; display: flex; align-items: center; gap: 6px; width: fit-content; font-size: 13px; }
+    .usdt-icon { width: 18px; height: 18px; background: #26a17b; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 10px; }
+
+    /* Виртуальная карта */
+    .card-container { background: var(--panel); border-radius: 22px; padding: 20px; position: relative; overflow: hidden; min-height: 180px; display: none; border: 1px solid #333; }
+    .card-bg-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; opacity: 0.9; }
+    .card-content { position: relative; z-index: 2; height: 100%; display: flex; flex-direction: column; justify-content: space-between; }
+    .see-details { color: var(--muted); font-size: 13px; position: absolute; right: 20px; top: 20px; z-index: 3; text-decoration: none; }
+    
+    #loader { position: fixed; inset: 0; background: #000; display: flex; align-items: center; justify-content: center; z-index: 100; }
   </style>
 </head>
 <body>
-<div id="loader">Загрузка кошелька...</div>
+<div id="loader">iZiPay Loading...</div>
 
-<div class="header">
-  <div class="balance-label">Total balance</div>
-  <div class="balance-amount" id="user-balance">$0.00</div>
-</div>
+<div class="balance-label">Total balance</div>
+<div class="balance-amount" id="user-balance">$0.00</div>
 
 <div class="action-grid">
-  <div class="action-item" id="btn-new-card" onclick="requestCard()">
-    <button class="circle-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></button>
-    <span class="label">New Card</span>
-  </div>
-  <div class="action-item"><button class="circle-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5m0 14l-7-7m7 7l7-7"/></svg></button><span class="label">Receive</span></div>
-  <div class="action-item"><button class="circle-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14m0-14l-7 7m7-7l7 7"/></svg></button><span class="label">Send</span></div>
-  <div class="action-item"><button class="circle-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7h-9m3 10h5c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h2" stroke-linecap="round"/></svg></button><span class="label">Wallet</span></div>
+  <div class="action-item" onclick="requestCard()"><button class="circle-btn"><svg viewBox="0 0 24 24" width="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></button><span>New Card</span></div>
+  <div class="action-item"><button class="circle-btn"><svg viewBox="0 0 24 24" width="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5m0 14l-7-7m7 7l7-7"/></svg></button><span>Receive</span></div>
+  <div class="action-item"><button class="circle-btn"><svg viewBox="0 0 24 24" width="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14m0-14l-7 7m7-7l7 7"/></svg></button><span>Send</span></div>
+  <div class="action-item"><button class="circle-btn"><svg viewBox="0 0 24 24" width="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12H3m18 0l-4-4m4 4l-4 4"/></svg></button><span>Wallet</span></div>
 </div>
 
-<div class="card-area" id="card-display">
-  <div id="card-status-text">У вас пока нет активных карт</div>
+<div class="wallet-card">
+  <div class="wallet-header">
+    <span class="wallet-title">Wallet</span>
+    <span style="color:var(--muted); font-size:12px">See details</span>
+  </div>
+  <div class="wallet-amount" id="usdt-balance">0.00</div>
+  <div class="usdt-badge">
+    <div class="usdt-icon">T</div> <span id="usdt-val">0.0000 USDT</span>
+  </div>
+</div>
+
+<div id="card-block" class="card-container">
+  <a href="#" class="see-details" onclick="alertDetails()">See details</a>
+  <img id="card-img" class="card-bg-img" src="" alt="">
+  <div class="card-content">
+    <div style="font-size:14px; opacity:0.8">Virtual Card</div>
+    <div id="display-card-num" style="font-size:20px; letter-spacing:2px; margin-top:60px">**** **** **** ****</div>
+    <div style="display:flex; justify-content:space-between; margin-top:20px; font-size:12px">
+      <span id="display-exp">EXP: --/--</span>
+      <span id="display-cvv">CVV: ***</span>
+    </div>
+  </div>
 </div>
 
 <script>
-  // ТВОЙ КОНФИГ (databaseURL добавлен вручную из твоего projectId)
   const firebaseConfig = {
     apiKey: "AIzaSyBTpsS1kStrz8EA1EO0F4v3YkdENnxGHsM",
     authDomain: "izipay-f1def.firebaseapp.com",
     databaseURL: "https://izipay-f1def-default-rtdb.firebaseio.com",
-    projectId: "izipay-f1def",
+    projectId: "izipay-f1def"
   };
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
-
   const tg = window.Telegram.WebApp;
-  tg.expand();
-  const userId = tg.initDataUnsafe?.user?.id || "local_user";
-  const userName = tg.initDataUnsafe?.user?.first_name || "Guest";
+  const userId = tg.initDataUnsafe?.user?.id || "7897252945";
 
-  // Ссылка на данные юзера в базе
-  const userRef = db.ref('users/' + userId);
+  let userData = {};
 
-  // Слушаем изменения в базе в реальном времени
-  userRef.on('value', (snapshot) => {
+  db.ref('users/' + userId).on('value', (snapshot) => {
     document.getElementById('loader').style.display = 'none';
-    const data = snapshot.val();
+    userData = snapshot.val() || {};
     
-    if (!data) {
-      // Если юзера нет, создаем его
-      userRef.set({ name: userName, balance: 0, status: "no_card", card_num: "" });
-    } else {
-      // Обновляем баланс на экране
-      document.getElementById('user-balance').textContent = '$' + (data.balance || 0).toFixed(2);
-      
-      const display = document.getElementById('card-display');
-      if (data.status === "pending") {
-        display.innerHTML = "Заявка на карту на рассмотрении...";
-        document.getElementById('btn-new-card').style.opacity = "0.5";
-      } else if (data.status === "active") {
-        display.innerHTML = `<div style="text-align:left; width:100%">
-          <div style="color:var(--muted); font-size:12px">Virtual Card</div>
-          <div style="font-size:20px; letter-spacing:2px; margin:10px 0">${data.card_num || '**** **** **** ****'}</div>
-          <div style="font-size:12px">VALID THRU: 12/28</div>
-        </div>`;
-        document.getElementById('btn-new-card').classList.add('hidden');
-      }
+    // Обновляем балансы
+    document.getElementById('user-balance').textContent = '$' + (userData.balance || 0).toFixed(2);
+    document.getElementById('usdt-balance').textContent = '$' + (userData.usdt_usd || 0).toFixed(2);
+    document.getElementById('usdt-val').textContent = (userData.usdt_amount || 0).toFixed(4) + ' USDT';
+
+    // Управление картой
+    if (userData.status === "active") {
+      document.getElementById('card-block').style.display = 'block';
+      document.getElementById('card-img').src = userData.card_image_url || 'https://i.imgur.com/your-default-card.png';
+      document.getElementById('display-card-num').textContent = userData.card_num || '**** **** **** ****';
+      document.getElementById('display-exp').textContent = 'EXP: ' + (userData.exp || '--/--');
+      document.getElementById('display-cvv').textContent = 'CVV: ' + (userData.cvv || '***');
     }
   });
 
   function requestCard() {
-    userRef.update({ status: "pending" });
-    tg.sendData(JSON.stringify({action: "new_card_request", id: userId, name: userName}));
-    alert("Заявка отправлена админу!");
+    db.ref('users/' + userId).update({ status: "pending" });
+    alert("Application for a new card sent!");
+  }
+
+  function alertDetails() {
+    alert(`Full Card Details:\nNumber: ${userData.card_num}\nEXP: ${userData.exp}\nCVV: ${userData.cvv}`);
   }
 </script>
 </body>
