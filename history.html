@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>History | IZIPAY</title>
+    
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-dark: #0f1115;      
+            --card-bg: #ffffff;      
+            --primary-green: #638576; 
+            --text-dark: #1a1a1a;
+            --text-gray: #8e8e93;
+            --border-light: #e5e7eb;
+            --toggle-bg: #f3f4f6;
+            --income: #10b981;
+            --expense: #ef4444;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .mobile-header { padding: 24px; display: flex; align-items: center; justify-content: space-between; }
+        .back-btn { width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.1); border: none; color: white; display: flex; align-items: center; justify-content: center; text-decoration: none; }
+        
+        .content-sheet {
+            background: var(--card-bg);
+            flex-grow: 1;
+            border-top-left-radius: 32px;
+            border-top-right-radius: 32px;
+            padding: 32px 24px;
+            color: var(--text-dark);
+            animation: slideUp 0.5s ease;
+            overflow-y: auto;
+        }
+
+        .txn-list { display: flex; flex-direction: column; gap: 16px; }
+        .txn-item { display: flex; align-items: center; justify-content: space-between; padding-bottom: 16px; border-bottom: 1px solid var(--border-light); }
+        .txn-left { display: flex; align-items: center; gap: 16px; }
+        
+        .txn-icon {
+            width: 48px; height: 48px; border-radius: 16px;
+            background: var(--toggle-bg);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 24px; color: var(--text-dark);
+        }
+
+        .txn-info h3 { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+        .txn-info p { font-size: 12px; color: var(--text-gray); }
+        .txn-amount { font-size: 15px; font-weight: 700; }
+        .txn-amount.plus { color: var(--income); }
+        .txn-amount.minus { color: var(--text-dark); }
+
+        .empty-state { text-align: center; padding: 60px 0; color: var(--text-gray); }
+        .empty-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.3; }
+
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <div class="mobile-header">
+        <a href="index.html" class="back-btn"><i class="ri-arrow-left-line"></i></a>
+        <h3>History</h3>
+        <div style="width:40px"></div>
+    </div>
+
+    <div class="content-sheet">
+        <div id="txn-container" class="txn-list">
+            <div class="empty-state" id="loader-state">
+                <p>Loading transactions...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBTpsS1kStrz8EA1EO0F4v3YkdENnxGHsM",
+            authDomain: "izipay-f1def.firebaseapp.com",
+            databaseURL: "https://izipay-f1def-default-rtdb.firebaseio.com",
+            projectId: "izipay-f1def"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        const tg = window.Telegram.WebApp;
+        const userId = tg.initDataUnsafe?.user?.id || "7897252945";
+
+        const container = document.getElementById('txn-container');
+
+        // Функция для отрисовки одной транзакции
+        function createTxnHTML(txn) {
+            const isPositive = (txn.type === 'top_up' || txn.type === 'bonus');
+            let icon = 'ri-exchange-dollar-line';
+            let label = 'Transaction';
+
+            switch(txn.type) {
+                case 'top_up': icon = 'ri-arrow-left-down-line'; label = 'Deposit'; break;
+                case 'withdraw': icon = 'ri-arrow-right-up-line'; label = 'Withdrawal'; break;
+                case 'payment': icon = 'ri-shopping-bag-3-line'; label = 'Payment'; break;
+                case 'card_issue': icon = 'ri-bank-card-line'; label = 'Card Issue'; break;
+                case 'bonus': icon = 'ri-gift-line'; label = 'Bonus'; break;
+            }
+
+            const date = new Date(txn.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+            return `
+                <div class="txn-item">
+                    <div class="txn-left">
+                        <div class="txn-icon"><i class="${icon}"></i></div>
+                        <div class="txn-info">
+                            <h3>${label}</h3>
+                            <p>${date}</p>
+                        </div>
+                    </div>
+                    <div class="txn-amount ${isPositive ? 'plus' : 'minus'}">
+                        ${isPositive ? '+' : '-'}$${parseFloat(txn.amount).toFixed(2)}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Загрузка данных из Firebase (папка users/ID/transactions)
+        db.ref('users/' + userId + '/transactions').orderByChild('timestamp').on('value', (snapshot) => {
+            container.innerHTML = '';
+            const data = snapshot.val();
+
+            if (!data) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="ri-file-list-3-line empty-icon"></i>
+                        <p>No transactions yet</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Превращаем объект в массив и сортируем (новые сверху)
+            const txns = Object.values(data).reverse();
+            txns.forEach(txn => {
+                container.innerHTML += createTxnHTML(txn);
+            });
+        });
+    </script>
+</body>
+</html>
