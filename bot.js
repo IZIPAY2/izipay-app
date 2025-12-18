@@ -99,6 +99,30 @@ usersRef.on('child_changed', (snapshot) => {
             }
         });
     }
+
+    // --- УВЕДОМЛЕНИЕ О ПОПОЛНЕНИИ (НОВОЕ) ---
+    if (user.deposit_request && user.deposit_request.status === 'pending') {
+        console.log(`💵 Новый запрос на пополнение от ${userId}`);
+        const deposit = user.deposit_request;
+        const depositText = `💵 **ЗАПРОС НА ПОПОЛНЕНИЕ**\n\n` +
+                            `👤 Имя: ${user.name || 'Неизвестно'}\n` +
+                            `🆔 ID: \`${userId}\`\n` +
+                            `💰 Сумма: **$${deposit.amount}**\n` +
+                            `🪙 Способ: ${deposit.method || 'Crypto'}\n` +
+                            `⏳ Статус: В ожидании подтверждения`;
+
+        bot.sendMessage(adminId, depositText, {
+            parse_mode: 'Markdown',
+            reply_markup: {
+                inline_keyboard: [
+                    [
+                        { text: '✅ Подтвердить получение', callback_data: `approve_in_${userId}` },
+                        { text: '❌ Отмена', callback_data: `reject_in_${userId}` }
+                    ]
+                ]
+            }
+        });
+    }
 });
 
 // Обработка кнопок (callback_query)
@@ -107,18 +131,50 @@ bot.on('callback_query', (query) => {
 
     const [action, type, targetId] = query.data.split('_');
 
+    // Логика для ВЫВОДА (out)
     if (type === 'out') {
         if (action === 'approve') {
-            // При нажатии "Выполнено" — просто удаляем или меняем статус в базе
             db.ref(`users/${targetId}/withdraw_request`).update({ status: 'completed' });
-            bot.editMessageText(query.message.text + "\n\n✅ **ВЫПОЛНЕНО**", {
+            bot.editMessageText(query.message.text + "\n\n✅ **ВЫПОЛНЕНО (ВЫВОД)**", {
                 chat_id: adminId,
                 message_id: query.message.message_id,
                 parse_mode: 'Markdown'
             });
         } else if (action === 'reject') {
             db.ref(`users/${targetId}/withdraw_request`).update({ status: 'rejected' });
-            bot.editMessageText(query.message.text + "\n\n❌ **ОТКЛОНЕНО**", {
+            bot.editMessageText(query.message.text + "\n\n❌ **ОТКЛОНЕНО (ВЫВОД)**", {
+                chat_id: adminId,
+                message_id: query.message.message_id,
+                parse_mode: 'Markdown'
+            });
+        }
+    }
+
+    // Логика для ПОПОЛНЕНИЯ (in)
+    if (type === 'in') {
+        if (action === 'approve') {
+            db.ref(`users/${targetId}`).once('value', (snapshot) => {
+                const user = snapshot.val();
+                const depositAmount = parseFloat(user.deposit_request.amount);
+                const currentBalance = parseFloat(user.balance || 0);
+                
+                // Автоматически прибавляем баланс при подтверждении
+                db.ref(`users/${targetId}`).update({
+                    balance: currentBalance + depositAmount,
+                    'deposit_request/status': 'completed'
+                }).then(() => {
+                    bot.editMessageText(query.message.text + `\n\n✅ **ПОПОЛНЕНО: +$${depositAmount}**`, {
+                        chat_id: adminId,
+                        message_id: query.message.message_id,
+                        parse_mode: 'Markdown'
+                    });
+                    // Уведомляем пользователя
+                    bot.sendMessage(targetId, `✅ Ваш баланс успешно пополнен на $${depositAmount}!`);
+                });
+            });
+        } else if (action === 'reject') {
+            db.ref(`users/${targetId}/deposit_request`).update({ status: 'rejected' });
+            bot.editMessageText(query.message.text + "\n\n❌ **ПОПОЛНЕНИЕ ОТМЕНЕНО**", {
                 chat_id: adminId,
                 message_id: query.message.message_id,
                 parse_mode: 'Markdown'
@@ -134,4 +190,4 @@ bot.on('polling_error', (err) => {
     }
 });
 
-console.log('🚀 Бот запущен. Мониторинг Карт и Выводов активен.');
+console.log('🚀 Бот запущен. Мониторинг Карт, Выводов и Пополнений активен.');
