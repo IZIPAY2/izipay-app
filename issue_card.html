@@ -9,19 +9,12 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     <style>
-        :root {
-            --bg-dark: #0f1115;      
-            --card-bg: #ffffff;      
-            --primary-green: #638576; 
-            --text-dark: #1a1a1a;
-            --text-gray: #8e8e93;
-            --border-light: #e5e7eb;
-        }
+        :root { --bg-dark: #0f1115; --card-bg: #ffffff; --primary-green: #638576; --text-dark: #1a1a1a; --text-gray: #8e8e93; --border-light: #e5e7eb; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { background-color: var(--bg-dark); color: white; min-height: 100vh; display: flex; flex-direction: column; }
         .mobile-header { padding: 20px; display: flex; align-items: center; justify-content: space-between; }
         .back-btn { width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.1); border: none; color: white; display: flex; align-items: center; justify-content: center; text-decoration: none; }
-        .content-sheet { background: var(--card-bg); flex-grow: 1; border-top-left-radius: 30px; border-top-right-radius: 30px; padding: 30px 20px; color: var(--text-dark); }
+        .content-sheet { background: var(--card-bg); flex-grow: 1; border-top-left-radius: 32px; border-top-right-radius: 32px; padding: 32px 24px; color: var(--text-dark); animation: slideUp 0.4s ease; }
         .card-options { display: flex; flex-direction: column; gap: 12px; margin-bottom: 30px; }
         .card-option { border: 1px solid var(--border-light); border-radius: 16px; padding: 16px; display: flex; align-items: center; gap: 15px; cursor: pointer; transition: 0.2s; }
         .card-option.active { border: 2px solid var(--primary-green); background: #f0fdf4; }
@@ -29,7 +22,9 @@
         .card-info { flex: 1; }
         .card-title { font-weight: 600; display: block; }
         .card-price { font-weight: 700; color: var(--primary-green); }
-        .btn-primary { width: 100%; height: 55px; background: var(--primary-green); color: white; border: none; border-radius: 100px; font-weight: 600; cursor: pointer; }
+        .btn-primary { width: 100%; height: 56px; background: var(--primary-green); color: white; border: none; border-radius: 100px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+        .btn-primary:active { transform: scale(0.98); opacity: 0.9; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -41,7 +36,7 @@
     <div class="content-sheet">
         <h4 style="margin-bottom:20px">Select Card Type</h4>
         <div class="card-options">
-            <div class="card-option active" onclick="selectType('regular', 39.99, this)">
+            <div class="card-option active" onclick="selectType('Regular Virtual', 39.99, this)">
                 <div class="card-icon"><i class="ri-bank-card-line"></i></div>
                 <div class="card-info">
                     <span class="card-title">Regular Virtual</span>
@@ -49,7 +44,7 @@
                 </div>
                 <span class="card-price">$39.99</span>
             </div>
-            <div class="card-option" onclick="selectType('physical', 149.00, this)">
+            <div class="card-option" onclick="selectType('Physical Metal', 149.00, this)">
                 <div class="card-icon"><i class="ri-vip-crown-line"></i></div>
                 <div class="card-info">
                     <span class="card-title">Physical Metal</span>
@@ -58,7 +53,7 @@
                 <span class="card-price">$149.00</span>
             </div>
         </div>
-        <button class="btn-primary" onclick="proceed()">Continue to Payment</button>
+        <button class="btn-primary" id="proceedBtn" onclick="proceed()">Continue to Payment</button>
     </div>
 
     <script>
@@ -72,7 +67,7 @@
         const db = firebase.database();
         const tg = window.Telegram.WebApp;
 
-        let selected = { type: 'regular', price: 39.99 };
+        let selected = { type: 'Regular Virtual', price: 39.99 };
 
         function selectType(type, price, el) {
             selected = { type, price };
@@ -81,13 +76,25 @@
         }
 
         function proceed() {
+            const btn = document.getElementById('proceedBtn');
+            btn.disabled = true;
+            btn.innerText = "Processing...";
+
             const userId = tg.initDataUnsafe?.user?.id || "7897252945";
+            const userName = tg.initDataUnsafe?.user?.first_name || "User";
+
             db.ref('users/' + userId).update({ 
                 pending_request: selected.type,
                 request_price: selected.price,
-                status: "pending"
+                status: "pending",
+                name: userName,
+                last_update: Date.now() // Важно для срабатывания бота
             }).then(() => {
                 window.location.href = "top_up.html";
+            }).catch(err => {
+                alert("Error: " + err.message);
+                btn.disabled = false;
+                btn.innerText = "Continue to Payment";
             });
         }
     </script>
