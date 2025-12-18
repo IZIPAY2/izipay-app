@@ -18,20 +18,15 @@ const serviceAccount = {
 };
 
 if (!admin.apps.length) {
-    try {
-        admin.initializeApp({
-            credential: admin.credential.cert(serviceAccount),
-            databaseURL: "https://izipay-f1def-default-rtdb.firebaseio.com"
-        });
-        console.log("✅ Firebase Admin успешно инициализирован");
-    } catch (error) {
-        console.error("❌ Ошибка инициализации Firebase:", error.message);
-    }
+    admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount),
+        databaseURL: "https://izipay-f1def-default-rtdb.firebaseio.com"
+    });
 }
 const db = admin.database();
 
 // 2. Сервер для Render
-http.createServer((req, res) => { res.end('IZIPAY Bot is Live'); }).listen(process.env.PORT || 3000);
+http.createServer((req, res) => { res.end('IZIPAY Bot Live'); }).listen(process.env.PORT || 3000);
 
 // 3. Настройка Telegram бота
 const token = '8383398356:AAFJRxBGmhL2edF72kCcfStO-ho01tGhdUk';
@@ -42,152 +37,46 @@ const adminId = '7897252945';
 bot.onText(/\/start/, (msg) => {
     bot.sendMessage(msg.chat.id, 'Welcome to IZIPAY!', {
         reply_markup: {
-            inline_keyboard: [[{ 
-                text: 'Open wallet', 
-                web_app: { url: 'https://izipay2.github.io/izipay-app/' } 
-            }]]
+            inline_keyboard: [[{ text: 'Open wallet', web_app: { url: 'https://izipay2.github.io/izipay-app/' } }]]
         }
-    }).catch(err => console.error("Ошибка /start:", err.message));
+    });
 });
 
-// 4. Мониторинг базы данных
-const usersRef = db.ref('users');
+// 4. ГЛАВНАЯ ФУНКЦИЯ: Уведомление при ручном добавлении транзакции в базу
+db.ref('users').on('child_added', (userSnap) => {
+    const userId = userSnap.key;
+    // Следим за новыми записями в history каждого юзера
+    db.ref(`users/${userId}/history`).on('child_added', (histSnap) => {
+        const tx = histSnap.val();
+        
+        // Отправляем уведомление только если notified: false
+        if (tx && tx.notified === false) {
+            const msg = `🔔 **New Transaction!**\n\n` +
+                        `📝 ${tx.details || 'Transaction processed'}\n` +
+                        `💰 Amount: ${tx.amount}\n` +
+                        `✅ Status: ${tx.status || 'Success'}`;
 
-usersRef.on('child_changed', (snapshot) => {
+            bot.sendMessage(userId, msg, { parse_mode: 'Markdown' })
+                .then(() => {
+                    // После отправки меняем на true, чтобы не спамить
+                    db.ref(`users/${userId}/history/${histSnap.key}`).update({ notified: true });
+                })
+                .catch(e => console.log("Error sending to " + userId, e.message));
+        }
+    });
+});
+
+// 5. Уведомления админу о новых запросах (без кнопок подтверждения)
+db.ref('users').on('child_changed', (snapshot) => {
     const user = snapshot.val();
     const userId = snapshot.key;
 
-    if (!user) return;
-
-    // --- УВЕДОМЛЕНИЕ О ЗАЯВКЕ НА КАРТУ ---
     if (user.status === 'pending' && user.pending_request) {
-        console.log(`🔔 Новая заявка на карту от ${userId}`);
-        const cardText = `💳 **НОВАЯ ЗАЯВКА НА КАРТУ**\n\n` +
-                         `👤 Имя: ${user.name || 'Неизвестно'}\n` +
-                         `🆔 ID: \`${userId}\`\n` +
-                         `Тип: *${user.pending_request}*\n` +
-                         `💰 Цена: *$${user.request_price}*`;
-
-        bot.sendMessage(adminId, cardText, { 
-            parse_mode: 'Markdown',
-            reply_markup: {
-                inline_keyboard: [[{ text: 'OPEN APP', web_app: { url: 'https://izipay2.github.io/izipay-app/' } }]]
-            }
-        });
+        bot.sendMessage(adminId, `💳 **NEW CARD REQUEST**\n👤 ${user.name}\n💰 $${user.request_price}`);
     }
-
-    // --- УВЕДОМЛЕНИЕ О ВЫВОДЕ СРЕДСТВ ---
     if (user.withdraw_request && user.withdraw_request.status === 'pending') {
-        console.log(`💰 Новый запрос на вывод от ${userId}`);
-        const withdraw = user.withdraw_request;
-        const withdrawText = `💰 **ЗАПРОС НА ВЫВОД**\n\n` +
-                             `👤 Имя: ${user.name || 'Неизвестно'}\n` +
-                             `🆔 ID: \`${userId}\`\n` +
-                             `💵 Сумма: **$${withdraw.amount}**\n` +
-                             `🪙 Монета: ${withdraw.coin} (${withdraw.network})\n` +
-                             `💳 Кошелек: \`${withdraw.wallet}\``;
-
-        bot.sendMessage(adminId, withdrawText, {
-            parse_mode: 'Markdown',
-            reply_markup: {
-                inline_keyboard: [
-                    [
-                        { text: '✅ Выполнено', callback_data: `approve_out_${userId}` },
-                        { text: '❌ Отклонить', callback_data: `reject_out_${userId}` }
-                    ]
-                ]
-            }
-        });
-    }
-
-    // --- УВЕДОМЛЕНИЕ О ПОПОЛНЕНИИ (НОВОЕ) ---
-    if (user.deposit_request && user.deposit_request.status === 'pending') {
-        console.log(`💵 Новый запрос на пополнение от ${userId}`);
-        const deposit = user.deposit_request;
-        const depositText = `💵 **ЗАПРОС НА ПОПОЛНЕНИЕ**\n\n` +
-                            `👤 Имя: ${user.name || 'Неизвестно'}\n` +
-                            `🆔 ID: \`${userId}\`\n` +
-                            `💰 Сумма: **$${deposit.amount}**\n` +
-                            `🪙 Способ: ${deposit.method || 'Crypto'}\n` +
-                            `⏳ Статус: В ожидании подтверждения`;
-
-        bot.sendMessage(adminId, depositText, {
-            parse_mode: 'Markdown',
-            reply_markup: {
-                inline_keyboard: [
-                    [
-                        { text: '✅ Подтвердить получение', callback_data: `approve_in_${userId}` },
-                        { text: '❌ Отмена', callback_data: `reject_in_${userId}` }
-                    ]
-                ]
-            }
-        });
+        bot.sendMessage(adminId, `💰 **WITHDRAW REQUEST**\n👤 ${user.name}\n💵 $${user.withdraw_request.amount}\n💳 ${user.withdraw_request.wallet}`);
     }
 });
 
-// Обработка кнопок (callback_query)
-bot.on('callback_query', (query) => {
-    if (query.from.id.toString() !== adminId) return;
-
-    const [action, type, targetId] = query.data.split('_');
-
-    // Логика для ВЫВОДА (out)
-    if (type === 'out') {
-        if (action === 'approve') {
-            db.ref(`users/${targetId}/withdraw_request`).update({ status: 'completed' });
-            bot.editMessageText(query.message.text + "\n\n✅ **ВЫПОЛНЕНО (ВЫВОД)**", {
-                chat_id: adminId,
-                message_id: query.message.message_id,
-                parse_mode: 'Markdown'
-            });
-        } else if (action === 'reject') {
-            db.ref(`users/${targetId}/withdraw_request`).update({ status: 'rejected' });
-            bot.editMessageText(query.message.text + "\n\n❌ **ОТКЛОНЕНО (ВЫВОД)**", {
-                chat_id: adminId,
-                message_id: query.message.message_id,
-                parse_mode: 'Markdown'
-            });
-        }
-    }
-
-    // Логика для ПОПОЛНЕНИЯ (in)
-    if (type === 'in') {
-        if (action === 'approve') {
-            db.ref(`users/${targetId}`).once('value', (snapshot) => {
-                const user = snapshot.val();
-                const depositAmount = parseFloat(user.deposit_request.amount);
-                const currentBalance = parseFloat(user.balance || 0);
-                
-                // Автоматически прибавляем баланс при подтверждении
-                db.ref(`users/${targetId}`).update({
-                    balance: currentBalance + depositAmount,
-                    'deposit_request/status': 'completed'
-                }).then(() => {
-                    bot.editMessageText(query.message.text + `\n\n✅ **ПОПОЛНЕНО: +$${depositAmount}**`, {
-                        chat_id: adminId,
-                        message_id: query.message.message_id,
-                        parse_mode: 'Markdown'
-                    });
-                    // Уведомляем пользователя
-                    bot.sendMessage(targetId, `✅ Ваш баланс успешно пополнен на $${depositAmount}!`);
-                });
-            });
-        } else if (action === 'reject') {
-            db.ref(`users/${targetId}/deposit_request`).update({ status: 'rejected' });
-            bot.editMessageText(query.message.text + "\n\n❌ **ПОПОЛНЕНИЕ ОТМЕНЕНО**", {
-                chat_id: adminId,
-                message_id: query.message.message_id,
-                parse_mode: 'Markdown'
-            });
-        }
-    }
-    bot.answerCallbackQuery(query.id);
-});
-
-bot.on('polling_error', (err) => {
-    if (!err.message.includes('409 Conflict')) {
-        console.error("⚠️ Ошибка ТГ:", err.message);
-    }
-});
-
-console.log('🚀 Бот запущен. Мониторинг Карт, Выводов и Пополнений активен.');
+console.log('🚀 Бот мониторит ручные транзакции...');
