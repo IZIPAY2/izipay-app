@@ -1,7 +1,7 @@
 const TelegramBot = require('node-telegram-bot-api');
 
 // Токен от @BotFather
-const token = '8383398356:AAEgAuC_P3yuKy8ohR3up93E19MPaV_lzFU; 
+const token = '8383398356:AAEgAuC_P3yuKy8ohR3up93E19MPaV_lzFU'; 
 const bot = new TelegramBot(token, {polling: true});
 
 // Ссылка на твой Mini App
