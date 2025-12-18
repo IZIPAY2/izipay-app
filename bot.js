@@ -1,62 +1,43 @@
 const TelegramBot = require('node-telegram-bot-api');
 const http = require('http');
+const admin = require('firebase-admin');
 
-// 1. Мини-сервер для Render (чтобы статус был Live и бот не отключался)
-const server = http.createServer((req, res) => {
-  res.writeHead(200, {'Content-Type': 'text/plain'});
-  res.end('IZIPAY Bot is running\n');
-});
+// 1. Настройка Firebase Admin (чтобы бот видел изменения в базе)
+// Мы используем упрощенный метод подключения через databaseURL
+if (!admin.apps.length) {
+    admin.initializeApp({
+        databaseURL: "https://izipay-f1def-default-rtdb.firebaseio.com"
+    });
+}
+const db = admin.database();
 
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-  console.log(`Server is listening on port ${PORT}`);
-});
+// 2. Сервер для Render
+http.createServer((req, res) => { res.end('IZIPAY Bot is Live'); }).listen(process.env.PORT || 3000);
 
-// 2. Настройка бота
-const token = '8383398356:AAEgAuC_P3yuKy8ohR3up93E19MPaV_lzFU';
+// 3. Настройка бота
+const token = '8383398356:AAEgAuC_P3yuKy8ohR3up93E19MPaV_lzFY';
 const bot = new TelegramBot(token, {polling: true});
-const webAppUrl = 'https://izipay2.github.io/izipay-app/';
-
-// !!! ВАЖНО: Замени 'ТВОЙ_ID' на свой числовой ID из Telegram !!!
-// Его можно узнать у бота @userinfobot
 const adminId = '7897252945'; 
 
-// Ответ на команду /start
 bot.onText(/\/start/, (msg) => {
-  const chatId = msg.chat.id;
-  bot.sendMessage(chatId, 'Добро пожаловать в IZIPAY! Нажмите кнопку ниже, чтобы открыть кошелек.', {
-    reply_markup: {
-      inline_keyboard: [
-        [{ text: 'Открыть кошелек', web_app: { url: webAppUrl } }]
-      ]
+    bot.sendMessage(msg.chat.id, 'Добро пожаловать в IZIPAY!', {
+        reply_markup: {
+            inline_keyboard: [[{ text: 'Открыть кошелек', web_app: { url: 'https://izipay2.github.io/izipay-app/' } }]]
+        }
+    });
+});
+
+// 4. ГЛАВНОЕ: Следим за новыми заявками в базе
+const usersRef = db.ref('users');
+usersRef.on('child_changed', (snapshot) => {
+    const user = snapshot.val();
+    const userId = snapshot.key;
+
+    // Если статус сменился на pending — пишем админу
+    if (user.status === 'pending') {
+        const text = `🔔 **НОВАЯ ЗАЯВКА**\n\n👤 Имя: ${user.name}\n🆔 ID: ${userId}\n\nЗайди в Firebase, чтобы выдать карту и баланс!`;
+        bot.sendMessage(adminId, text, { parse_mode: 'Markdown' });
     }
-  });
 });
 
-// 3. Слушаем данные от Mini App (когда юзер жмет "New Card")
-bot.on('web_app_data', (msg) => {
-  try {
-    const data = JSON.parse(msg.web_app_data.data);
-    
-    if (data.action === "new_card_request") {
-      // Это сообщение придет ТЕБЕ в личку от бота
-      const text = `🔔 **НОВАЯ ЗАЯВКА НА КАРТУ**\n\n` +
-                   `👤 Имя: ${data.name}\n` +
-                   `🆔 ID: ${data.id}\n` +
-                   `📍 Проверь Firebase для одобрения!`;
-      
-      bot.sendMessage(adminId, text, { parse_mode: 'Markdown' });
-    }
-  } catch (e) {
-    console.error('Ошибка обработки данных WebApp:', e);
-  }
-});
-
-// Обработка ошибок, чтобы бот не падал
-bot.on('polling_error', (error) => {
-  if (error.code !== 'ETELEGRAM' || !error.message.includes('409 Conflict')) {
-    console.error('Ошибка логов:', error.message);
-  }
-});
-
-console.log('Бот успешно запущен и готов к работе!');
+console.log('Бот запущен и следит за базой...');
