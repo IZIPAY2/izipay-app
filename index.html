@@ -3,89 +3,105 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-  <title>iZiPay</title>
+  <title>iZiPay Dashboard</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
   <style>
-    :root { --bg: #000; --panel: #1c1c1e; --muted: #8e8e93; --accent: #fff; }
-    * { box-sizing: border-box; font-family: -apple-system, system-ui, sans-serif; }
-    body { background: var(--bg); color: #fff; margin: 0; padding: 20px; }
-    
-    .balance-label { font-size: 16px; opacity: 0.7; }
-    .balance-amount { font-size: 54px; font-weight: 600; margin: 5px 0 25px; }
-    
-    .action-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 30px; }
-    .action-item { display: flex; flex-direction: column; align-items: center; gap: 8px; font-size: 12px; }
-    .circle-btn { width: 55px; height: 55px; background: #1c1c1e; border-radius: 50%; border: none; color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-
-    /* Дизайн карты */
-    .card-wrapper { position: relative; width: 100%; border-radius: 20px; overflow: hidden; margin-top: 10px; border: 1px solid #333; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
-    .card-img { width: 100%; display: block; border-radius: 20px; }
-    
-    .card-data {
-      position: absolute; inset: 0; padding: 25px;
-      display: flex; flex-direction: column; justify-content: flex-end;
-      /* Затемнение снизу, чтобы белый текст читался на светлой карте */
-      background: linear-gradient(0deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 50%);
-    }
-    
-    .card-num { 
-      font-size: 22px; 
-      letter-spacing: 2px; 
-      margin-bottom: 45px; 
-      text-shadow: 2px 2px 4px rgba(0,0,0,0.8); 
-      font-family: 'Courier New', monospace;
-      color: #fff;
-    }
-    
-    .card-info-row { 
-      display: flex; 
-      justify-content: space-between; 
-      font-size: 14px; 
-      opacity: 1; 
-      text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
-      color: #fff;
-    }
-    
-    .details-btn {
-      position: absolute; top: 15px; right: 15px;
-      background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); color: #fff;
-      padding: 6px 14px; border-radius: 12px; font-size: 12px; cursor: pointer; z-index: 10;
+    :root {
+      --bg-dark: #0f1115;
+      --card-bg: #1a1d24;
+      --primary-green: #638576;
+      --text-white: #ffffff;
+      --text-gray: #9ca3af;
+      --border-glass: rgba(255, 255, 255, 0.08);
+      --glass-surface: rgba(255, 255, 255, 0.03);
     }
 
-    #loader { position: fixed; inset: 0; background: #000; display: flex; align-items: center; justify-content: center; z-index: 100; }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+    
+    body { background: var(--bg-dark); color: var(--text-white); padding: 20px; }
+
+    /* Хедер */
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+    .logo-text { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; }
+
+    /* Баланс */
+    .balance-section { text-align: center; margin-bottom: 30px; }
+    .currency { font-size: 14px; color: var(--text-gray); text-transform: uppercase; letter-spacing: 1px; }
+    .balance-amount { font-size: 42px; font-weight: 700; background: linear-gradient(180deg, #fff 0%, #aaa 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+    /* Кнопки действий */
+    .card-actions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 30px; }
+    .action-btn { background: var(--card-bg); border: 1px solid var(--border-glass); border-radius: 14px; padding: 12px 5px; display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; color: white; transition: 0.2s; text-decoration: none; }
+    .action-btn i { font-size: 22px; color: var(--primary-green); }
+    .action-btn span { font-size: 10px; font-weight: 500; }
+
+    /* Карта */
+    .card-visual-wrapper { width: 100%; border-radius: 20px; overflow: hidden; margin-bottom: 15px; border: none; /* Убрали обводку */ box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+    .card-image { width: 100%; display: block; border-radius: 20px; }
+
+    /* Инфо-бокс с номером */
+    .card-info-box { background: var(--card-bg); border: 1px solid var(--border-glass); border-radius: 16px; padding: 16px 20px; margin-bottom: 10px; }
+    .card-number-row { display: flex; justify-content: space-between; align-items: center; }
+    .card-number-text { font-family: monospace; font-size: 18px; letter-spacing: 2px; color: var(--text-white); }
+    .copy-icon { color: var(--primary-green); cursor: pointer; padding: 5px; }
+
+    /* Кнопка деталей */
+    .toggle-details-btn { width: 100%; background: var(--glass-surface); border: none; color: var(--primary-green); padding: 12px; border-radius: 12px; font-size: 13px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+
+    /* Скрытые детали */
+    .card-details { margin-top: 10px; background: var(--glass-surface); border-radius: 12px; padding: 0 15px; display: none; }
+    .card-details.active { display: block; }
+    .detail-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 13px; }
+    .detail-row:last-child { border-bottom: none; }
+    .detail-label { color: var(--text-gray); }
+    .detail-value { font-weight: 600; }
+
+    #loader { position: fixed; inset: 0; background: var(--bg-dark); display: flex; align-items: center; justify-content: center; z-index: 1000; }
   </style>
 </head>
 <body>
-<div id="loader">iZiPay...</div>
+<div id="loader">IZIPAY...</div>
 
-<div class="balance-label">Total balance</div>
-<div class="balance-amount" id="user-balance">$0.00</div>
+<header class="header">
+  <div class="logo-text">IZIPAY</div>
+  <i class="ri-user-line" style="font-size: 24px;"></i>
+</header>
 
-<div class="action-grid">
-  <div class="action-item" onclick="requestCard()"><button class="circle-btn"><svg viewBox="0 0 24 24" width="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></button><span>New Card</span></div>
-  <div class="action-item"><button class="circle-btn"><svg viewBox="0 0 24 24" width="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5m0 14l-7-7m7 7l7-7"/></svg></button><span>Receive</span></div>
-  <div class="action-item"><button class="circle-btn"><svg viewBox="0 0 24 24" width="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14m0-14l-7 7m7-7l7 7"/></svg></button><span>Send</span></div>
-  <div class="action-item"><button class="circle-btn"><svg viewBox="0 0 24 24" width="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7h-9m3 10h5c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h2"/></svg></button><span>Wallet</span></div>
+<div class="balance-section">
+  <div class="currency">Total Balance</div>
+  <div class="balance-amount" id="user-balance">$0.00</div>
+</div>
+
+<div class="card-actions">
+  <div class="action-btn"><i class="ri-add-circle-fill"></i><span>Top Up</span></div>
+  <div class="action-btn"><i class="ri-arrow-up-circle-fill"></i><span>Withdraw</span></div>
+  <div class="action-btn"><i class="ri-time-fill"></i><span>History</span></div>
+  <div class="action-btn" onclick="requestCard()"><i class="ri-bank-card-fill"></i><span>New Card</span></div>
 </div>
 
 <div id="card-section" style="display: none;">
-  <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-    <span style="font-size: 14px; color: var(--muted);">Virtual Card</span>
+  <div class="card-visual-wrapper">
+    <img src="metalwhitecard.png" class="card-image" alt="Card">
   </div>
-  
-  <div class="card-wrapper">
-    <img src="metalwhitecard.png" class="card-img" alt="Card">
-    <button class="details-btn" onclick="showFullDetails()">See details</button>
-    
-    <div class="card-data">
-      <div class="card-num" id="card-num-display">**** **** **** ****</div>
-      <div class="card-info-row">
-        <span id="card-exp-display">EXP: --/--</span>
-        <span id="card-cvv-display">CVV: ***</span>
-      </div>
+
+  <div class="card-info-box">
+    <div class="card-number-row">
+      <span class="card-number-text" id="card-num-display">**** **** **** ****</span>
+      <i class="ri-file-copy-line copy-icon" onclick="copyCard()"></i>
     </div>
+  </div>
+
+  <button class="toggle-details-btn" id="toggleBtn" onclick="toggleDetails()">
+    <i class="ri-eye-line"></i> View Card Details
+  </button>
+
+  <div class="card-details" id="cardDetails">
+    <div class="detail-row"><span class="detail-label">CVV</span><span class="detail-value" id="card-cvv-display">***</span></div>
+    <div class="detail-row"><span class="detail-label">Expiry</span><span class="detail-value" id="card-exp-display">--/--</span></div>
+    <div class="detail-row"><span class="detail-label">Status</span><span class="detail-value" style="color: #10b981;">Active</span></div>
   </div>
 </div>
 
@@ -100,44 +116,45 @@
   const db = firebase.database();
   const tg = window.Telegram.WebApp;
   tg.expand();
-  
-  const userId = tg.initDataUnsafe?.user?.id || "7897252945";
-  const userName = tg.initDataUnsafe?.user?.first_name || "User";
 
-  let userData = {};
+  const userId = tg.initDataUnsafe?.user?.id || "7897252945";
 
   db.ref('users/' + userId).on('value', (snapshot) => {
     document.getElementById('loader').style.display = 'none';
-    userData = snapshot.val();
+    const data = snapshot.val();
     
-    if (!userData) {
-      db.ref('users/' + userId).set({
-        name: userName,
-        balance: 0,
-        status: "no_card",
-        card_num: "4242 **** **** 1234",
-        exp: "12/28",
-        cvv: "123"
-      });
-    } else {
-      document.getElementById('user-balance').textContent = '$' + (userData.balance || 0).toLocaleString(undefined, {minimumFractionDigits: 2});
+    if (data) {
+      document.getElementById('user-balance').textContent = '$' + (data.balance || 0).toLocaleString(undefined, {minimumFractionDigits: 2});
       
-      if (userData.status === "active" || userData.status === "pending") {
+      if (data.status === "active" || data.status === "pending") {
         document.getElementById('card-section').style.display = 'block';
-        document.getElementById('card-num-display').textContent = userData.card_num || "**** **** **** ****";
-        document.getElementById('card-exp-display').textContent = "EXP: " + (userData.exp || "--/--");
-        document.getElementById('card-cvv-display').textContent = "CVV: " + (userData.cvv || "***");
+        document.getElementById('card-num-display').textContent = data.card_num || "**** **** **** ****";
+        document.getElementById('card-cvv-display').textContent = data.cvv || "***";
+        document.getElementById('card-exp-display').textContent = data.exp || "--/--";
       }
     }
   });
 
-  function requestCard() {
-    db.ref('users/' + userId).update({ status: "pending" });
-    tg.showAlert("Card request sent to admin!");
+  function toggleDetails() {
+    const details = document.getElementById('cardDetails');
+    const btn = document.getElementById('toggleBtn');
+    details.classList.toggle('active');
+    if(details.classList.contains('active')) {
+      btn.innerHTML = '<i class="ri-eye-off-line"></i> Hide Details';
+    } else {
+      btn.innerHTML = '<i class="ri-eye-line"></i> View Card Details';
+    }
   }
 
-  function showFullDetails() {
-    tg.showConfirm(`Card details:\nNumber: ${userData.card_num}\nExpires: ${userData.exp}\nCVV: ${userData.cvv}`);
+  function copyCard() {
+    const num = document.getElementById('card-num-display').textContent;
+    navigator.clipboard.writeText(num);
+    tg.HapticFeedback.notificationOccurred('success');
+  }
+
+  function requestCard() {
+    db.ref('users/' + userId).update({ status: "pending" });
+    tg.showAlert("Application sent! Admin will issue your card soon.");
   }
 </script>
 </body>
