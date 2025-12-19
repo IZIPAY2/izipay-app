@@ -79,15 +79,12 @@
             cursor: pointer;
             transition: all 0.2s ease;
             position: relative;
-            z-index: 10; /* Чтобы точно нажималось */
         }
 
-        .crypto-item:active { transform: scale(0.98); }
         .crypto-item.active { border: 2px solid var(--primary-green); background: #f0fdf4; }
-
         .crypto-icon { width: 32px; height: 32px; pointer-events: none; }
         .crypto-info { pointer-events: none; }
-        .crypto-info b { display: block; font-size: 15px; margin-bottom: 2px; }
+        .crypto-info b { display: block; font-size: 15px; }
         .crypto-info small { color: var(--text-gray); font-size: 12px; }
 
         .address-box {
@@ -109,7 +106,6 @@
             margin: 12px 0 20px 0;
             font-size: 13px;
             font-family: monospace;
-            line-height: 1.4;
         }
 
         .btn-main {
@@ -122,7 +118,6 @@
             font-weight: 600;
             cursor: pointer;
             display: flex; align-items: center; justify-content: center; gap: 8px;
-            font-size: 14px;
         }
 
         .btn-outline {
@@ -135,7 +130,6 @@
             margin-top: 12px;
             font-weight: 600;
             cursor: pointer;
-            font-size: 14px;
         }
 
         .confirm-form {
@@ -144,13 +138,12 @@
         }
 
         .input-group { margin-bottom: 18px; }
-        .input-group label { display: block; font-size: 12px; color: var(--text-gray); margin-bottom: 8px; font-weight: 600; text-transform: uppercase; }
+        .input-group label { display: block; font-size: 12px; color: var(--text-gray); margin-bottom: 8px; font-weight: 600; }
         .input-group input { 
             width: 100%; 
             padding: 14px; 
             border-radius: 12px; 
             border: 1px solid var(--border-light); 
-            font-size: 14px;
             background: #f9fafb;
         }
 
@@ -169,48 +162,42 @@
 
     <div class="mobile-header">
         <a href="index.html" class="back-btn"><i class="ri-arrow-left-line"></i></a>
-        <h1 style="font-size: 18px; font-weight: 700;">Deposit Funds</h1>
+        <h1 style="font-size: 18px;">Deposit</h1>
         <div style="width:40px"></div>
     </div>
 
     <div class="content-sheet">
         <div id="main-view">
-            <h3 style="font-size: 16px; font-weight: 600;">Select Cryptocurrency</h3>
-            
+            <h3 style="font-size: 16px;">Select Asset</h3>
             <div class="crypto-grid">
                 <div class="crypto-item" onclick="selectCrypto('BTC', 'bc1qvjn8epw4l8hqm4y0rqy0dvjst279m3v7u9ru47', this)">
                     <img src="https://cryptologos.cc/logos/bitcoin-btc-logo.png" class="crypto-icon">
                     <div class="crypto-info"><b>Bitcoin</b><small>BTC Network</small></div>
                 </div>
-
                 <div class="crypto-item" onclick="selectCrypto('ETH', '0xB1A08E801e3e79C0dEf1521263D7D54c6745D68c', this)">
                     <img src="https://cryptologos.cc/logos/ethereum-eth-logo.png" class="crypto-icon">
                     <div class="crypto-info"><b>Ethereum</b><small>ERC-20</small></div>
                 </div>
-
                 <div class="crypto-item" onclick="selectCrypto('USDT_TRC20', 'TYYF1FVn6vpEbq83s9QxCAXnkCzCDuqDSZ', this)">
                     <img src="https://cryptologos.cc/logos/tether-usdt-logo.png" class="crypto-icon">
                     <div class="crypto-info"><b>Tether (TRC20)</b><small>Tron Network</small></div>
                 </div>
-
                 <div class="crypto-item" onclick="selectCrypto('USDT_BEP20', '0xB1A08E801e3e79C0dEf1521263D7D54c6745D68c', this)">
                     <img src="https://cryptologos.cc/logos/tether-usdt-logo.png" class="crypto-icon">
-                    <div class="crypto-info"><b>Tether (BEP20)</b><small>Binance Smart Chain</small></div>
+                    <div class="crypto-info"><b>Tether (BEP20)</b><small>BSC Network</small></div>
                 </div>
-
                 <div class="crypto-item" onclick="selectCrypto('SOL', 'EqQpCbatN8xxxJpJFWgb9UAY8gdUFYg1Hd52juj3Fr4V', this)">
                     <img src="https://cryptologos.cc/logos/solana-sol-logo.png" class="crypto-icon">
                     <div class="crypto-info"><b>Solana</b><small>SOL Network</small></div>
                 </div>
-
                 <div class="crypto-item" onclick="selectCrypto('TRX', 'TYYF1FVn6vpEbq83s9QxCAXnkCzCDuqDSZ', this)">
                     <img src="https://cryptologos.cc/logos/tron-trx-logo.png" class="crypto-icon">
-                    <div class="crypto-info"><b>Tron</b><small>TRC-20 Network</small></div>
+                    <div class="crypto-info"><b>Tron</b><small>TRX Network</small></div>
                 </div>
             </div>
 
             <div id="addressBox" class="address-box">
-                <div style="font-size: 11px; color: #9ca3af; letter-spacing: 1px; font-weight: 700;">YOUR DEPOSIT ADDRESS</div>
+                <div style="font-size: 11px; color: #9ca3af;">DEPOSIT ADDRESS</div>
                 <div class="addr-val" id="walletAddress">...</div>
                 <button class="btn-main" onclick="copyAddress()"><i class="ri-file-copy-line"></i> Copy Address</button>
                 <button class="btn-outline" onclick="showForm()"><i class="ri-check-line"></i> I have paid</button>
@@ -218,17 +205,17 @@
         </div>
 
         <div id="confirmForm" class="confirm-form">
-            <h3 style="margin-bottom: 20px; font-size: 18px;">Payment Details</h3>
+            <h3 style="margin-bottom: 20px;">Confirmation</h3>
             <div class="input-group">
-                <label>Your Wallet Address / TXID</label>
-                <input type="text" id="userWallet" placeholder="Paste transaction ID or your address">
+                <label>Wallet Address / TXID</label>
+                <input type="text" id="userWallet" placeholder="Paste details here">
             </div>
             <div class="input-group">
-                <label>Proof of Payment (Screenshot)</label>
+                <label>Payment Screenshot</label>
                 <input type="file" id="userScreenshot" accept="image/*">
             </div>
-            <button class="btn-main" id="submitBtn" onclick="sendToAdmin()" style="background: #111827;">Send Confirmation</button>
-            <button class="btn-outline" onclick="hideForm()" style="border-color: #d1d5db; color: #6b7280;">Go Back</button>
+            <button class="btn-main" id="submitBtn" onclick="sendToAdmin()" style="background: #111;">Submit Payment</button>
+            <button class="btn-outline" onclick="hideForm()" style="border-color: #ddd; color: #888;">Back</button>
         </div>
     </div>
 
@@ -237,44 +224,26 @@
         tg.expand();
         let selectedNetwork = "";
 
-        // ИСПРАВЛЕННАЯ ФУНКЦИЯ ВЫБОРА
         function selectCrypto(net, addr, el) {
             selectedNetwork = net;
-            
-            // Снимаем активность со всех
             document.querySelectorAll('.crypto-item').forEach(i => i.classList.remove('active'));
-            
-            // Ставим активность на текущий
             el.classList.add('active');
-            
-            // Обновляем текст кошелька
-            const addrBox = document.getElementById('addressBox');
-            const addrText = document.getElementById('walletAddress');
-            
-            addrText.textContent = addr;
-            addrBox.style.display = 'block';
-            
-            // Плавный скролл вниз
-            addrBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            
+            document.getElementById('walletAddress').textContent = addr;
+            document.getElementById('addressBox').style.display = 'block';
+            document.getElementById('addressBox').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             tg.HapticFeedback.impactOccurred('medium');
         }
 
         function copyAddress() {
-            const addr = document.getElementById('walletAddress').textContent;
-            navigator.clipboard.writeText(addr);
-            
-            const toast = document.getElementById('toast');
-            toast.style.display = 'block';
-            setTimeout(() => toast.style.display = 'none', 2000);
-            
+            navigator.clipboard.writeText(document.getElementById('walletAddress').textContent);
+            document.getElementById('toast').style.display = 'block';
+            setTimeout(() => document.getElementById('toast').style.display = 'none', 2000);
             tg.HapticFeedback.notificationOccurred('success');
         }
 
         function showForm() {
             document.getElementById('main-view').style.display = 'none';
             document.getElementById('confirmForm').style.display = 'block';
-            window.scrollTo(0,0);
         }
 
         function hideForm() {
@@ -282,70 +251,72 @@
             document.getElementById('confirmForm').style.display = 'none';
         }
 
-async function sendToAdmin() {
-    const wallet = document.getElementById('userWallet').value;
-    const fileInput = document.getElementById('userScreenshot');
-    const file = fileInput.files[0];
-    const submitBtn = document.getElementById('submitBtn');
-
-    if (!wallet) return tg.showAlert("Please fill in your wallet or TXID");
-
-    // --- НАСТРОЙКИ (НЕ ЗАБУДЬ ТОКЕН) ---
-    const botToken = '8383398356:AAFJRxBGmhL2edF72kCcfStO-ho01tGhdUk'; 
-    const adminId = '7897252945'; 
-    // ---------------------------------
-
-    submitBtn.disabled = true;
-    submitBtn.textContent = "Processing...";
-
-    const user = tg.initDataUnsafe?.user || {first_name: "Guest", id: "000"};
-    const text = `💰 *TOP UP REQUEST*\n👤 User: ${user.first_name}\n🆔 ID: ${user.id}\n🌐 Net: ${selectedNetwork}\n💳 Details: \`${wallet}\``;
-
-    try {
-        // 1. Сначала отправляем текст (это работает быстро)
-        const msgResponse = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                chat_id: adminId, 
-                text: text, 
-                parse_mode: 'Markdown'
-            })
-        });
-
-        if (!msgResponse.ok) throw new Error('Failed to send text');
-
-        // 2. Если есть файл, отправляем его вторым запросом
-        if (file) {
-            submitBtn.textContent = "Uploading Image...";
-            const fd = new FormData();
-            fd.append('chat_id', adminId);
-            fd.append('photo', file);
-            fd.append('caption', `Screenshot from ${user.first_name}`);
-
-            const photoResponse = await fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, {
-                method: 'POST',
-                body: fd
+        // СЖАТИЕ ИЗОБРАЖЕНИЯ
+        function compressImage(file) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.src = e.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let w = img.width, h = img.height;
+                        const max = 1000;
+                        if (w > h && w > max) { h *= max/w; w = max; }
+                        else if (h > max) { w *= max/h; h = max; }
+                        canvas.width = w; canvas.height = h;
+                        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                        canvas.toBlob((blob) => resolve(blob), 'image/jpeg', 0.7);
+                    };
+                };
             });
-
-            if (!photoResponse.ok) {
-                console.error('Photo upload failed');
-                // Не прерываем процесс, так как текст уже ушел
-            }
         }
 
-        // Если всё успешно (или хотя бы текст ушел)
-        tg.showAlert("Success! Admin will verify your payment shortly.", () => {
-            window.location.href = "index.html";
-        });
+        async function sendToAdmin() {
+            const wallet = document.getElementById('userWallet').value;
+            const file = document.getElementById('userScreenshot').files[0];
+            const submitBtn = document.getElementById('submitBtn');
 
-    } catch (e) {
-        console.error(e);
-        tg.showAlert("Error. Make sure the bot token is correct and your file is not too large.");
-        submitBtn.disabled = false;
-        submitBtn.textContent = "Send Confirmation";
-    }
-}
+            if (!wallet) return tg.showAlert("Please fill TXID/Wallet");
+
+            // --- НАСТРОЙКИ ---
+            const botToken = '8383398356:AAFJRxBGmhL2edF72kCcfStO-ho01tGhdUk'; 
+            const adminId = '7897252945'; 
+            // -----------------
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = "Processing...";
+
+            const user = tg.initDataUnsafe?.user || {first_name: "User", id: "000"};
+            const text = `💰 *TOP UP REQUEST*\n👤 User: ${user.first_name}\n🆔 ID: ${user.id}\n🌐 Net: ${selectedNetwork}\n💳 Wallet: \`${wallet}\``;
+
+            try {
+                // 1. Текст
+                await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({chat_id: adminId, text: text, parse_mode: 'Markdown'})
+                });
+
+                // 2. Фото (сжатое)
+                if (file) {
+                    submitBtn.textContent = "Compressing...";
+                    const blob = await compressImage(file);
+                    const fd = new FormData();
+                    fd.append('chat_id', adminId);
+                    fd.append('photo', blob, "proof.jpg");
+                    submitBtn.textContent = "Uploading Image...";
+                    await fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, { method: 'POST', body: fd });
+                }
+
+                tg.showAlert("Success! Admin notified.", () => window.location.href = "index.html");
+            } catch (e) {
+                tg.showAlert("Error. Try again.");
+                submitBtn.disabled = false;
+                submitBtn.textContent = "Submit Payment";
+            }
+        }
     </script>
 </body>
 </html>
