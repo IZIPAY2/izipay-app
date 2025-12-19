@@ -20,7 +20,7 @@
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-    body { background: var(--bg-dark); color: var(--text-white); padding: 20px; overflow-x: hidden; }
+    body { background: var(--bg-dark); color: var(--text-white); padding: 20px; }
 
     /* Хедер */
     .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
@@ -57,7 +57,7 @@
     .card-visual-wrapper { width: 100%; border-radius: 20px; overflow: hidden; margin-bottom: 15px; box-shadow: 0 15px 35px rgba(0,0,0,0.6); position: relative; }
     .card-image { width: 100%; display: block; border-radius: 20px; }
 
-    /* Заглушка (Issue Card) */
+    /* Заглушка (когда нет карты) */
     .no-card-box { 
         width: 100%; height: 200px; 
         background: linear-gradient(135deg, #1a1d24 0%, #0f1115 100%); 
@@ -67,23 +67,22 @@
     }
     .no-card-box i { font-size: 40px; color: var(--primary-green); opacity: 0.8; }
 
-    /* Инфо-бокс */
+    /* Инфо-бокс с номером */
     .card-info-box { background: var(--card-bg); border: 1px solid var(--border-glass); border-radius: 16px; padding: 20px; margin-bottom: 12px; }
     .card-number-row { display: flex; justify-content: space-between; align-items: center; }
     .card-number-text { font-family: 'Courier New', monospace; font-size: 20px; letter-spacing: 2px; color: var(--text-white); font-weight: 600; }
     .copy-icon { color: var(--primary-green); cursor: pointer; padding: 5px; font-size: 20px; }
 
-    /* Кнопка деталей */
+    /* Детали */
     .toggle-details-btn { width: 100%; background: var(--glass-surface); border: 1px solid var(--border-glass); color: var(--primary-green); padding: 14px; border-radius: 14px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
     .card-details { margin-top: 10px; background: var(--glass-surface); border-radius: 14px; padding: 5px 20px; display: none; border: 1px solid var(--border-glass); }
     .card-details.active { display: block; animation: slideIn 0.3s ease; }
     .detail-row { display: flex; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14px; }
     .detail-row:last-child { border-bottom: none; }
 
-    /* Футер с поддержкой */
+    /* Нижняя ссылка поддержки */
     .support-footer { margin-top: 30px; text-align: center; padding-bottom: 30px; }
     .support-link { color: var(--text-gray); cursor: pointer; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; opacity: 0.7; }
-    .support-link:active { opacity: 1; color: var(--primary-green); }
 
     #loader { position: fixed; inset: 0; background: var(--bg-dark); display: flex; align-items: center; justify-content: center; z-index: 1000; }
     @keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
@@ -147,7 +146,7 @@
 <footer class="support-footer">
     <div class="support-link" onclick="openSupport()">
         <i class="ri-questionnaire-line"></i>
-        Support: @izipay_sup
+        Contact support: @izipay_sup
     </div>
 </footer>
 
@@ -163,52 +162,39 @@
   const tg = window.Telegram.WebApp;
   tg.expand();
 
-  // ИСПРАВЛЕННАЯ ФУНКЦИЯ
+  // ФУНКЦИЯ ДЛЯ ОТКРЫТИЯ ЛИЧНОГО ЧАТА @izipay_sup
   function openSupport() {
-    // Используем ваш подтвержденный юзернейм izipay_sup
     tg.openTelegramLink('https://t.me/izipay_sup');
   }
 
   const userId = tg.initDataUnsafe?.user?.id || "7897252945";
 
-  // Слушатель Firebase
+  // Логика получения данных из Firebase
   db.ref('users/' + userId).on('value', (snapshot) => {
     document.getElementById('loader').style.display = 'none';
     const data = snapshot.val();
     if (!data) return;
 
-    const balanceEl = document.getElementById('user-balance');
-    balanceEl.textContent = '$' + (data.balance || 0).toLocaleString(undefined, {minimumFractionDigits: 2});
+    document.getElementById('user-balance').textContent = '$' + (data.balance || 0).toLocaleString(undefined, {minimumFractionDigits: 2});
     
-    const cardSection = document.getElementById('card-section');
-    const placeholderSection = document.getElementById('card-placeholder');
+    const hasCard = data.status === "active" || data.status === "pending";
+    document.getElementById('card-placeholder').style.display = hasCard ? 'none' : 'block';
+    document.getElementById('card-section').style.display = hasCard ? 'block' : 'none';
 
-    if (data.status === "active" || data.status === "pending") {
-      placeholderSection.style.display = 'none';
-      cardSection.style.display = 'block';
+    if (hasCard) {
       document.getElementById('card-num-display').textContent = data.card_num || "**** **** **** ****";
       document.getElementById('card-cvv-display').textContent = data.cvv || "***";
       document.getElementById('card-exp-display').textContent = data.exp || "--/--";
-      
       const statusLabel = document.getElementById('card-status-label');
-      if(data.status === "pending") {
-          statusLabel.textContent = "On Review";
-          statusLabel.style.color = "#facc15";
-      } else {
-          statusLabel.textContent = "Active";
-          statusLabel.style.color = "#10b981";
-      }
-    } else {
-      cardSection.style.display = 'none';
-      placeholderSection.style.display = 'block';
+      statusLabel.textContent = data.status === "pending" ? "On Review" : "Active";
+      statusLabel.style.color = data.status === "pending" ? "#facc15" : "#10b981";
     }
   });
 
   function toggleDetails() {
     const details = document.getElementById('cardDetails');
-    const btn = document.getElementById('toggleBtn');
     details.classList.toggle('active');
-    btn.innerHTML = details.classList.contains('active') 
+    document.getElementById('toggleBtn').innerHTML = details.classList.contains('active') 
         ? '<i class="ri-eye-off-line"></i> Hide Details' 
         : '<i class="ri-eye-line"></i> View Card Details';
   }
