@@ -26,6 +26,9 @@
     /* Хедер */
     .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
     .logo-text { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
+    .header-actions { display: flex; gap: 16px; align-items: center; }
+    .support-icon-btn { color: var(--primary-green); cursor: pointer; display: flex; align-items: center; transition: opacity 0.2s; }
+    .support-icon-btn:active { opacity: 0.7; }
 
     /* Баланс */
     .balance-section { text-align: center; margin-bottom: 35px; }
@@ -46,53 +49,44 @@
         cursor: pointer; 
         color: white; 
         transition: transform 0.2s, background 0.2s; 
-        text-decoration: none; 
     }
     .action-btn:active { transform: scale(0.95); background: var(--glass-surface); }
     .action-btn i { font-size: 28px; color: var(--primary-green); }
     .action-btn span { font-size: 11px; font-weight: 600; }
 
-    /* Карта и Заглушка */
-    .card-visual-wrapper { width: 100%; border-radius: 20px; overflow: hidden; margin-bottom: 15px; border: none; box-shadow: 0 15px 35px rgba(0,0,0,0.6); position: relative; }
+    /* Карта */
+    .card-visual-wrapper { width: 100%; border-radius: 20px; overflow: hidden; margin-bottom: 15px; box-shadow: 0 15px 35px rgba(0,0,0,0.6); position: relative; }
     .card-image { width: 100%; display: block; border-radius: 20px; }
 
-    /* Плейсхолдер (когда карты нет) */
+    /* Заглушка */
     .no-card-box { 
-        width: 100%; 
-        height: 200px; 
+        width: 100%; height: 200px; 
         background: linear-gradient(135deg, #1a1d24 0%, #0f1115 100%); 
-        border: 2px dashed var(--border-glass); 
-        border-radius: 20px; 
-        display: flex; 
-        flex-direction: column; 
-        align-items: center; 
-        justify-content: center; 
-        gap: 12px;
-        color: var(--text-gray);
-        cursor: pointer;
+        border: 2px dashed var(--border-glass); border-radius: 20px; 
+        display: flex; flex-direction: column; align-items: center; justify-content: center; 
+        gap: 12px; color: var(--text-gray); cursor: pointer;
     }
     .no-card-box i { font-size: 40px; color: var(--primary-green); opacity: 0.8; }
-    .no-card-box span { font-size: 14px; font-weight: 500; }
 
-    /* Инфо-бокс с номером */
+    /* Инфо-бокс */
     .card-info-box { background: var(--card-bg); border: 1px solid var(--border-glass); border-radius: 16px; padding: 20px; margin-bottom: 12px; }
     .card-number-row { display: flex; justify-content: space-between; align-items: center; }
     .card-number-text { font-family: 'Courier New', monospace; font-size: 20px; letter-spacing: 2px; color: var(--text-white); font-weight: 600; }
     .copy-icon { color: var(--primary-green); cursor: pointer; padding: 5px; font-size: 20px; }
 
-    /* Кнопка деталей */
+    /* Детали */
     .toggle-details-btn { width: 100%; background: var(--glass-surface); border: 1px solid var(--border-glass); color: var(--primary-green); padding: 14px; border-radius: 14px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
-
-    /* Скрытые детали */
     .card-details { margin-top: 10px; background: var(--glass-surface); border-radius: 14px; padding: 5px 20px; display: none; border: 1px solid var(--border-glass); }
     .card-details.active { display: block; animation: slideIn 0.3s ease; }
     .detail-row { display: flex; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14px; }
     .detail-row:last-child { border-bottom: none; }
     .detail-label { color: var(--text-gray); }
-    .detail-value { font-weight: 600; }
+
+    /* Футер */
+    .support-footer { margin-top: 30px; text-align: center; padding-bottom: 20px; }
+    .support-link { color: var(--text-gray); cursor: pointer; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; opacity: 0.7; }
 
     #loader { position: fixed; inset: 0; background: var(--bg-dark); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-    
     @keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
   </style>
 </head>
@@ -101,10 +95,10 @@
 
 <header class="header">
   <div class="logo-text">IZIPAY</div>
-  <div style="display: flex; gap: 15px; align-items: center;">
-    <a href="https://t.me/izipay_sup" target="_blank" style="text-decoration: none;">
-      <i class="ri-customer-service-2-line" style="font-size: 26px; color: var(--primary-green);"></i>
-    </a>
+  <div class="header-actions">
+    <div class="support-icon-btn" onclick="openSupport()">
+      <i class="ri-customer-service-2-line" style="font-size: 26px;"></i>
+    </div>
     <i class="ri-user-3-line" style="font-size: 26px; color: var(--text-gray);"></i>
   </div>
 </header>
@@ -151,7 +145,15 @@
   </div>
 </div>
 
+<footer class="support-footer">
+    <div class="support-link" onclick="openSupport()">
+        <i class="ri-questionnaire-line"></i>
+        Support: @izipay.me
+    </div>
+</footer>
+
 <script>
+  // Конфигурация Firebase
   const firebaseConfig = {
     apiKey: "AIzaSyBTpsS1kStrz8EA1EO0F4v3YkdENnxGHsM",
     authDomain: "izipay-f1def.firebaseapp.com",
@@ -165,7 +167,13 @@
 
   const userId = tg.initDataUnsafe?.user?.id || "7897252945";
 
-// 1. ПРИНУДИТЕЛЬНАЯ ПРОВЕРКА ПОЛЕЙ ПРИ ВХОДЕ
+  // Функция открытия поддержки (Исправлено для Mini App)
+  function openSupport() {
+    // Используем нативный метод Telegram для открытия ссылок
+    tg.openTelegramLink('https://t.me/izipay_me');
+  }
+
+  // Логика инициализации данных
   db.ref('users/' + userId).once('value').then((snapshot) => {
     const data = snapshot.val();
     const defaultData = {
@@ -175,13 +183,7 @@
       exp: "--/--",
       status: "no_card",
       name: tg.initDataUnsafe?.user?.first_name || "User",
-      // Теперь тут только одно поле details, куда ты будешь кидать текст
-      history: {
-        "0": {
-          details: "",
-          notified: true
-        }
-      }
+      history: { "0": { details: "", notified: true } }
     };
 
     if (!data) {
@@ -191,13 +193,11 @@
       if (data.balance === undefined) updates.balance = 0;
       if (data.card_num === undefined) updates.card_num = "**** **** **** ****";
       if (!data.history) updates.history = defaultData.history;
-      
-      if (Object.keys(updates).length > 0) {
-        db.ref('users/' + userId).update(updates);
-      }
+      if (Object.keys(updates).length > 0) db.ref('users/' + userId).update(updates);
     }
   });
-  // 2. СЛУШАТЕЛЬ В РЕАЛЬНОМ ВРЕМЕНИ (.on)
+
+  // Слушатель данных
   db.ref('users/' + userId).on('value', (snapshot) => {
     document.getElementById('loader').style.display = 'none';
     const data = snapshot.val();
@@ -212,7 +212,6 @@
     if (data.status === "active" || data.status === "pending") {
       placeholderSection.style.display = 'none';
       cardSection.style.display = 'block';
-      
       document.getElementById('card-num-display').textContent = data.card_num || "**** **** **** ****";
       document.getElementById('card-cvv-display').textContent = data.cvv || "***";
       document.getElementById('card-exp-display').textContent = data.exp || "--/--";
