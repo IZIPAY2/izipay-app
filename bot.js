@@ -25,13 +25,14 @@ if (!admin.apps.length) {
 }
 const db = admin.database();
 
-// 2. Веб-сервер и Само-пинг (ДЛЯ CRON-JOB)
+// 2. Веб-сервер для CRON-JOB.ORG и Само-пинг
 const PORT = process.env.PORT || 3000;
-const MY_URL = "https://izipay-app.onrender.com"; // Твоя ссылка на Render
+const MY_URL = "https://izipay-app.onrender.com";
 
-const server = http.createServer((req, res) => { 
-  // Когда cron-job.org заходит по ссылке, сервер отвечает и логирует это
-  console.log(`[${new Date().toISOString()}] Alive ping received`);
+const server = http.createServer((req, res) => {
+  // Этот лог подтверждает, что cron-job зашел на сервер
+  console.log(`[${new Date().toISOString()}] Cron-job.org ping received`);
+  res.writeHead(200, {'Content-Type': 'text/plain'});
   res.end('IZIPAY Bot is Active'); 
 });
 
@@ -39,7 +40,7 @@ server.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
 });
 
-// Каждые 10 минут бот пингует сам себя (дополнительная страховка)
+// Дополнительный интервал само-пинга (раз в 10 минут)
 setInterval(() => {
   http.get(MY_URL, (res) => {
     console.log('Self-ping successful');
@@ -77,4 +78,4 @@ bot.on('polling_error', (err) => {
     if (!err.message.includes('409')) console.error("TG:", err.message);
 });
 
-console.log('🚀 Бот запущен в режиме 24/7 с поддержкой Cron-job');
+console.log('🚀 Бот запущен в режиме 24/7 с поддержкой внешнего пинга');
