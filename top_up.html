@@ -8,7 +8,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
         :root {
@@ -30,7 +29,6 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            overflow-x: hidden;
         }
 
         .mobile-header {
@@ -85,9 +83,12 @@
             align-items: center;
             gap: 16px;
             cursor: pointer;
+            transition: 0.2s;
         }
 
         .crypto-item.active { border: 2px solid var(--primary-green); background: #f0fdf4; }
+
+        .crypto-icon { width: 36px; height: 36px; object-fit: contain; }
 
         .address-box {
             background: var(--bg-dark);
@@ -96,7 +97,9 @@
             padding: 24px;
             display: none;
             margin-bottom: 40px;
+            animation: fadeIn 0.3s;
         }
+        .address-box.show { display: block; }
 
         .addr-val {
             word-break: break-all;
@@ -105,6 +108,7 @@
             border-radius: 12px;
             margin: 10px 0 20px 0;
             font-size: 13px;
+            font-family: monospace;
         }
 
         .btn-main {
@@ -128,6 +132,7 @@
             border-radius: 12px;
             margin-top: 12px;
             font-weight: 600;
+            cursor: pointer;
         }
 
         .confirm-form {
@@ -136,93 +141,137 @@
             border-radius: 20px;
             padding: 24px;
             color: var(--text-dark);
+            animation: fadeIn 0.3s;
         }
 
         .input-group { margin-bottom: 16px; }
-        .input-group label { display: block; font-size: 12px; color: var(--text-gray); margin-bottom: 6px; }
-        .input-group input { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border-light); }
+        .input-group label { display: block; font-size: 12px; color: var(--text-gray); margin-bottom: 6px; font-weight: 600; }
+        .input-group input { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border-light); font-family: inherit; }
 
         .toast {
             position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
             background: white; padding: 12px 24px; border-radius: 50px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.1); z-index: 2000; display: none;
         }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
     <div class="mobile-header">
         <a href="index.html" class="back-btn"><i class="ri-arrow-left-line"></i></a>
-        <h1>Top Up</h1>
+        <h1 style="font-size: 20px;">Top Up</h1>
         <div style="width:40px"></div>
     </div>
 
     <div class="content-sheet">
         <div id="main-view">
             <div class="info-box">
-                <p style="font-size: 13px;">Select a network, copy address and pay. Then click "I have paid".</p>
+                <h3 style="font-size: 14px; margin-bottom: 5px;">How to Deposit</h3>
+                <p style="font-size: 13px; color: var(--text-gray);">Select a network, copy the address and send funds. After payment, click "I have paid".</p>
             </div>
 
+            <h3 style="margin-bottom: 16px; font-size: 16px;">Select Network</h3>
+
             <div class="crypto-grid">
-                <div class="crypto-item" onclick="selectCrypto('USDT_TRC20', 'TYYF1FVn6vpEbq83s9QxCAXnkCzCDuqDSZ', this)">
-                    <img src="https://cryptologos.cc/logos/tether-usdt-logo.png" width="30">
-                    <div><b>Tether (TRC20)</b><br><small>TRX Network</small></div>
+                <div class="crypto-item" onclick="selectCrypto('BTC', 'bc1qvjn8epw4l8hqm4y0rqy0dvjst279m3v7u9ru47', this)">
+                    <img src="https://cryptologos.cc/logos/bitcoin-btc-logo.png" class="crypto-icon">
+                    <div style="flex:1"><b>Bitcoin</b><br><small style="color:var(--text-gray)">BTC Network</small></div>
                 </div>
+
+                <div class="crypto-item" onclick="selectCrypto('ETH', '0xB1A08E801e3e79C0dEf1521263D7D54c6745D68c', this)">
+                    <img src="https://cryptologos.cc/logos/ethereum-eth-logo.png" class="crypto-icon">
+                    <div style="flex:1"><b>Ethereum</b><br><small style="color:var(--text-gray)">ERC-20</small></div>
+                </div>
+
+                <div class="crypto-item" onclick="selectCrypto('USDT_TRC20', 'TYYF1FVn6vpEbq83s9QxCAXnkCzCDuqDSZ', this)">
+                    <img src="https://cryptologos.cc/logos/tether-usdt-logo.png" class="crypto-icon">
+                    <div style="flex:1"><b>Tether (TRC20)</b><br><small style="color:var(--text-gray)">TRC-20 Network</small></div>
+                </div>
+
+                <div class="crypto-item" onclick="selectCrypto('USDT_BEP20', '0xB1A08E801e3e79C0dEf1521263D7D54c6745D68c', this)">
+                    <img src="https://cryptologos.cc/logos/bnb-bnb-logo.png" class="crypto-icon">
+                    <div style="flex:1"><b>Tether (BEP20)</b><br><small style="color:var(--text-gray)">BSC Network</small></div>
+                </div>
+
                 <div class="crypto-item" onclick="selectCrypto('SOL', 'EqQpCbatN8xxxJpJFWgb9UAY8gdUFYg1Hd52juj3Fr4V', this)">
-                    <img src="https://cryptologos.cc/logos/solana-sol-logo.png" width="30">
-                    <div><b>Solana</b><br><small>SOL Network</small></div>
+                    <img src="https://cryptologos.cc/logos/solana-sol-logo.png" class="crypto-icon">
+                    <div style="flex:1"><b>Solana</b><br><small style="color:var(--text-gray)">SOL Network</small></div>
+                </div>
+
+                <div class="crypto-item" onclick="selectCrypto('TRX', 'TYYF1FVn6vpEbq83s9QxCAXnkCzCDuqDSZ', this)">
+                    <img src="https://cryptologos.cc/logos/tron-trx-logo.png" class="crypto-icon">
+                    <div style="flex:1"><b>Tron</b><br><small style="color:var(--text-gray)">TRX Network</small></div>
                 </div>
             </div>
 
             <div id="addressBox" class="address-box">
-                <div style="font-size: 12px; color: #8e8e93;">DEPOSIT ADDRESS</div>
+                <div style="font-size: 12px; color: #8e8e93; letter-spacing: 1px;">DEPOSIT ADDRESS</div>
                 <div class="addr-val" id="walletAddress">...</div>
-                <button class="btn-main" onclick="copyAddress()">Copy Address</button>
-                <button class="btn-outline" onclick="showForm()">I have paid</button>
+                <button class="btn-main" onclick="copyAddress()"><i class="ri-file-copy-line"></i> Copy Address</button>
+                <button class="btn-outline" onclick="showForm()"><i class="ri-checkbox-circle-line"></i> I have paid</button>
             </div>
         </div>
 
         <div id="confirmForm" class="confirm-form">
-            <h3 style="margin-bottom: 15px;">Confirm Payment</h3>
+            <h3 style="margin-bottom: 20px;">Confirm Transaction</h3>
             <div class="input-group">
-                <label>Your Wallet Address / TXID</label>
-                <input type="text" id="userWallet" placeholder="Paste here...">
+                <label>Your Wallet Address or TXID</label>
+                <input type="text" id="userWallet" placeholder="Enter transaction details">
             </div>
             <div class="input-group">
-                <label>Screenshot</label>
+                <label>Screenshot of Payment</label>
                 <input type="file" id="userScreenshot" accept="image/*">
             </div>
-            <button class="btn-main" id="submitBtn" onclick="sendToAdmin()" style="background: #000;">Submit Payment</button>
-            <button class="btn-outline" onclick="hideForm()" style="border:none;">Cancel</button>
+            <button class="btn-main" id="submitBtn" onclick="sendToAdmin()" style="background: #000;">Send Confirmation</button>
+            <button class="btn-outline" onclick="hideForm()" style="border:none; color: var(--text-gray);">Back to Network</button>
         </div>
     </div>
 
-    <div id="toast" class="toast">Copied!</div>
+    <div id="toast" class="toast">Copied to clipboard!</div>
 
     <script>
         const tg = window.Telegram.WebApp;
         let selectedNetwork = "";
 
+        // ФУНКЦИЯ ВЫБОРА КРИПТОВАЛЮТЫ (ИСПРАВЛЕНО)
         function selectCrypto(net, addr, el) {
             selectedNetwork = net;
-            document.querySelectorAll('.crypto-item').forEach(i => i.classList.remove('active'));
+            
+            // Сброс активного класса у всех элементов
+            document.querySelectorAll('.crypto-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Активация текущего
             el.classList.add('active');
+            
+            // Обновление адреса и показ блока
             document.getElementById('walletAddress').textContent = addr;
-            document.getElementById('addressBox').style.display = 'block';
-            tg.HapticFeedback.impactOccurred('light');
+            document.getElementById('addressBox').classList.add('show');
+            
+            // Прокрутка к блоку адреса
+            document.getElementById('addressBox').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            
+            tg.HapticFeedback.impactOccurred('medium');
         }
 
         function copyAddress() {
-            navigator.clipboard.writeText(document.getElementById('walletAddress').textContent);
-            const t = document.getElementById('toast');
-            t.style.display = 'block';
-            setTimeout(() => t.style.display = 'none', 2000);
+            const addr = document.getElementById('walletAddress').textContent;
+            navigator.clipboard.writeText(addr);
+            
+            const toast = document.getElementById('toast');
+            toast.style.display = 'block';
+            setTimeout(() => toast.style.display = 'none', 2000);
+            
             tg.HapticFeedback.notificationOccurred('success');
         }
 
         function showForm() {
             document.getElementById('main-view').style.display = 'none';
             document.getElementById('confirmForm').style.display = 'block';
+            window.scrollTo(0,0);
         }
 
         function hideForm() {
@@ -232,21 +281,22 @@
 
         async function sendToAdmin() {
             const wallet = document.getElementById('userWallet').value;
-            const file = document.getElementById('userScreenshot').files[0];
+            const fileInput = document.getElementById('userScreenshot');
+            const file = fileInput.files[0];
             const submitBtn = document.getElementById('submitBtn');
 
             if (!wallet) return tg.showAlert("Please enter your wallet/TXID");
 
-            // --- НАСТРОЙКИ ---
-            const botToken = '8383398356:AAFJRxBGmhL2edF72kCcfStO-ho01tGhdUk'; 
+            // --- ОБЯЗАТЕЛЬНО ВСТАВЬТЕ ВАШ ТОКЕН НИЖЕ ---
+            const botToken = 'ВАШ_ТОКЕН_БОТА'; 
             const adminId = '7897252945'; 
-            // -----------------
+            // ------------------------------------------
 
             submitBtn.disabled = true;
             submitBtn.textContent = "Sending...";
 
             const user = tg.initDataUnsafe?.user || {first_name: "User", id: "000"};
-            const text = `💰 *NEW DEPOSIT*\n👤 User: ${user.first_name}\n🆔 ID: ${user.id}\n🌐 Net: ${selectedNetwork}\n💳 Wallet: \`${wallet}\``;
+            const text = `💰 *NEW TOP UP REQUEST*\n\n👤 User: ${user.first_name}\n🆔 ID: ${user.id}\n🌐 Network: ${selectedNetwork}\n💳 Details: \`${wallet}\``;
 
             try {
                 // 1. Отправка сообщения
@@ -256,7 +306,7 @@
                     body: JSON.stringify({chat_id: adminId, text: text, parse_mode: 'Markdown'})
                 });
 
-                // 2. Отправка фото (если есть)
+                // 2. Отправка фото
                 if (file) {
                     const fd = new FormData();
                     fd.append('chat_id', adminId);
@@ -267,15 +317,17 @@
                     });
                 }
 
-                tg.showAlert("Success! Admin will verify your payment.", () => {
+                tg.showAlert("Confirmation sent! Funds will be added after manual review.", () => {
                     window.location.href = "index.html";
                 });
             } catch (e) {
-                tg.showAlert("Send error. Try again.");
+                tg.showAlert("Connection error. Check your token or internet.");
                 submitBtn.disabled = false;
-                submitBtn.textContent = "Submit Payment";
+                submitBtn.textContent = "Send Confirmation";
             }
         }
+
+        tg.expand();
     </script>
 </body>
 </html>
