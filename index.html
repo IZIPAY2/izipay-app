@@ -57,6 +57,16 @@
     .card-visual-wrapper { width: 100%; border-radius: 20px; overflow: hidden; margin-bottom: 15px; box-shadow: 0 15px 35px rgba(0,0,0,0.6); position: relative; }
     .card-image { width: 100%; display: block; border-radius: 20px; }
 
+    /* Заглушка (когда нет карты) */
+    .no-card-box { 
+        width: 100%; height: 200px; 
+        background: linear-gradient(135deg, #1a1d24 0%, #0f1115 100%); 
+        border: 2px dashed var(--border-glass); border-radius: 20px; 
+        display: flex; flex-direction: column; align-items: center; justify-content: center; 
+        gap: 12px; color: var(--text-gray); cursor: pointer;
+    }
+    .no-card-box i { font-size: 40px; color: var(--primary-green); opacity: 0.8; }
+
     /* Инфо-бокс с номером */
     .card-info-box { background: var(--card-bg); border: 1px solid var(--border-glass); border-radius: 16px; padding: 20px; margin-bottom: 12px; }
     .card-number-row { display: flex; justify-content: space-between; align-items: center; }
@@ -103,7 +113,14 @@
   <div class="action-btn" onclick="window.location.href='history.html'"><i class="ri-history-fill"></i><span>History</span></div>
 </div>
 
-<div id="card-section">
+<div id="card-placeholder" style="display: none;" onclick="window.location.href='issue_card.html'">
+    <div class="no-card-box">
+        <i class="ri-bank-card-line"></i>
+        <span>Get your New Virtual Card</span>
+    </div>
+</div>
+  
+<div id="card-section" style="display: none;">
   <div class="card-visual-wrapper">
     <img src="metalwhitecard.png" class="card-image" alt="Card">
   </div>
@@ -122,7 +139,7 @@
   <div class="card-details" id="cardDetails">
     <div class="detail-row"><span class="detail-label">CVV</span><span class="detail-value" id="card-cvv-display">***</span></div>
     <div class="detail-row"><span class="detail-label">Expiry</span><span class="detail-value" id="card-exp-display">--/--</span></div>
-    <div class="detail-row"><span class="detail-label">Status</span><span class="detail-value" id="card-status-label" style="color: #10b981;">Active</span></div>
+    <div class="detail-row"><span class="detail-label">Status</span><span class="detail-value" id="card-status-label">Active</span></div>
   </div>
 </div>
 
@@ -145,31 +162,33 @@
   const tg = window.Telegram.WebApp;
   tg.expand();
 
+  // ФУНКЦИЯ ДЛЯ ОТКРЫТИЯ ЛИЧНОГО ЧАТА @izipay_sup
   function openSupport() {
     tg.openTelegramLink('https://t.me/izipay_sup');
   }
 
   const userId = tg.initDataUnsafe?.user?.id || "7897252945";
 
+  // Логика получения данных из Firebase
   db.ref('users/' + userId).on('value', (snapshot) => {
     document.getElementById('loader').style.display = 'none';
     const data = snapshot.val();
+    if (!data) return;
+
+    document.getElementById('user-balance').textContent = '$' + (data.balance || 0).toLocaleString(undefined, {minimumFractionDigits: 2});
     
-    // Если данных в базе нет, баланс просто 0
-    const balance = data ? data.balance : 0;
-    document.getElementById('user-balance').textContent = '$' + balance.toLocaleString(undefined, {minimumFractionDigits: 2});
-    
-    // Если данные есть, подгружаем номер и детали, иначе оставляем маски
-    if (data) {
+    const hasCard = data.status === "active" || data.status === "active";
+    document.getElementById('card-placeholder').style.display = hasCard ? 'none' : 'block';
+    document.getElementById('card-section').style.display = hasCard ? 'block' : 'none';
+
+    if (hasCard) {
       document.getElementById('card-num-display').textContent = data.card_num || "**** **** **** ****";
       document.getElementById('card-cvv-display').textContent = data.cvv || "***";
       document.getElementById('card-exp-display').textContent = data.exp || "--/--";
+      const statusLabel = document.getElementById('card-status-label');
+      statusLabel.textContent = data.status === "active" ? "On Review" : "Active";
+      statusLabel.style.color = data.status === "active" ? "#facc15" : "#10b981";
     }
-
-    // Статус ВСЕГДА Active и ВСЕГДА зеленый
-    const statusLabel = document.getElementById('card-status-label');
-    statusLabel.textContent = "Active";
-    statusLabel.style.color = "#10b981";
   });
 
   function toggleDetails() {
