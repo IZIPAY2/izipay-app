@@ -1,211 +1,164 @@
-<!doctype html>
-<html lang="ru">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-  <title>IZIPAY Dashboard</title>
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
-  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
-  <style>
-    :root {
-      --bg-dark: #0f1115;
-      --card-bg: #1a1d24;
-      --primary-green: #638576;
-      --text-white: #ffffff;
-      --text-gray: #9ca3af;
-      --border-glass: rgba(255, 255, 255, 0.12);
-      --glass-surface: rgba(255, 255, 255, 0.05);
-    }
+<!doctype html> 
+<html lang="ru"> 
+<head> 
+  <meta charset="utf-8" /> 
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" /> 
+  <title>IZIPAY Dashboard</title> 
+  <script src="https://telegram.org/js/telegram-web-app.js"></script> 
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script> 
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script> 
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet"> 
+  <style> 
+    :root { 
+      --bg-dark: #0f1115; 
+      --card-bg: #1a1d24; 
+      --primary-green: #638576; 
+      --text-white: #ffffff; 
+      --text-gray: #9ca3af; 
+      --border-glass: rgba(255, 255, 255, 0.12); 
+      --glass-surface: rgba(255, 255, 255, 0.05); 
+    } 
 
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-    body { background: var(--bg-dark); color: var(--text-white); padding: 20px; }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; } 
+    body { background: var(--bg-dark); color: var(--text-white); padding: 20px; } 
 
-    /* Хедер */
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-    .logo-text { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
-    .header-actions { display: flex; gap: 16px; align-items: center; }
-    .support-icon-btn { color: var(--primary-green); cursor: pointer; display: flex; align-items: center; padding: 5px; }
-    .support-icon-btn:active { opacity: 0.6; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; } 
+    .logo-text { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; } 
+    .header-actions { display: flex; gap: 16px; align-items: center; } 
+    .support-icon-btn { color: var(--primary-green); cursor: pointer; display: flex; align-items: center; padding: 5px; } 
 
-    /* Баланс */
-    .balance-section { text-align: center; margin-bottom: 35px; }
-    .currency { font-size: 14px; color: var(--text-gray); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
-    .balance-amount { font-size: 48px; font-weight: 700; background: linear-gradient(180deg, #fff 0%, #aaa 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .balance-section { text-align: center; margin-bottom: 35px; } 
+    .currency { font-size: 14px; color: var(--text-gray); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; } 
+    .balance-amount { font-size: 48px; font-weight: 700; background: linear-gradient(180deg, #fff 0%, #aaa 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; } 
 
-    /* Кнопки действий */
-    .card-actions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 35px; }
-    .action-btn { 
-        background: var(--card-bg); 
-        border: 1px solid var(--border-glass); 
-        border-radius: 18px; 
-        padding: 16px 8px;
-        display: flex; 
-        flex-direction: column; 
-        align-items: center; 
-        gap: 10px; 
-        cursor: pointer; 
-        color: white; 
-        transition: transform 0.1s;
-    }
-    .action-btn:active { transform: scale(0.95); background: var(--glass-surface); }
-    .action-btn i { font-size: 28px; color: var(--primary-green); }
-    .action-btn span { font-size: 11px; font-weight: 600; }
+    .card-actions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 35px; } 
+    .action-btn { background: var(--card-bg); border: 1px solid var(--border-glass); border-radius: 18px; padding: 16px 8px; display: flex; flex-direction: column; align-items: center; gap: 10px; cursor: pointer; color: white; } 
+    .action-btn i { font-size: 28px; color: var(--primary-green); } 
+    .action-btn span { font-size: 11px; font-weight: 600; } 
 
-    /* Карта */
-    .card-visual-wrapper { width: 100%; border-radius: 20px; overflow: hidden; margin-bottom: 15px; box-shadow: 0 15px 35px rgba(0,0,0,0.6); position: relative; }
-    .card-image { width: 100%; display: block; border-radius: 20px; }
+    .card-section { display: block; } 
+    .card-visual-wrapper { width: 100%; border-radius: 20px; overflow: hidden; margin-bottom: 15px; box-shadow: 0 15px 35px rgba(0,0,0,0.6); position: relative; } 
+    .card-image { width: 100%; display: block; border-radius: 20px; } 
 
-    /* Заглушка (когда нет карты) */
-    .no-card-box { 
-        width: 100%; height: 200px; 
-        background: linear-gradient(135deg, #1a1d24 0%, #0f1115 100%); 
-        border: 2px dashed var(--border-glass); border-radius: 20px; 
-        display: flex; flex-direction: column; align-items: center; justify-content: center; 
-        gap: 12px; color: var(--text-gray); cursor: pointer;
-    }
-    .no-card-box i { font-size: 40px; color: var(--primary-green); opacity: 0.8; }
+    .card-info-box { background: var(--card-bg); border: 1px solid var(--border-glass); border-radius: 16px; padding: 20px; margin-bottom: 12px; } 
+    .card-number-row { display: flex; justify-content: space-between; align-items: center; } 
+    .card-number-text { font-family: 'Courier New', monospace; font-size: 20px; letter-spacing: 2px; color: var(--text-white); font-weight: 600; } 
+    .copy-icon { color: var(--primary-green); cursor: pointer; padding: 5px; font-size: 20px; } 
 
-    /* Инфо-бокс с номером */
-    .card-info-box { background: var(--card-bg); border: 1px solid var(--border-glass); border-radius: 16px; padding: 20px; margin-bottom: 12px; }
-    .card-number-row { display: flex; justify-content: space-between; align-items: center; }
-    .card-number-text { font-family: 'Courier New', monospace; font-size: 20px; letter-spacing: 2px; color: var(--text-white); font-weight: 600; }
-    .copy-icon { color: var(--primary-green); cursor: pointer; padding: 5px; font-size: 20px; }
+    .toggle-details-btn { width: 100%; background: var(--glass-surface); border: 1px solid var(--border-glass); color: var(--primary-green); padding: 14px; border-radius: 14px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; } 
+    .card-details { margin-top: 10px; background: var(--glass-surface); border-radius: 14px; padding: 5px 20px; display: none; border: 1px solid var(--border-glass); } 
+    .card-details.active { display: block; animation: slideIn 0.3s ease; } 
+    .detail-row { display: flex; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14px; } 
+    .detail-row:last-child { border-bottom: none; } 
 
-    /* Детали */
-    .toggle-details-btn { width: 100%; background: var(--glass-surface); border: 1px solid var(--border-glass); color: var(--primary-green); padding: 14px; border-radius: 14px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
-    .card-details { margin-top: 10px; background: var(--glass-surface); border-radius: 14px; padding: 5px 20px; display: none; border: 1px solid var(--border-glass); }
-    .card-details.active { display: block; animation: slideIn 0.3s ease; }
-    .detail-row { display: flex; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14px; }
-    .detail-row:last-child { border-bottom: none; }
+    .support-footer { margin-top: 30px; text-align: center; padding-bottom: 30px; } 
+    .support-link { color: var(--text-gray); cursor: pointer; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; opacity: 0.7; } 
 
-    /* Нижняя ссылка поддержки */
-    .support-footer { margin-top: 30px; text-align: center; padding-bottom: 30px; }
-    .support-link { color: var(--text-gray); cursor: pointer; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; opacity: 0.7; }
+    #loader { position: fixed; inset: 0; background: var(--bg-dark); display: flex; align-items: center; justify-content: center; z-index: 1000; } 
+    @keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } } 
+  </style> 
+</head> 
+<body> 
+<div id="loader">IZIPAY...</div> 
 
-    #loader { position: fixed; inset: 0; background: var(--bg-dark); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-    @keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-  </style>
-</head>
-<body>
-<div id="loader">IZIPAY...</div>
+<header class="header"> 
+  <div class="logo-text">IZIPAY</div> 
+  <div class="header-actions"> 
+    <div class="support-icon-btn" onclick="openSupport()"> 
+      <i class="ri-customer-service-2-line" style="font-size: 26px;"></i> 
+    </div> 
+    <i class="ri-user-3-line" style="font-size: 26px; color: var(--text-gray);"></i> 
+  </div> 
+</header> 
 
-<header class="header">
-  <div class="logo-text">IZIPAY</div>
-  <div class="header-actions">
-    <div class="support-icon-btn" onclick="openSupport()">
-      <i class="ri-customer-service-2-line" style="font-size: 26px;"></i>
-    </div>
-    <i class="ri-user-3-line" style="font-size: 26px; color: var(--text-gray);"></i>
-  </div>
-</header>
+<div class="balance-section"> 
+  <div class="currency">Total Balance</div> 
+  <div class="balance-amount" id="user-balance">$0.00</div> 
+</div> 
 
-<div class="balance-section">
-  <div class="currency">Total Balance</div>
-  <div class="balance-amount" id="user-balance">$0.00</div>
-</div>
+<div class="card-actions"> 
+  <div class="action-btn" onclick="window.location.href='issue_card.html'"><i class="ri-add-box-fill"></i><span>New Card</span></div> 
+  <div class="action-btn" onclick="window.location.href='top_up.html'"><i class="ri-download-2-fill"></i><span>Top Up</span></div> 
+  <div class="action-btn" onclick="window.location.href='withdraw.html'"><i class="ri-upload-2-fill"></i><span>Withdraw</span></div> 
+  <div class="action-btn" onclick="window.location.href='history.html'"><i class="ri-history-fill"></i><span>History</span></div> 
+</div> 
 
-<div class="card-actions">
-  <div class="action-btn" onclick="window.location.href='issue_card.html'"><i class="ri-add-box-fill"></i><span>New Card</span></div>
-  <div class="action-btn" onclick="window.location.href='top_up.html'"><i class="ri-download-2-fill"></i><span>Top Up</span></div>
-  <div class="action-btn" onclick="window.location.href='withdraw.html'"><i class="ri-upload-2-fill"></i><span>Withdraw</span></div>
-  <div class="action-btn" onclick="window.location.href='history.html'"><i class="ri-history-fill"></i><span>History</span></div>
-</div>
+<div id="card-section" class="card-section"> 
+  <div class="card-visual-wrapper"> 
+    <img src="metalwhitecard.png" class="card-image" alt="Card"> 
+  </div> 
 
-<div id="card-placeholder" style="display: none;" onclick="window.location.href='issue_card.html'">
-    <div class="no-card-box">
-        <i class="ri-bank-card-line"></i>
-        <span>Get your New Virtual Card</span>
-    </div>
-</div>
-  
-<div id="card-section" style="display: none;">
-  <div class="card-visual-wrapper">
-    <img src="metalwhitecard.png" class="card-image" alt="Card">
-  </div>
+  <div class="card-info-box"> 
+    <div class="card-number-row"> 
+      <span class="card-number-text" id="card-num-display">**** **** **** ****</span> 
+      <i class="ri-file-copy-2-line copy-icon" onclick="copyCard()"></i> 
+    </div> 
+  </div> 
 
-  <div class="card-info-box">
-    <div class="card-number-row">
-      <span class="card-number-text" id="card-num-display">**** **** **** ****</span>
-      <i class="ri-file-copy-2-line copy-icon" onclick="copyCard()"></i>
-    </div>
-  </div>
+  <button class="toggle-details-btn" id="toggleBtn" onclick="toggleDetails()"> 
+    <i class="ri-eye-line"></i> View Card Details 
+  </button> 
 
-  <button class="toggle-details-btn" id="toggleBtn" onclick="toggleDetails()">
-    <i class="ri-eye-line"></i> View Card Details
-  </button>
+  <div class="card-details" id="cardDetails"> 
+    <div class="detail-row"><span class="detail-label">CVV</span><span class="detail-value" id="card-cvv-display">***</span></div> 
+    <div class="detail-row"><span class="detail-label">Expiry</span><span class="detail-value" id="card-exp-display">--/--</span></div> 
+    <div class="detail-row"><span class="detail-label">Status</span><span class="detail-value" id="card-status-label" style="color: #10b981;">Active</span></div> 
+  </div> 
+</div> 
 
-  <div class="card-details" id="cardDetails">
-    <div class="detail-row"><span class="detail-label">CVV</span><span class="detail-value" id="card-cvv-display">***</span></div>
-    <div class="detail-row"><span class="detail-label">Expiry</span><span class="detail-value" id="card-exp-display">--/--</span></div>
-    <div class="detail-row"><span class="detail-label">Status</span><span class="detail-value" id="card-status-label">Active</span></div>
-  </div>
-</div>
+<footer class="support-footer"> 
+    <div class="support-link" onclick="openSupport()"> 
+        <i class="ri-questionnaire-line"></i> Support: @izipay_sup 
+    </div> 
+</footer> 
 
-<footer class="support-footer">
-    <div class="support-link" onclick="openSupport()">
-        <i class="ri-questionnaire-line"></i>
-        Contact support: @izipay_sup
-    </div>
-</footer>
+<script> 
+  const firebaseConfig = { 
+    apiKey: "AIzaSyBTpsS1kStrz8EA1EO0F4v3YkdENnxGHsM", 
+    authDomain: "izipay-f1def.firebaseapp.com", 
+    databaseURL: "https://izipay-f1def-default-rtdb.firebaseio.com", 
+    projectId: "izipay-f1def" 
+  }; 
+  firebase.initializeApp(firebaseConfig); 
+  const db = firebase.database(); 
+  const tg = window.Telegram.WebApp; 
+  tg.expand(); 
 
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyBTpsS1kStrz8EA1EO0F4v3YkdENnxGHsM",
-    authDomain: "izipay-f1def.firebaseapp.com",
-    databaseURL: "https://izipay-f1def-default-rtdb.firebaseio.com",
-    projectId: "izipay-f1def"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
-  const tg = window.Telegram.WebApp;
-  tg.expand();
+  function openSupport() { tg.openTelegramLink('https://t.me/izipay_sup'); } 
 
-  // ФУНКЦИЯ ДЛЯ ОТКРЫТИЯ ЛИЧНОГО ЧАТА @izipay_sup
-  function openSupport() {
-    tg.openTelegramLink('https://t.me/izipay_sup');
-  }
+  const userId = tg.initDataUnsafe?.user?.id || "7897252945"; 
 
-  const userId = tg.initDataUnsafe?.user?.id || "7897252945";
+  db.ref('users/' + userId).on('value', (snapshot) => { 
+    document.getElementById('loader').style.display = 'none'; 
+    const data = snapshot.val() || {}; 
 
-  // Логика получения данных из Firebase
-  db.ref('users/' + userId).on('value', (snapshot) => {
-    document.getElementById('loader').style.display = 'none';
-    const data = snapshot.val();
-    if (!data) return;
-
-    document.getElementById('user-balance').textContent = '$' + (data.balance || 0).toLocaleString(undefined, {minimumFractionDigits: 2});
+    // 1. Только баланс
+    document.getElementById('user-balance').textContent = '$' + (data.balance || 0).toLocaleString(undefined, {minimumFractionDigits: 2}); 
     
-    const hasCard = data.status === "active" || data.status === "active";
-    document.getElementById('card-placeholder').style.display = hasCard ? 'none' : 'block';
-    document.getElementById('card-section').style.display = hasCard ? 'block' : 'none';
+    // 2. Только номер карты
+    document.getElementById('card-num-display').textContent = data.card_num || "**** **** **** ****"; 
+    
+    // 3. Только CVV и Дата
+    document.getElementById('card-cvv-display').textContent = data.cvv || "***"; 
+    document.getElementById('card-exp-display').textContent = data.exp || "--/--"; 
 
-    if (hasCard) {
-      document.getElementById('card-num-display').textContent = data.card_num || "**** **** **** ****";
-      document.getElementById('card-cvv-display').textContent = data.cvv || "***";
-      document.getElementById('card-exp-display').textContent = data.exp || "--/--";
-      const statusLabel = document.getElementById('card-status-label');
-      statusLabel.textContent = data.status === "active" ? "On Review" : "Active";
-      statusLabel.style.color = data.status === "active" ? "#facc15" : "#10b981";
-    }
-  });
+    // Статус просто текст, ничего в базе не требует
+    document.getElementById('card-status-label').textContent = "Active"; 
+  }); 
 
-  function toggleDetails() {
-    const details = document.getElementById('cardDetails');
-    details.classList.toggle('active');
-    document.getElementById('toggleBtn').innerHTML = details.classList.contains('active') 
-        ? '<i class="ri-eye-off-line"></i> Hide Details' 
-        : '<i class="ri-eye-line"></i> View Card Details';
-  }
+  function toggleDetails() { 
+    const details = document.getElementById('cardDetails'); 
+    details.classList.toggle('active'); 
+    document.getElementById('toggleBtn').innerHTML = details.classList.contains('active') ? '<i class="ri-eye-off-line"></i> Hide Details' : '<i class="ri-eye-line"></i> View Card Details'; 
+  } 
 
-  function copyCard() {
-    const num = document.getElementById('card-num-display').textContent;
-    if (num.includes('*')) return;
-    navigator.clipboard.writeText(num);
-    tg.HapticFeedback.notificationOccurred('success');
-    tg.showAlert("Number copied!");
-  }
-</script>
-</body>
+  function copyCard() { 
+    const num = document.getElementById('card-num-display').textContent; 
+    if (num.includes('*')) return; 
+    navigator.clipboard.writeText(num); 
+    tg.HapticFeedback.notificationOccurred('success'); 
+    tg.showAlert("Number copied!"); 
+  } 
+</script> 
+</body> 
 </html>
