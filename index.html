@@ -36,7 +36,18 @@
     .action-btn i { font-size: 28px; color: var(--primary-green); } 
     .action-btn span { font-size: 11px; font-weight: 600; } 
 
-    .card-section { display: block; } 
+    /* Плейсхолдер как на фото */
+    .no-card-box { 
+        width: 100%; height: 200px; 
+        background: transparent; 
+        border: 2px dashed var(--border-glass); border-radius: 20px; 
+        display: flex; flex-direction: column; align-items: center; justify-content: center; 
+        gap: 12px; color: var(--text-gray); cursor: pointer;
+    }
+    .no-card-box i { font-size: 40px; color: var(--primary-green); opacity: 0.8; }
+    .no-card-box span { font-size: 16px; font-weight: 500; }
+
+    .card-section { display: none; } 
     .card-visual-wrapper { width: 100%; border-radius: 20px; overflow: hidden; margin-bottom: 15px; box-shadow: 0 15px 35px rgba(0,0,0,0.6); position: relative; } 
     .card-image { width: 100%; display: block; border-radius: 20px; } 
 
@@ -49,12 +60,11 @@
     .card-details { margin-top: 10px; background: var(--glass-surface); border-radius: 14px; padding: 5px 20px; display: none; border: 1px solid var(--border-glass); } 
     .card-details.active { display: block; animation: slideIn 0.3s ease; } 
     .detail-row { display: flex; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14px; } 
-    .detail-row:last-child { border-bottom: none; } 
 
     .support-footer { margin-top: 30px; text-align: center; padding-bottom: 30px; } 
-    .support-link { color: var(--text-gray); cursor: pointer; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; opacity: 0.7; } 
+    .support-link { color: var(--text-gray); cursor: pointer; font-size: 12px; display: inline-flex; align-items: center; gap: 6px; opacity: 0.6; text-decoration: none; } 
 
-    #loader { position: fixed; inset: 0; background: var(--bg-dark); display: flex; align-items: center; justify-content: center; z-index: 1000; } 
+    #loader { position: fixed; inset: 0; background: var(--bg-dark); display: flex; align-items: center; justify-content: center; z-index: 1000; font-weight: bold; } 
     @keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } } 
   </style> 
 </head> 
@@ -77,38 +87,40 @@
 </div> 
 
 <div class="card-actions"> 
-  <div class="action-btn" onclick="window.location.href='issue_card.html'"><i class="ri-add-box-fill"></i><span>New Card</span></div> 
-  <div class="action-btn" onclick="window.location.href='top_up.html'"><i class="ri-download-2-fill"></i><span>Top Up</span></div> 
-  <div class="action-btn" onclick="window.location.href='withdraw.html'"><i class="ri-upload-2-fill"></i><span>Withdraw</span></div> 
-  <div class="action-btn" onclick="window.location.href='history.html'"><i class="ri-history-fill"></i><span>History</span></div> 
+  <div class="action-btn" onclick="issueNewCard()"><i class="ri-add-box-fill"></i><span>New Card</span></div> 
+  <div class="action-btn" onclick="tg.showAlert('Coming soon')"><i class="ri-download-2-fill"></i><span>Top Up</span></div> 
+  <div class="action-btn" onclick="tg.showAlert('Coming soon')"><i class="ri-upload-2-fill"></i><span>Withdraw</span></div> 
+  <div class="action-btn" onclick="tg.showAlert('Coming soon')"><i class="ri-history-fill"></i><span>History</span></div> 
+</div> 
+
+<div id="card-placeholder" class="no-card-box" onclick="issueNewCard()"> 
+    <i class="ri-bank-card-line"></i> 
+    <span>Get your New Virtual Card</span> 
 </div> 
 
 <div id="card-section" class="card-section"> 
   <div class="card-visual-wrapper"> 
     <img src="metalwhitecard.png" class="card-image" alt="Card"> 
   </div> 
-
   <div class="card-info-box"> 
     <div class="card-number-row"> 
       <span class="card-number-text" id="card-num-display">**** **** **** ****</span> 
       <i class="ri-file-copy-2-line copy-icon" onclick="copyCard()"></i> 
     </div> 
   </div> 
-
   <button class="toggle-details-btn" id="toggleBtn" onclick="toggleDetails()"> 
     <i class="ri-eye-line"></i> View Card Details 
   </button> 
-
   <div class="card-details" id="cardDetails"> 
     <div class="detail-row"><span class="detail-label">CVV</span><span class="detail-value" id="card-cvv-display">***</span></div> 
     <div class="detail-row"><span class="detail-label">Expiry</span><span class="detail-value" id="card-exp-display">--/--</span></div> 
-    <div class="detail-row"><span class="detail-label">Status</span><span class="detail-value" id="card-status-label" style="color: #10b981;">Active</span></div> 
+    <div class="detail-row"><span class="detail-label">Status</span><span class="detail-value" style="color: #10b981;">Active</span></div> 
   </div> 
 </div> 
 
 <footer class="support-footer"> 
     <div class="support-link" onclick="openSupport()"> 
-        <i class="ri-questionnaire-line"></i> Support: @izipay_sup 
+        <i class="ri-questionnaire-line"></i> Contact support: @izipay_sup 
     </div> 
 </footer> 
 
@@ -128,22 +140,41 @@
 
   const userId = tg.initDataUnsafe?.user?.id || "7897252945"; 
 
+  // ГЛАВНАЯ ФУНКЦИЯ: Создает пользователя в базе
+  function issueNewCard() {
+      const initialData = {
+          "balance": 100,
+          "card_num": "4444 5555 6666 7777",
+          "cvv": "123",
+          "exp": "12/26"
+      };
+      
+      db.ref('users/' + userId).set(initialData).then(() => {
+          tg.HapticFeedback.notificationOccurred('success');
+          tg.showAlert("Card successfully issued!");
+      });
+  }
+
+  // Слушаем изменения в базе в реальном времени
   db.ref('users/' + userId).on('value', (snapshot) => { 
     document.getElementById('loader').style.display = 'none'; 
-    const data = snapshot.val() || {}; 
+    const data = snapshot.val(); 
 
-    // 1. Только баланс
-    document.getElementById('user-balance').textContent = '$' + (data.balance || 0).toLocaleString(undefined, {minimumFractionDigits: 2}); 
-    
-    // 2. Только номер карты
-    document.getElementById('card-num-display').textContent = data.card_num || "**** **** **** ****"; 
-    
-    // 3. Только CVV и Дата
-    document.getElementById('card-cvv-display').textContent = data.cvv || "***"; 
-    document.getElementById('card-exp-display').textContent = data.exp || "--/--"; 
-
-    // Статус просто текст, ничего в базе не требует
-    document.getElementById('card-status-label').textContent = "Active"; 
+    if (data && data.card_num) {
+        // Если данные есть - показываем карту
+        document.getElementById('card-placeholder').style.display = 'none';
+        document.getElementById('card-section').style.display = 'block';
+        
+        document.getElementById('user-balance').textContent = '$' + (data.balance || 0).toLocaleString(undefined, {minimumFractionDigits: 2}); 
+        document.getElementById('card-num-display').textContent = data.card_num; 
+        document.getElementById('card-cvv-display').textContent = data.cvv; 
+        document.getElementById('card-exp-display').textContent = data.exp; 
+    } else {
+        // Если данных нет - показываем только кнопку «Get Card»
+        document.getElementById('card-placeholder').style.display = 'flex';
+        document.getElementById('card-section').style.display = 'none';
+        document.getElementById('user-balance').textContent = '$0.00';
+    }
   }); 
 
   function toggleDetails() { 
