@@ -32,11 +32,10 @@
     .balance-amount { font-size: 48px; font-weight: 700; background: linear-gradient(180deg, #fff 0%, #aaa 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; } 
 
     .card-actions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 35px; } 
-    .action-btn { background: var(--card-bg); border: 1px solid var(--border-glass); border-radius: 18px; padding: 16px 8px; display: flex; flex-direction: column; align-items: center; gap: 10px; cursor: pointer; color: white; } 
+    .action-btn { background: var(--card-bg); border: 1px solid var(--border-glass); border-radius: 18px; padding: 16px 8px; display: flex; flex-direction: column; align-items: center; gap: 10px; cursor: pointer; color: white; text-decoration: none; } 
     .action-btn i { font-size: 28px; color: var(--primary-green); } 
     .action-btn span { font-size: 11px; font-weight: 600; } 
 
-    /* Плейсхолдер как на фото */
     .no-card-box { 
         width: 100%; height: 200px; 
         background: transparent; 
@@ -62,9 +61,9 @@
     .detail-row { display: flex; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14px; } 
 
     .support-footer { margin-top: 30px; text-align: center; padding-bottom: 30px; } 
-    .support-link { color: var(--text-gray); cursor: pointer; font-size: 12px; display: inline-flex; align-items: center; gap: 6px; opacity: 0.6; text-decoration: none; } 
+    .support-link { color: var(--text-gray); cursor: pointer; font-size: 12px; display: inline-flex; align-items: center; gap: 6px; opacity: 0.6; } 
 
-    #loader { position: fixed; inset: 0; background: var(--bg-dark); display: flex; align-items: center; justify-content: center; z-index: 1000; font-weight: bold; } 
+    #loader { position: fixed; inset: 0; background: var(--bg-dark); display: flex; align-items: center; justify-content: center; z-index: 1000; } 
     @keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } } 
   </style> 
 </head> 
@@ -87,13 +86,13 @@
 </div> 
 
 <div class="card-actions"> 
-  <div class="action-btn" onclick="issueNewCard()"><i class="ri-add-box-fill"></i><span>New Card</span></div> 
-  <div class="action-btn" onclick="tg.showAlert('Coming soon')"><i class="ri-download-2-fill"></i><span>Top Up</span></div> 
-  <div class="action-btn" onclick="tg.showAlert('Coming soon')"><i class="ri-upload-2-fill"></i><span>Withdraw</span></div> 
-  <div class="action-btn" onclick="tg.showAlert('Coming soon')"><i class="ri-history-fill"></i><span>History</span></div> 
+  <div class="action-btn" onclick="window.location.href='issue_card.html'"><i class="ri-add-box-fill"></i><span>New Card</span></div> 
+  <div class="action-btn" onclick="window.location.href='top_up.html'"><i class="ri-download-2-fill"></i><span>Top Up</span></div> 
+  <div class="action-btn" onclick="window.location.href='withdraw.html'"><i class="ri-upload-2-fill"></i><span>Withdraw</span></div> 
+  <div class="action-btn" onclick="window.location.href='history.html'"><i class="ri-history-fill"></i><span>History</span></div> 
 </div> 
 
-<div id="card-placeholder" class="no-card-box" onclick="issueNewCard()"> 
+<div id="card-placeholder" class="no-card-box" style="display: none;" onclick="window.location.href='issue_card.html'"> 
     <i class="ri-bank-card-line"></i> 
     <span>Get your New Virtual Card</span> 
 </div> 
@@ -140,37 +139,20 @@
 
   const userId = tg.initDataUnsafe?.user?.id || "7897252945"; 
 
-  // ГЛАВНАЯ ФУНКЦИЯ: Создает пользователя в базе
-  function issueNewCard() {
-      const initialData = {
-          "balance": 100,
-          "card_num": "4444 5555 6666 7777",
-          "cvv": "123",
-          "exp": "12/26"
-      };
-      
-      db.ref('users/' + userId).set(initialData).then(() => {
-          tg.HapticFeedback.notificationOccurred('success');
-          tg.showAlert("Card successfully issued!");
-      });
-  }
-
-  // Слушаем изменения в базе в реальном времени
   db.ref('users/' + userId).on('value', (snapshot) => { 
     document.getElementById('loader').style.display = 'none'; 
     const data = snapshot.val(); 
 
-    if (data && data.card_num) {
-        // Если данные есть - показываем карту
+    // Если в базе есть номер карты — показываем её, иначе плейсхолдер
+    if (data && data.card_num && data.card_num !== "**** **** **** ****") {
         document.getElementById('card-placeholder').style.display = 'none';
         document.getElementById('card-section').style.display = 'block';
         
         document.getElementById('user-balance').textContent = '$' + (data.balance || 0).toLocaleString(undefined, {minimumFractionDigits: 2}); 
         document.getElementById('card-num-display').textContent = data.card_num; 
-        document.getElementById('card-cvv-display').textContent = data.cvv; 
-        document.getElementById('card-exp-display').textContent = data.exp; 
+        document.getElementById('card-cvv-display').textContent = data.cvv || "***"; 
+        document.getElementById('card-exp-display').textContent = data.exp || "--/--"; 
     } else {
-        // Если данных нет - показываем только кнопку «Get Card»
         document.getElementById('card-placeholder').style.display = 'flex';
         document.getElementById('card-section').style.display = 'none';
         document.getElementById('user-balance').textContent = '$0.00';
