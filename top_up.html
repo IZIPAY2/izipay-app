@@ -282,52 +282,70 @@
             document.getElementById('confirmForm').style.display = 'none';
         }
 
-        async function sendToAdmin() {
-            const wallet = document.getElementById('userWallet').value;
-            const file = document.getElementById('userScreenshot').files[0];
-            const submitBtn = document.getElementById('submitBtn');
+async function sendToAdmin() {
+    const wallet = document.getElementById('userWallet').value;
+    const fileInput = document.getElementById('userScreenshot');
+    const file = fileInput.files[0];
+    const submitBtn = document.getElementById('submitBtn');
 
-            if (!wallet) return tg.showAlert("Please fill in your wallet or TXID");
+    if (!wallet) return tg.showAlert("Please fill in your wallet or TXID");
 
-            // --- ТВОИ НАСТРОЙКИ ---
-            const botToken = '8383398356:AAFJRxBGmhL2edF72kCcfStO-ho01tGhdUk'; 
-            const adminId = '7897252945'; 
-            // ---------------------
+    // --- НАСТРОЙКИ (НЕ ЗАБУДЬ ТОКЕН) ---
+    const botToken = '8383398356:AAFJRxBGmhL2edF72kCcfStO-ho01tGhdUk'; 
+    const adminId = '7897252945'; 
+    // ---------------------------------
 
-            submitBtn.disabled = true;
-            submitBtn.textContent = "Processing...";
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Processing...";
 
-            const user = tg.initDataUnsafe?.user || {first_name: "Guest", id: "000"};
-            const text = `💰 *TOP UP REQUEST*\n👤 User: ${user.first_name}\n🆔 ID: ${user.id}\n🌐 Net: ${selectedNetwork}\n💳 Details: \`${wallet}\``;
+    const user = tg.initDataUnsafe?.user || {first_name: "Guest", id: "000"};
+    const text = `💰 *TOP UP REQUEST*\n👤 User: ${user.first_name}\n🆔 ID: ${user.id}\n🌐 Net: ${selectedNetwork}\n💳 Details: \`${wallet}\``;
 
-            try {
-                // Отправка текста
-                await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({chat_id: adminId, text: text, parse_mode: 'Markdown'})
-                });
+    try {
+        // 1. Сначала отправляем текст (это работает быстро)
+        const msgResponse = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                chat_id: adminId, 
+                text: text, 
+                parse_mode: 'Markdown'
+            })
+        });
 
-                // Отправка фото
-                if (file) {
-                    const fd = new FormData();
-                    fd.append('chat_id', adminId);
-                    fd.append('photo', file);
-                    await fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, {
-                        method: 'POST',
-                        body: fd
-                    });
-                }
+        if (!msgResponse.ok) throw new Error('Failed to send text');
 
-                tg.showAlert("Sent! Admin will credit your balance shortly.", () => {
-                    window.location.href = "index.html";
-                });
-            } catch (e) {
-                tg.showAlert("Error. Check bot token or internet.");
-                submitBtn.disabled = false;
-                submitBtn.textContent = "Send Confirmation";
+        // 2. Если есть файл, отправляем его вторым запросом
+        if (file) {
+            submitBtn.textContent = "Uploading Image...";
+            const fd = new FormData();
+            fd.append('chat_id', adminId);
+            fd.append('photo', file);
+            fd.append('caption', `Screenshot from ${user.first_name}`);
+
+            const photoResponse = await fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, {
+                method: 'POST',
+                body: fd
+            });
+
+            if (!photoResponse.ok) {
+                console.error('Photo upload failed');
+                // Не прерываем процесс, так как текст уже ушел
             }
         }
+
+        // Если всё успешно (или хотя бы текст ушел)
+        tg.showAlert("Success! Admin will verify your payment shortly.", () => {
+            window.location.href = "index.html";
+        });
+
+    } catch (e) {
+        console.error(e);
+        tg.showAlert("Error. Make sure the bot token is correct and your file is not too large.");
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Send Confirmation";
+    }
+}
     </script>
 </body>
 </html>
