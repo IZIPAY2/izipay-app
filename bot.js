@@ -51,7 +51,7 @@ const bot = new TelegramBot(token, { polling: true });
 const adminId = '7897252945';  
 
 bot.onText(/\/start/, (msg) => { 
-    bot.sendMessage(msg.chat.id, 'Welcome to IZIPAY!', { 
+    bot.sendMessage(msg.chat.id, 'Welcome to IZIPAY! Support: @izipay_sup', { 
         reply_markup: { 
             inline_keyboard: [[{ text: 'Open wallet', web_app: { url: 'https://izipay2.github.io/izipay-app/' } }]] 
         } 
