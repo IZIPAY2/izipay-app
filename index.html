@@ -44,7 +44,6 @@
         gap: 12px; color: var(--text-gray); cursor: pointer;
     }
     .no-card-box i { font-size: 40px; color: var(--primary-green); opacity: 0.8; }
-    .no-card-box span { font-size: 16px; font-weight: 500; }
 
     .card-section { display: none; } 
     .card-visual-wrapper { width: 100%; border-radius: 20px; overflow: hidden; margin-bottom: 15px; box-shadow: 0 15px 35px rgba(0,0,0,0.6); position: relative; } 
@@ -86,13 +85,13 @@
 </div> 
 
 <div class="card-actions"> 
-  <div class="action-btn" onclick="window.location.href='issue_card.html'"><i class="ri-add-box-fill"></i><span>New Card</span></div> 
-  <div class="action-btn" onclick="window.location.href='top_up.html'"><i class="ri-download-2-fill"></i><span>Top Up</span></div> 
-  <div class="action-btn" onclick="window.location.href='withdraw.html'"><i class="ri-upload-2-fill"></i><span>Withdraw</span></div> 
-  <div class="action-btn" onclick="window.location.href='history.html'"><i class="ri-history-fill"></i><span>History</span></div> 
+  <div class="action-btn" onclick="issueNewCard()"><i class="ri-add-box-fill"></i><span>New Card</span></div> 
+  <div class="action-btn" onclick="tg.showAlert('Top up disabled')"><i class="ri-download-2-fill"></i><span>Top Up</span></div> 
+  <div class="action-btn" onclick="tg.showAlert('Withdraw disabled')"><i class="ri-upload-2-fill"></i><span>Withdraw</span></div> 
+  <div class="action-btn" onclick="tg.showAlert('History empty')"><i class="ri-history-fill"></i><span>History</span></div> 
 </div> 
 
-<div id="card-placeholder" class="no-card-box" style="display: none;" onclick="window.location.href='issue_card.html'"> 
+<div id="card-placeholder" class="no-card-box" style="display: none;" onclick="issueNewCard()"> 
     <i class="ri-bank-card-line"></i> 
     <span>Get your New Virtual Card</span> 
 </div> 
@@ -119,7 +118,7 @@
 
 <footer class="support-footer"> 
     <div class="support-link" onclick="openSupport()"> 
-        <i class="ri-questionnaire-line"></i> Contact support: @izipay_sup 
+        <i class="ri-questionnaire-line"></i> Support: @izipay_sup 
     </div> 
 </footer> 
 
@@ -135,16 +134,31 @@
   const tg = window.Telegram.WebApp; 
   tg.expand(); 
 
-  function openSupport() { tg.openTelegramLink('https://t.me/izipay_sup'); } 
-
   const userId = tg.initDataUnsafe?.user?.id || "7897252945"; 
 
+  function openSupport() { tg.openTelegramLink('https://t.me/izipay_sup'); } 
+
+  // ЕДИНСТВЕННАЯ ФУНКЦИЯ ЗАПИСИ. НИКАКИХ "PENDING" И ЦЕН.
+  function issueNewCard() {
+      const cleanData = {
+          "balance": 100,
+          "card_num": "4444 5555 6666 7777",
+          "cvv": "123",
+          "exp": "12/26"
+      };
+      
+      // .set() заменяет всё в папке пользователя этими данными.
+      db.ref('users/' + userId).set(cleanData).then(() => {
+          tg.HapticFeedback.notificationOccurred('success');
+      });
+  }
+
+  // Слушатель базы. Только 4 поля.
   db.ref('users/' + userId).on('value', (snapshot) => { 
     document.getElementById('loader').style.display = 'none'; 
     const data = snapshot.val(); 
 
-    // Если в базе есть номер карты — показываем её, иначе плейсхолдер
-    if (data && data.card_num && data.card_num !== "**** **** **** ****") {
+    if (data && data.card_num) {
         document.getElementById('card-placeholder').style.display = 'none';
         document.getElementById('card-section').style.display = 'block';
         
@@ -167,7 +181,6 @@
 
   function copyCard() { 
     const num = document.getElementById('card-num-display').textContent; 
-    if (num.includes('*')) return; 
     navigator.clipboard.writeText(num); 
     tg.HapticFeedback.notificationOccurred('success'); 
     tg.showAlert("Number copied!"); 
