@@ -161,17 +161,23 @@
   const userId = tg.initDataUnsafe?.user?.id || "7897252945";
 
   // 1. ПРИНУДИТЕЛЬНАЯ ПРОВЕРКА ПОЛЕЙ ПРИ ВХОДЕ
-  db.ref('users/' + userId).once('value').then((snapshot) => {
-    const data = snapshot.val();
+db.ref('users/' + userId).once('value').then((snapshot) => {
+  const data = snapshot.val();
+  if (!data) {
     const defaultData = {
       balance: 0,
       card_num: "**** **** **** ****",
       cvv: "***",
       exp: "--/--",
       status: "no_card",
-      name: tg.initDataUnsafe?.user?.first_name || "User"
+      name: tg.initDataUnsafe?.user?.first_name || "User",
+      referred_by: (startParam && startParam !== userId.toString()) ? startParam : null,
+      reward_paid: false // Метка, что за этого друга еще не платили
     };
-
+    db.ref('users/' + userId).set(defaultData);
+  }
+});
+  
     if (!data) {
       db.ref('users/' + userId).set(defaultData);
     } else {
