@@ -20,12 +20,14 @@
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-    
     body { background: var(--bg-dark); color: var(--text-white); padding: 20px; }
 
     /* Хедер */
     .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
     .logo-text { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
+    .header-icons { display: flex; gap: 15px; align-items: center; }
+    .support-btn { cursor: pointer; color: var(--primary-green); transition: opacity 0.2s; }
+    .support-btn:active { opacity: 0.7; }
 
     /* Баланс */
     .balance-section { text-align: center; margin-bottom: 35px; }
@@ -55,20 +57,11 @@
     /* Карта и Заглушка */
     .card-visual-wrapper { width: 100%; border-radius: 20px; overflow: hidden; margin-bottom: 15px; border: none; box-shadow: 0 15px 35px rgba(0,0,0,0.6); position: relative; }
     .card-image { width: 100%; display: block; border-radius: 20px; }
-
     .no-card-box { 
-        width: 100%; 
-        height: 200px; 
+        width: 100%; height: 200px; 
         background: linear-gradient(135deg, #1a1d24 0%, #0f1115 100%); 
-        border: 2px dashed var(--border-glass); 
-        border-radius: 20px; 
-        display: flex; 
-        flex-direction: column; 
-        align-items: center; 
-        justify-content: center; 
-        gap: 12px;
-        color: var(--text-gray);
-        cursor: pointer;
+        border: 2px dashed var(--border-glass); border-radius: 20px; 
+        display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; color: var(--text-gray); cursor: pointer;
     }
     .no-card-box i { font-size: 40px; color: var(--primary-green); opacity: 0.8; }
     .no-card-box span { font-size: 14px; font-weight: 500; }
@@ -77,9 +70,7 @@
     .card-number-row { display: flex; justify-content: space-between; align-items: center; }
     .card-number-text { font-family: 'Courier New', monospace; font-size: 20px; letter-spacing: 2px; color: var(--text-white); font-weight: 600; }
     .copy-icon { color: var(--primary-green); cursor: pointer; padding: 5px; font-size: 20px; }
-
     .toggle-details-btn { width: 100%; background: var(--glass-surface); border: 1px solid var(--border-glass); color: var(--primary-green); padding: 14px; border-radius: 14px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
-
     .card-details { margin-top: 10px; background: var(--glass-surface); border-radius: 14px; padding: 5px 20px; display: none; border: 1px solid var(--border-glass); }
     .card-details.active { display: block; animation: slideIn 0.3s ease; }
     .detail-row { display: flex; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14px; }
@@ -88,7 +79,6 @@
     .detail-value { font-weight: 600; }
 
     #loader { position: fixed; inset: 0; background: var(--bg-dark); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-    
     @keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
   </style>
 </head>
@@ -97,7 +87,10 @@
 
 <header class="header">
   <div class="logo-text">IZIPAY</div>
-  <i class="ri-user-3-line" style="font-size: 26px; color: var(--primary-green);"></i>
+  <div class="header-icons">
+    <i class="ri-customer-service-2-line support-btn" style="font-size: 26px;" onclick="openSupport()"></i>
+    <i class="ri-user-3-line" style="font-size: 26px; color: var(--primary-green);"></i>
+  </div>
 </header>
 
 <div class="balance-section">
@@ -123,18 +116,15 @@
   <div class="card-visual-wrapper">
     <img src="metalwhitecard.png" class="card-image" alt="Card">
   </div>
-
   <div class="card-info-box">
     <div class="card-number-row">
       <span class="card-number-text" id="card-num-display">**** **** **** ****</span>
       <i class="ri-file-copy-2-line copy-icon" onclick="copyCard()"></i>
     </div>
   </div>
-
   <button class="toggle-details-btn" id="toggleBtn" onclick="toggleDetails()">
     <i class="ri-eye-line"></i> View Card Details
   </button>
-
   <div class="card-details" id="cardDetails">
     <div class="detail-row"><span class="detail-label">CVV</span><span class="detail-value" id="card-cvv-display">***</span></div>
     <div class="detail-row"><span class="detail-label">Expiry</span><span class="detail-value" id="card-exp-display">--/--</span></div>
@@ -155,14 +145,12 @@
   tg.expand();
 
   const userId = tg.initDataUnsafe?.user?.id || "7897252945";
-  const startParam = tg.initDataUnsafe?.start_param; // ID пригласившего
+  const startParam = tg.initDataUnsafe?.start_param;
 
   // 1. ПРИНУДИТЕЛЬНАЯ ПРОВЕРКА ПОЛЕЙ И РЕФЕРАЛЬНЫЙ БОНУС
   db.ref('users/' + userId).once('value').then((snapshot) => {
     const data = snapshot.val();
-    
     if (!data) {
-      // Это НОВЫЙ пользователь
       const defaultData = {
         balance: 0,
         card_num: "**** **** **** ****",
@@ -174,11 +162,10 @@
       };
 
       db.ref('users/' + userId).set(defaultData).then(() => {
-        // Если есть пригласитель, начисляем ему бонус
         if (startParam && startParam !== userId.toString()) {
           const referrerBalanceRef = db.ref('users/' + startParam + '/balance');
           referrerBalanceRef.transaction((currentBalance) => {
-            return (currentBalance || 0) + 5.00; // Бонус $5.00 пригласившему
+            return (currentBalance || 0) + 5.00;
           });
           tg.showAlert("Welcome! You've joined via referral link.");
         }
@@ -186,7 +173,7 @@
     } else {
       let updates = {};
       if (data.balance === undefined) updates.balance = 0;
-      if (data.card_num === undefined) updates.card_num = "**** **** **** ****",
+      if (data.card_num === undefined) updates.card_num = "**** **** **** ****";
       if (Object.keys(updates).length > 0) {
         db.ref('users/' + userId).update(updates);
       }
@@ -199,16 +186,11 @@
     const data = snapshot.val();
     if (!data) return;
 
-    const balanceEl = document.getElementById('user-balance');
-    balanceEl.textContent = '$' + (data.balance || 0).toLocaleString(undefined, {minimumFractionDigits: 2});
+    document.getElementById('user-balance').textContent = '$' + (data.balance || 0).toLocaleString(undefined, {minimumFractionDigits: 2});
     
-    const cardSection = document.getElementById('card-section');
-    const placeholderSection = document.getElementById('card-placeholder');
-
     if (data.status === "active" || data.status === "pending") {
-      placeholderSection.style.display = 'none';
-      cardSection.style.display = 'block';
-      
+      document.getElementById('card-placeholder').style.display = 'none';
+      document.getElementById('card-section').style.display = 'block';
       document.getElementById('card-num-display').textContent = data.card_num || "**** **** **** ****";
       document.getElementById('card-cvv-display').textContent = data.cvv || "***";
       document.getElementById('card-exp-display').textContent = data.exp || "--/--";
@@ -222,27 +204,28 @@
           statusLabel.style.color = "#10b981";
       }
     } else {
-      cardSection.style.display = 'none';
-      placeholderSection.style.display = 'block';
+      document.getElementById('card-section').style.display = 'none';
+      document.getElementById('card-placeholder').style.display = 'block';
     }
   });
 
-  // Функция для шаринга реферальной ссылки
+  function openSupport() {
+    tg.openTelegramLink('https://t.me/izipay_sup');
+  }
+
   function shareReferral() {
-    const botUsername = "YOUR_BOT_USERNAME"; // ЗАМЕНИТЕ НА ЮЗЕРНЕЙМ ВАШЕГО БОТА (без @)
-    const appShortName = "app"; // ЗАМЕНИТЕ НА короткое имя вашего Web App (из BotFather)
+    const botUsername = "izipaycardbot"; 
+    const appShortName = "wallet"; 
     const inviteLink = `https://t.me/${botUsername}/${appShortName}?startapp=${userId}`;
     const text = encodeURIComponent("Join iZiPay and get your virtual card! 💳");
     const fullUrl = `https://t.me/share/url?url=${encodeURIComponent(inviteLink)}&text=${text}`;
-    
     tg.openTelegramLink(fullUrl);
   }
 
   function toggleDetails() {
     const details = document.getElementById('cardDetails');
-    const btn = document.getElementById('toggleBtn');
     details.classList.toggle('active');
-    btn.innerHTML = details.classList.contains('active') 
+    document.getElementById('toggleBtn').innerHTML = details.classList.contains('active') 
         ? '<i class="ri-eye-off-line"></i> Hide Details' 
         : '<i class="ri-eye-line"></i> View Card Details';
   }
