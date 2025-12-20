@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>iZiPay Referral Program</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0f1115;
+      --card-bg: #1a1d24;
+      --primary-green: #638576;
+      --text-white: #ffffff;
+      --text-gray: #9ca3af;
+      --border-glass: rgba(255, 255, 255, 0.12);
+      --glass-surface: rgba(255, 255, 255, 0.05);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+    body { background: var(--bg-dark); color: var(--text-white); padding: 20px; }
+
+    .header { display: flex; align-items: center; gap: 15px; margin-bottom: 30px; }
+    .back-btn { font-size: 24px; color: var(--text-white); cursor: pointer; }
+    .page-title { font-size: 20px; font-weight: 700; }
+
+    .bonus-card {
+      background: linear-gradient(135deg, var(--primary-green) 0%, #3e584d 100%);
+      border-radius: 20px; padding: 25px; text-align: center; margin-bottom: 25px;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+    }
+    .bonus-title { font-size: 14px; opacity: 0.8; margin-bottom: 5px; }
+    .bonus-amount { font-size: 32px; font-weight: 800; }
+
+    .info-box { background: var(--card-bg); border: 1px solid var(--border-glass); border-radius: 18px; padding: 20px; margin-bottom: 20px; }
+    .info-title { font-size: 15px; font-weight: 600; margin-bottom: 10px; color: var(--primary-green); }
+    .info-text { font-size: 13px; color: var(--text-gray); line-height: 1.5; }
+
+    .ref-link-box {
+      background: var(--glass-surface); border: 1px dashed var(--border-glass);
+      border-radius: 12px; padding: 12px; display: flex; justify-content: space-between; align-items: center; margin-top: 15px;
+    }
+    .ref-url { font-size: 12px; color: var(--text-gray); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 80%; }
+    .copy-btn { color: var(--primary-green); font-weight: 600; cursor: pointer; font-size: 14px; }
+
+    .invite-btn {
+      width: 100%; background: var(--text-white); color: var(--bg-dark); border: none;
+      padding: 16px; border-radius: 16px; font-weight: 700; font-size: 16px;
+      cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 30px;
+    }
+
+    .friends-list-title { font-size: 16px; font-weight: 700; margin-bottom: 15px; }
+    .friend-item {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 15px 0; border-bottom: 1px solid var(--border-glass);
+    }
+    .friend-info { display: flex; align-items: center; gap: 12px; }
+    .friend-avatar { width: 40px; height: 40px; background: var(--glass-surface); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--primary-green); }
+    .friend-name { font-size: 14px; font-weight: 600; }
+    .friend-bonus { color: #10b981; font-size: 14px; font-weight: 700; }
+
+    #empty-state { text-align: center; color: var(--text-gray); padding: 40px 0; font-size: 14px; }
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <i class="ri-arrow-left-line back-btn" onclick="window.location.href='index.html'"></i>
+  <span class="page-title">Referral Program</span>
+</header>
+
+<div class="bonus-card">
+  <div class="bonus-title">Total Earned</div>
+  <div class="bonus-amount" id="total-earned">$0.00</div>
+</div>
+
+<div class="info-box">
+  <div class="info-title">How it works</div>
+  <div class="info-text">Invite your friends to iZiPay and get <b>$5.00</b> for every friend who issues a new virtual card. Your friend also gets a welcome bonus!</div>
+  
+  <div class="ref-link-box">
+    <span class="ref-url" id="ref-link">t.me/izipaycardbot/wallet?startapp=...</span>
+    <span class="copy-btn" onclick="copyLink()">Copy</span>
+  </div>
+</div>
+
+<button class="invite-btn" onclick="inviteFriend()">
+  <i class="ri-user-add-line"></i> Invite Friend
+</button>
+
+<div class="friends-list-title">My Friends</div>
+<div id="friends-container">
+  <div id="empty-state">You haven't invited anyone yet.</div>
+</div>
+
+<script>
+  // Конфигурация Firebase та же самая
+  const firebaseConfig = {
+    apiKey: "AIzaSyBTpsS1kStrz8EA1EO0F4v3YkdENnxGHsM",
+    authDomain: "izipay-f1def.firebaseapp.com",
+    databaseURL: "https://izipay-f1def-default-rtdb.firebaseio.com",
+    projectId: "izipay-f1def"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+  const tg = window.Telegram.WebApp;
+  tg.expand();
+
+  const userId = tg.initDataUnsafe?.user?.id || "7897252945";
+  const botUsername = "izipaycardbot"; 
+  const appShortName = "wallet"; 
+  const refLink = `https://t.me/${botUsername}/${appShortName}?startapp=${userId}`;
+
+  // Показываем ссылку в интерфейсе
+  document.getElementById('ref-link').innerText = refLink;
+
+  // Загружаем данные о бонусах (предполагаем, что вы храните общую сумму реф. дохода)
+  db.ref('users/' + userId).on('value', (snapshot) => {
+    const data = snapshot.val();
+    if (data && data.referral_earnings) {
+        document.getElementById('total-earned').innerText = '$' + data.referral_earnings.toLocaleString(undefined, {minimumFractionDigits: 2});
+    }
+  });
+
+  // Логика приглашения через нативное окно Telegram
+  function inviteFriend() {
+    const text = encodeURIComponent("Join iZiPay and get your virtual card with a bonus! 💳");
+    const fullUrl = `https://t.me/share/url?url=${encodeURIComponent(refLink)}&text=${text}`;
+    tg.openTelegramLink(fullUrl);
+  }
+
+  function copyLink() {
+    navigator.clipboard.writeText(refLink);
+    tg.HapticFeedback.notificationOccurred('success');
+    tg.showAlert("Referral link copied!");
+  }
+
+  // Здесь можно добавить код для загрузки списка друзей из отдельной ветки БД, 
+  // если вы будете записывать ID друзей в users/userId/friends
+</script>
+
+</body>
+</html>
