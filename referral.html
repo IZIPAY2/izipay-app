@@ -22,7 +22,7 @@
     body { background: var(--bg-dark); color: var(--text-white); padding: 20px; }
 
     .header { display: flex; align-items: center; gap: 15px; margin-bottom: 30px; }
-    .back-btn { font-size: 24px; color: var(--text-white); cursor: pointer; }
+    .back-btn { font-size: 24px; color: var(--text-white); cursor: pointer; border: none; background: none; }
     .page-title { font-size: 20px; font-weight: 700; }
 
     .bonus-card {
@@ -58,6 +58,7 @@
     .friend-info { display: flex; align-items: center; gap: 12px; }
     .friend-avatar { width: 40px; height: 40px; background: var(--glass-surface); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--primary-green); }
     .friend-name { font-size: 14px; font-weight: 600; }
+    .friend-status { font-size: 10px; color: var(--text-gray); }
     .friend-bonus { color: #10b981; font-size: 14px; font-weight: 700; }
 
     #empty-state { text-align: center; color: var(--text-gray); padding: 40px 0; font-size: 14px; }
@@ -66,7 +67,7 @@
 <body>
 
 <header class="header">
-  <i class="ri-arrow-left-line back-btn" onclick="window.location.href='index.html'"></i>
+  <button class="back-btn" onclick="window.location.href='index.html'"><i class="ri-arrow-left-line"></i></button>
   <span class="page-title">Referral Program</span>
 </header>
 
@@ -95,7 +96,6 @@
 </div>
 
 <script>
-  // Конфигурация Firebase та же самая
   const firebaseConfig = {
     apiKey: "AIzaSyBTpsS1kStrz8EA1EO0F4v3YkdENnxGHsM",
     authDomain: "izipay-f1def.firebaseapp.com",
@@ -112,10 +112,10 @@
   const appShortName = "wallet"; 
   const refLink = `https://t.me/${botUsername}/${appShortName}?startapp=${userId}`;
 
-  // Показываем ссылку в интерфейсе
+  // Отображение реферальной ссылки
   document.getElementById('ref-link').innerText = refLink;
 
-  // Загружаем данные о бонусах (предполагаем, что вы храните общую сумму реф. дохода)
+  // Загрузка общей суммы заработка
   db.ref('users/' + userId).on('value', (snapshot) => {
     const data = snapshot.val();
     if (data && data.referral_earnings) {
@@ -123,7 +123,33 @@
     }
   });
 
-  // Логика приглашения через нативное окно Telegram
+  // Загрузка и отображение списка друзей
+  const friendsContainer = document.getElementById('friends-container');
+
+  db.ref('users/' + userId + '/friends').on('value', (snapshot) => {
+      const friends = snapshot.val();
+      if (friends) {
+          friendsContainer.innerHTML = ''; // Очистка контейнера
+          Object.values(friends).forEach(friend => {
+              const div = document.createElement('div');
+              div.className = 'friend-item';
+              div.innerHTML = `
+                  <div class="friend-info">
+                      <div class="friend-avatar"><i class="ri-user-heart-line"></i></div>
+                      <div>
+                          <div class="friend-name">${friend.name || 'Friend'}</div>
+                          <div class="friend-status">${friend.status || 'Registered'}</div>
+                      </div>
+                  </div>
+                  <div class="friend-bonus">+$${(friend.bonus || 0).toFixed(2)}</div>
+              `;
+              friendsContainer.appendChild(div);
+          });
+      } else {
+          friendsContainer.innerHTML = '<div id="empty-state">You haven\'t invited anyone yet.</div>';
+      }
+  });
+
   function inviteFriend() {
     const text = encodeURIComponent("Join iZiPay and get your virtual card with a bonus! 💳");
     const fullUrl = `https://t.me/share/url?url=${encodeURIComponent(refLink)}&text=${text}`;
@@ -135,9 +161,6 @@
     tg.HapticFeedback.notificationOccurred('success');
     tg.showAlert("Referral link copied!");
   }
-
-  // Здесь можно добавить код для загрузки списка друзей из отдельной ветки БД, 
-  // если вы будете записывать ID друзей в users/userId/friends
 </script>
 
 </body>
