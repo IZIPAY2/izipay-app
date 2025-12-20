@@ -66,6 +66,7 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
         const tg = window.Telegram.WebApp;
+        const userId = tg.initDataUnsafe?.user?.id || "7897252945";
 
         let selected = { type: 'Regular Virtual', price: 39.99 };
 
@@ -75,57 +76,70 @@
             el.classList.add('active');
         }
 
+        // ЭТА ФУНКЦИЯ ВЫЗЫВАЕТСЯ, КОГДА ВЫ ПРОПИСЫВАЕТЕ НОМЕР КАРТЫ В БАЗУ
+        function completeCardIssue(newCardNumber) {
+            const userRef = db.ref('users/' + userId);
+
+            userRef.once('value').then((snapshot) => {
+                const userData = snapshot.val();
+                if (!userData) return;
+
+                // Если у пользователя есть пригласитель и бонус еще не платили
+                if (userData.referred_by && userData.reward_paid === false) {
+                    const referrerId = userData.referred_by;
+
+                    // 1. Начисляем $5.00 пригласившему
+                    db.ref('users/' + referrerId + '/balance').transaction((curr) => (curr || 0) + 5.00);
+                    db.ref('users/' + referrerId + '/referral_earnings').transaction((curr) => (curr || 0) + 5.00);
+
+                    // 2. Добавляем в список друзей пригласившего
+                    db.ref('users/' + referrerId + '/friends').push({
+                        name: userData.name || "Friend",
+                        status: "Card Issued",
+                        bonus: 5.00,
+                        date: Date.now()
+                    });
+
+                    // 3. Обновляем статус и ставим метку оплаты бонуса
+                    userRef.update({ 
+                        reward_paid: true,
+                        card_num: newCardNumber, 
+                        status: "active" 
+                    });
+                } else {
+                    // Просто обновляем карту
+                    userRef.update({ 
+                        card_num: newCardNumber,
+                        status: "active" 
+                    });
+                }
+            });
+        }
+
+        // ЛОГИКА КНОПКИ "CONTINUE TO PAYMENT"
         function proceed() {
             const btn = document.getElementById('proceedBtn');
             btn.disabled = true;
             btn.innerText = "Processing...";
 
-            const userId = tg.initDataUnsafe?.user?.id || "7897252945";
             const userName = tg.initDataUnsafe?.user?.first_name || "User";
             const userRef = db.ref('users/' + userId);
 
-            userRef.once('value').then((snapshot) => {
-                const userData = snapshot.val() || {};
+            // Просто создаем запрос на оплату (без начисления бонуса на этом этапе)
+            const updateData = {
+                pending_request: selected.type,
+                request_price: selected.price,
+                status: "pending",
+                name: userName,
+                last_update: Date.now()
+            };
 
-                // 1. Возвращаем поля для бота и статус pending
-                const updateData = {
-                    pending_request: selected.type,
-                    request_price: selected.price,
-                    status: "pending",
-                    name: userName,
-                    last_update: Date.now()
-                };
-
-                userRef.update(updateData).then(() => {
-                    
-                    // 2. РЕФЕРАЛЬНАЯ ЛОГИКА
-                    if (userData.referred_by && userData.reward_paid !== true) {
-                        const referrerId = userData.referred_by;
-                        
-                        // Начисляем бонус пригласившему
-                        db.ref('users/' + referrerId + '/balance').transaction((curr) => (curr || 0) + 5.00);
-                        db.ref('users/' + referrerId + '/referral_earnings').transaction((curr) => (curr || 0) + 5.00);
-                        
-                        // Добавляем запись в список друзей
-                        db.ref('users/' + referrerId + '/friends').push({
-                            name: userName,
-                            status: "Card Ordered",
-                            bonus: 5.00,
-                            date: Date.now()
-                        });
-
-                        // Помечаем, что бонус за этого юзера выплачен
-                        userRef.update({ reward_paid: true });
-                    }
-
-                    // 3. Переход на страницу оплаты
-                    window.location.href = "top_up.html";
-
-                }).catch(err => {
-                    alert("Error: " + err.message);
-                    btn.disabled = false;
-                    btn.innerText = "Continue to Payment";
-                });
+            userRef.update(updateData).then(() => {
+                window.location.href = "top_up.html";
+            }).catch(err => {
+                alert("Error: " + err.message);
+                btn.disabled = false;
+                btn.innerText = "Continue to Payment";
             });
         }
     </script>
