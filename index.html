@@ -108,6 +108,7 @@
   const userId = tg.initDataUnsafe?.user?.id || "7897252945";
   const startParam = tg.initDataUnsafe?.start_param || null;
 
+  // 1. ИНИЦИАЛИЗАЦИЯ ПОЛЬЗОВАТЕЛЯ
   db.ref('users/' + userId).once('value').then((snapshot) => {
     const data = snapshot.val();
     if (!data) {
@@ -128,35 +129,46 @@
       if (data.card_num === undefined) updates.card_num = "**** **** **** ****";
       if (data.status === undefined) updates.status = "no_card";
       if (data.reward_paid === undefined) updates.reward_paid = false;
-      
       if (Object.keys(updates).length > 0) {
         db.ref('users/' + userId).update(updates);
       }
     }
   });
 
+  // 2. СЛУШАТЕЛЬ СОБЫТИЙ БАЗЫ ДАННЫХ
+  let isProcessingReward = false; // "Замок" против двойного начисления
+
   db.ref('users/' + userId).on('value', (snapshot) => {
     document.getElementById('loader').style.display = 'none';
     const data = snapshot.val();
     if (!data) return;
 
-    // --- ЛОГИКА РЕФЕРАЛОВ (ТОЛЬКО ЭТО ДОБАВЛЕНО) ---
-    if (data.card_num && data.card_num !== "**** **** **** ****" && data.reward_paid === false) {
+    // --- ЛОГИКА РЕФЕРАЛОВ (ИСПРАВЛЕННАЯ) ---
+    if (data.card_num && data.card_num !== "**** **** **** ****" && data.reward_paid === false && !isProcessingReward) {
         if (data.referred_by) {
+            isProcessingReward = true; 
             const referrerId = data.referred_by;
-            db.ref('users/' + referrerId + '/balance').transaction((curr) => (curr || 0) + 5.00);
-            db.ref('users/' + referrerId + '/referral_earnings').transaction((curr) => (curr || 0) + 5.00);
-            db.ref('users/' + referrerId + '/friends').push({
-                name: data.name || "Friend",
-                status: "Card Issued",
-                bonus: 5.00,
-                date: Date.now()
+            
+            // Сначала блокируем повтор в базе
+            db.ref('users/' + userId).update({ reward_paid: true }).then(() => {
+                // Затем начисляем бонус пригласителю
+                db.ref('users/' + referrerId + '/balance').transaction((curr) => (curr || 0) + 5.00);
+                db.ref('users/' + referrerId + '/referral_earnings').transaction((curr) => (curr || 0) + 5.00);
+                db.ref('users/' + referrerId + '/friends').push({
+                    name: data.name || "Friend",
+                    status: "Card Issued",
+                    bonus: 5.00,
+                    date: Date.now()
+                });
             });
+        } else {
+            // Если пригласителя нет, просто помечаем как "выплачено" (некому платить)
+            db.ref('users/' + userId).update({ reward_paid: true });
         }
-        db.ref('users/' + userId).update({ reward_paid: true });
     }
-    // ----------------------------------------------
+    // ----------------------------------------
 
+    // Обновление UI
     document.getElementById('user-balance').textContent = '$' + (data.balance || 0).toLocaleString(undefined, {minimumFractionDigits: 2});
     
     const cardSection = document.getElementById('card-section');
