@@ -64,36 +64,16 @@
             background: #f9fafb;
             border: 1px solid var(--border-light);
             border-radius: 20px;
-            padding: 20px;
+            padding: 30px 20px;
             margin-bottom: 24px;
             text-align: center;
         }
 
         .price-tag {
-            font-size: 32px;
+            font-size: 36px;
             font-weight: 700;
             color: var(--text-dark);
-            margin: 10px 0;
-        }
-
-        .fee-details {
-            font-size: 13px;
-            color: var(--text-gray);
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            text-align: left;
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px solid var(--border-light);
-        }
-
-        .fee-row { display: flex; justify-content: space-between; }
-        
-        .total-to-pay {
-            font-weight: 700;
-            font-size: 16px;
-            color: var(--primary-green);
+            margin: 5px 0;
         }
 
         .crypto-grid { display: flex; flex-direction: column; gap: 12px; margin: 20px 0; }
@@ -112,6 +92,8 @@
 
         .crypto-item.active { border: 2px solid var(--primary-green); background: #f0fdf4; }
         .crypto-icon { width: 32px; height: 32px; }
+        .crypto-info b { display: block; font-size: 15px; }
+        .crypto-info small { color: var(--text-gray); font-size: 12px; }
 
         .address-box {
             background: var(--bg-dark);
@@ -121,6 +103,7 @@
             display: none;
             margin-top: 10px;
             margin-bottom: 30px;
+            animation: fadeIn 0.3s ease;
         }
 
         .addr-val {
@@ -149,66 +132,71 @@
         .input-group { margin-bottom: 18px; }
         .input-group label { display: block; font-size: 12px; color: var(--text-gray); margin-bottom: 8px; font-weight: 600; }
         .input-group input { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--border-light); background: #f9fafb; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
     <div class="mobile-header">
         <a href="index.html" class="back-btn"><i class="ri-arrow-left-line"></i></a>
-        <h1 style="font-size: 18px;">Card Issuance</h1>
+        <h1 style="font-size: 18px;">Order Card</h1>
         <div style="width:40px"></div>
     </div>
 
     <div class="content-sheet">
         <div id="main-view">
             <div class="payment-summary">
-                <div style="font-size: 14px; color: var(--text-gray);">Fixed Card Price</div>
+                <div style="font-size: 14px; color: var(--text-gray); font-weight: 500;">Card Issuance Fee</div>
                 <div class="price-tag">$39.99</div>
-                
-                <div class="fee-details" id="feeCalculator" style="display: none;">
-                    <div class="fee-row">
-                        <span>Service Fee (2%)</span>
-                        <span id="serviceFeeText">$0.80</span>
-                    </div>
-                    <div class="fee-row">
-                        <span>Network Fee</span>
-                        <span id="networkFeeText">$0.00</span>
-                    </div>
-                    <div class="fee-row" style="margin-top: 5px; padding-top: 5px; border-top: 1px dashed #ddd;">
-                        <span style="color: var(--text-dark); font-weight: 600;">Total to Send:</span>
-                        <span id="finalToPay" class="total-to-pay">$0.00</span>
-                    </div>
-                </div>
-                <div id="selectPrompt" style="font-size: 12px; color: var(--text-gray); margin-top: 10px;">
-                    Please select a network to calculate final amount
-                </div>
+                <div style="font-size: 12px; color: var(--text-gray); margin-top: 5px;">One-time payment</div>
             </div>
 
-            <h3 style="font-size: 16px;">Select Payment Network</h3>
+            <h3 style="font-size: 16px; margin-bottom: 15px;">Choose Payment Method</h3>
             <div class="crypto-grid">
-                <div class="crypto-item" onclick="selectCrypto('Bitcoin', 'bc1qrs8d7pckelsnlsl900s9m4adyaj8z7x4kdk7de', 'dynamic_btc', this)">
+                <div class="crypto-item" onclick="selectCrypto('Bitcoin', 'bc1qrs8d7pckelsnlsl900s9m4adyaj8z7x4kdk7de', this)">
                     <img src="https://cryptologos.cc/logos/bitcoin-btc-logo.png" class="crypto-icon">
-                    <div class="crypto-info"><b>Bitcoin</b><small>Fee: 1%</small></div>
+                    <div class="crypto-info"><b>Bitcoin</b><small>BTC Network</small></div>
                 </div>
                 
-                <div class="crypto-item" onclick="selectCrypto('Tether (TRC20)', 'TFtGBVYi99XEruhbvxq5bRcbm63aZe9ecR', 2.80, this)">
+                <div class="crypto-item" onclick="selectCrypto('Ethereum', '0xB6D25D305B4Bf38C83DD67bC63Bd2562CE6Fd442', this)">
+                    <img src="https://cryptologos.cc/logos/ethereum-eth-logo.png" class="crypto-icon">
+                    <div class="crypto-info"><b>Ethereum</b><small>ERC-20</small></div>
+                </div>
+
+                <div class="crypto-item" onclick="selectCrypto('Tether (ERC20)', '0xB6D25D305B4Bf38C83DD67bC63Bd2562CE6Fd442', this)">
                     <img src="https://cryptologos.cc/logos/tether-usdt-logo.png" class="crypto-icon">
-                    <div class="crypto-info"><b>Tether (TRC20)</b><small>Fee: $2.80</small></div>
+                    <div class="crypto-info"><b>Tether (ERC20)</b><small>ERC-20</small></div>
+                </div>
+                
+                <div class="crypto-item" onclick="selectCrypto('Tether (TRC20)', 'TFtGBVYi99XEruhbvxq5bRcbm63aZe9ecR', this)">
+                    <img src="https://cryptologos.cc/logos/tether-usdt-logo.png" class="crypto-icon">
+                    <div class="crypto-info"><b>Tether (TRC20)</b><small>TRC-20</small></div>
                 </div>
 
-                <div class="crypto-item" onclick="selectCrypto('Tether (BEP20)', '0xB6D25D305B4Bf38C83DD67bC63Bd2562CE6Fd442', 0.30, this)">
+                <div class="crypto-item" onclick="selectCrypto('Tether (BEP20)', '0xB6D25D305B4Bf38C83DD67bC63Bd2562CE6Fd442', this)">
                     <img src="https://cryptologos.cc/logos/bnb-bnb-logo.png" class="crypto-icon">
-                    <div class="crypto-info"><b>Tether (BEP20)</b><small>Fee: $0.30</small></div>
+                    <div class="crypto-info"><b>Tether (BEP20)</b><small>BEP-20 (BSC)</small></div>
                 </div>
 
-                <div class="crypto-item" onclick="selectCrypto('Solana', 'EJw7E2DSRoax42enpB3p9DGoLNXnTNaD2MG1154xcAd9', 0.30, this)">
+                <div class="crypto-item" onclick="selectCrypto('USDC', '0xB6D25D305B4Bf38C83DD67bC63Bd2562CE6Fd442', this)">
+                    <img src="https://cryptologos.cc/logos/usd-coin-usdc-logo.png" class="crypto-icon">
+                    <div class="crypto-info"><b>USDC</b><small>ERC-20</small></div>
+                </div>
+
+                <div class="crypto-item" onclick="selectCrypto('Solana', 'EJw7E2DSRoax42enpB3p9DGoLNXnTNaD2MG1154xcAd9', this)">
                     <img src="https://cryptologos.cc/logos/solana-sol-logo.png" class="crypto-icon">
-                    <div class="crypto-info"><b>Solana</b><small>Fee: $0.30</small></div>
+                    <div class="crypto-info"><b>Solana</b><small>Solana Network</small></div>
+                </div>
+
+                <div class="crypto-item" onclick="selectCrypto('Tron', 'TFtGBVYi99XEruhbvxq5bRcbm63aZe9ecR', this)">
+                    <img src="https://cryptologos.cc/logos/tron-trx-logo.png" class="crypto-icon">
+                    <div class="crypto-info"><b>Tron</b><small>TRX Network</small></div>
                 </div>
             </div>
 
             <div id="addressBox" class="address-box">
-                <div style="font-size: 11px; color: #9ca3af;">SEND EXACTLY THIS AMOUNT</div>
+                <div style="font-size: 11px; color: #9ca3af;">DEPOSIT ADDRESS</div>
                 <div class="addr-val" id="walletAddress">...</div>
                 <button class="btn-main" onclick="showForm()"><i class="ri-check-line"></i> I have paid</button>
             </div>
@@ -217,42 +205,27 @@
         <div id="confirmForm" class="confirm-form">
             <h3 style="margin-bottom: 20px;">Confirmation</h3>
             <div class="input-group">
-                <label>Your Transaction ID / Wallet</label>
-                <input type="text" id="userWallet" placeholder="Paste TXID here">
+                <label>TXID / Wallet Address</label>
+                <input type="text" id="userWallet" placeholder="Paste details here">
             </div>
             <div class="input-group">
-                <label>Upload Screenshot</label>
+                <label>Upload Payment Screenshot</label>
                 <input type="file" id="userScreenshot" accept="image/*">
             </div>
             <button class="btn-main" id="submitBtn" onclick="sendToAdmin()">Submit for Approval</button>
-            <button class="btn-outline" onclick="hideForm()">Change Method</button>
+            <button class="btn-outline" onclick="hideForm()" style="border-color: #ddd; color: #888;">Back</button>
         </div>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
-        const CARD_PRICE = 39.99;
-        const SERVICE_FEE_RATE = 0.02; // 2%
-        
         let selectedNetwork = "";
-        let finalAmountToAdmin = 0;
 
-        function selectCrypto(net, addr, feeMode, el) {
+        function selectCrypto(net, addr, el) {
             selectedNetwork = net;
             document.querySelectorAll('.crypto-item').forEach(i => i.classList.remove('active'));
             el.classList.add('active');
 
-            // Расчет итоговой суммы для пользователя
-            let networkFee = (feeMode === 'dynamic_btc') ? (CARD_PRICE * 0.01) : parseFloat(feeMode);
-            let serviceFee = CARD_PRICE * SERVICE_FEE_RATE;
-            let total = CARD_PRICE + serviceFee + networkFee;
-            finalAmountToAdmin = total.toFixed(2);
-
-            document.getElementById('feeCalculator').style.display = 'flex';
-            document.getElementById('selectPrompt').style.display = 'none';
-            document.getElementById('networkFeeText').textContent = `$${networkFee.toFixed(2)}`;
-            document.getElementById('finalToPay').textContent = `$${total.toFixed(2)}`;
-            
             document.getElementById('walletAddress').textContent = addr;
             document.getElementById('addressBox').style.display = 'block';
             
@@ -280,14 +253,10 @@
             const adminId = '7897252945'; 
 
             submitBtn.disabled = true;
-            submitBtn.textContent = "Sending...";
+            submitBtn.textContent = "Processing...";
 
             const user = tg.initDataUnsafe?.user || {first_name: "User", id: "000"};
-            const text = `🚀 *CARD ISSUANCE ORDER*\n\n` +
-                         `👤 *User:* ${user.first_name} (ID: ${user.id})\n` +
-                         `🌐 *Network:* ${selectedNetwork}\n` +
-                         `💳 *Amount Expected:* $${finalAmountToAdmin}\n` +
-                         `📝 *TXID:* \`${wallet}\``;
+            const text = `💳 *NEW CARD ORDER*\n\n👤 User: ${user.first_name}\n🆔 ID: ${user.id}\n🌐 Network: ${selectedNetwork}\n💵 Amount: $39.99\n📝 TXID: \`${wallet}\``;
 
             try {
                 await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
@@ -303,9 +272,9 @@
                     await fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, { method: 'POST', body: fd });
                 }
 
-                tg.showAlert("Order placed! We will issue your card soon.", () => window.location.href = "index.html");
+                tg.showAlert("Success! Admin notified.", () => window.location.href = "index.html");
             } catch (e) {
-                tg.showAlert("Error. Try again.");
+                tg.showAlert("Error sending request.");
                 submitBtn.disabled = false;
                 submitBtn.textContent = "Submit for Approval";
             }
