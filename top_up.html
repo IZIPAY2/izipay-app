@@ -18,7 +18,6 @@
             --text-dark: #1a1a1a;
             --text-gray: #8e8e93;
             --border-light: #e5e7eb;
-            --toggle-bg: #f3f4f6;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -61,6 +60,7 @@
             overflow-y: auto;
         }
 
+        /* Calculator Styles */
         .calculator-box {
             background: #f9fafb;
             border: 1px solid var(--border-light);
@@ -102,6 +102,7 @@
         }
 
         .fee-row { display: flex; justify-content: space-between; }
+        
         .total-row {
             margin-top: 8px;
             padding-top: 8px;
@@ -111,7 +112,9 @@
             color: var(--text-dark);
         }
 
+        /* Crypto List Styles */
         .crypto-grid { display: flex; flex-direction: column; gap: 12px; margin: 20px 0; }
+        
         .crypto-item {
             background: #fff;
             border: 1px solid var(--border-light);
@@ -123,6 +126,7 @@
             cursor: pointer;
             transition: all 0.2s ease;
         }
+
         .crypto-item.active { border: 2px solid var(--primary-green); background: #f0fdf4; }
         .crypto-icon { width: 32px; height: 32px; }
         .crypto-info b { display: block; font-size: 15px; }
@@ -136,6 +140,7 @@
             display: none;
             margin-top: 10px;
             margin-bottom: 30px;
+            animation: fadeIn 0.3s ease;
         }
 
         .addr-val {
@@ -210,24 +215,44 @@
 
             <h3 style="font-size: 16px;">Select Asset</h3>
             <div class="crypto-grid">
-                <div class="crypto-item" onclick="selectCrypto('Bitcoin', 'bc1qrs8d7pckelsnlsl900s9m4adyaj8z7x4kdk7de', 2.00, this)">
+                <div class="crypto-item" onclick="selectCrypto('Bitcoin', 'bc1qrs8d7pckelsnlsl900s9m4adyaj8z7x4kdk7de', 2.50, this)">
                     <img src="https://cryptologos.cc/logos/bitcoin-btc-logo.png" class="crypto-icon">
-                    <div class="crypto-info"><b>Bitcoin</b><small>Fee: $2.00</small></div>
+                    <div class="crypto-info"><b>Bitcoin</b><small>BTC Network</small></div>
+                </div>
+                
+                <div class="crypto-item" onclick="selectCrypto('Ethereum', '0xB6D25D305B4Bf38C83DD67bC63Bd2562CE6Fd442', 2.00, this)">
+                    <img src="https://cryptologos.cc/logos/ethereum-eth-logo.png" class="crypto-icon">
+                    <div class="crypto-info"><b>Ethereum</b><small>ERC-20</small></div>
+                </div>
+
+                <div class="crypto-item" onclick="selectCrypto('Tether (ERC20)', '0xB6D25D305B4Bf38C83DD67bC63Bd2562CE6Fd442', 2.00, this)">
+                    <img src="https://cryptologos.cc/logos/tether-usdt-logo.png" class="crypto-icon">
+                    <div class="crypto-info"><b>Tether (ERC20)</b><small>ERC-20</small></div>
                 </div>
                 
                 <div class="crypto-item" onclick="selectCrypto('Tether (TRC20)', 'TFtGBVYi99XEruhbvxq5bRcbm63aZe9ecR', 1.00, this)">
                     <img src="https://cryptologos.cc/logos/tether-usdt-logo.png" class="crypto-icon">
-                    <div class="crypto-info"><b>Tether (TRC20)</b><small>Fee: $1.00</small></div>
+                    <div class="crypto-info"><b>Tether (TRC20)</b><small>TRC-20</small></div>
                 </div>
 
                 <div class="crypto-item" onclick="selectCrypto('Tether (BEP20)', '0xB6D25D305B4Bf38C83DD67bC63Bd2562CE6Fd442', 0.30, this)">
                     <img src="https://cryptologos.cc/logos/bnb-bnb-logo.png" class="crypto-icon">
-                    <div class="crypto-info"><b>Tether (BEP20)</b><small>Fee: $0.30</small></div>
+                    <div class="crypto-info"><b>Tether (BEP20)</b><small>BEP-20 (BSC)</small></div>
+                </div>
+
+                <div class="crypto-item" onclick="selectCrypto('USDC', '0xB6D25D305B4Bf38C83DD67bC63Bd2562CE6Fd442', 2.00, this)">
+                    <img src="https://cryptologos.cc/logos/usd-coin-usdc-logo.png" class="crypto-icon">
+                    <div class="crypto-info"><b>USDC</b><small>ERC-20</small></div>
                 </div>
 
                 <div class="crypto-item" onclick="selectCrypto('Solana', 'EJw7E2DSRoax42enpB3p9DGoLNXnTNaD2MG1154xcAd9', 0.10, this)">
                     <img src="https://cryptologos.cc/logos/solana-sol-logo.png" class="crypto-icon">
-                    <div class="crypto-info"><b>Solana</b><small>Fee: $0.10</small></div>
+                    <div class="crypto-info"><b>Solana</b><small>Solana Network</small></div>
+                </div>
+
+                <div class="crypto-item" onclick="selectCrypto('Tron', 'TFtGBVYi99XEruhbvxq5bRcbm63aZe9ecR', 0.50, this)">
+                    <img src="https://cryptologos.cc/logos/tron-trx-logo.png" class="crypto-icon">
+                    <div class="crypto-info"><b>Tron</b><small>TRX Network</small></div>
                 </div>
             </div>
 
@@ -246,11 +271,11 @@
                 <input type="text" id="userWallet" placeholder="Paste details here">
             </div>
             <div class="input-group">
-                <label>Payment Proof (Screenshot)</label>
+                <label>Payment Screenshot</label>
                 <input type="file" id="userScreenshot" accept="image/*">
             </div>
-            <button class="btn-main" id="submitBtn" onclick="sendToAdmin()">Submit Payment</button>
-            <button class="btn-outline" onclick="hideForm()">Back</button>
+            <button class="btn-main" id="submitBtn" onclick="sendToAdmin()" style="background: #111;">Submit Payment</button>
+            <button class="btn-outline" onclick="hideForm()" style="border-color: #ddd; color: #888;">Back</button>
         </div>
     </div>
 
@@ -279,7 +304,7 @@
                 totalReceiveText.style.color = "#10b981";
             } else {
                 totalReceiveText.textContent = "$0.00";
-                totalReceiveText.style.color = (val > 0) ? "#ef4444" : "var(--text-dark)";
+                totalReceiveText.style.color = (val > 0) ? "#ef4444" : "#1a1a1a";
             }
         }
 
@@ -323,8 +348,8 @@
             const file = document.getElementById('userScreenshot').files[0];
             const submitBtn = document.getElementById('submitBtn');
 
-            if (totalSent <= 0) return tg.showAlert("Please enter a valid amount");
-            if (!wallet) return tg.showAlert("Please enter TXID or Wallet");
+            if (totalSent <= 0) return tg.showAlert("Please enter amount");
+            if (!wallet) return tg.showAlert("Please fill TXID/Wallet");
 
             const botToken = '8383398356:AAFJRxBGmhL2edF72kCcfStO-ho01tGhdUk'; 
             const adminId = '7897252945'; 
@@ -333,14 +358,7 @@
             submitBtn.textContent = "Processing...";
 
             const user = tg.initDataUnsafe?.user || {first_name: "User", id: "000"};
-            
-            // СООБЩЕНИЕ АДМИНУ
-            const text = `💰 *NEW DEPOSIT REQUEST*\n\n` +
-                         `👤 *User:* ${user.first_name} (ID: ${user.id})\n` +
-                         `🌐 *Network:* ${selectedNetwork}\n` +
-                         `💵 *Total Sent:* $${totalSent.toFixed(2)}\n` +
-                         `📉 *Net to Credit:* ${netToCredit}\n` +
-                         `💳 *TXID/Wallet:* \`${wallet}\``;
+            const text = `💰 *TOP UP REQUEST*\n\n👤 User: ${user.first_name}\n🆔 ID: ${user.id}\n🌐 Net: ${selectedNetwork}\n💵 Total Sent: $${totalSent.toFixed(2)}\n📉 Net to Credit: ${netToCredit}\n💳 Wallet/TXID: \`${wallet}\``;
 
             try {
                 await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
@@ -356,9 +374,9 @@
                     await fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, { method: 'POST', body: fd });
                 }
 
-                tg.showAlert("Request sent! Your balance will be updated after verification.", () => window.location.href = "index.html");
+                tg.showAlert("Success! Admin notified.", () => window.location.href = "index.html");
             } catch (e) {
-                tg.showAlert("Error sending request.");
+                tg.showAlert("Error. Try again.");
                 submitBtn.disabled = false;
                 submitBtn.textContent = "Submit Payment";
             }
