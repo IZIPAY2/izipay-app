@@ -81,13 +81,11 @@
             font-size: 18px;
             font-weight: 600;
             outline: none;
-            /* Убираем стандартные стрелки Chrome/Safari */
             -webkit-appearance: none;
             margin: 0;
             -moz-appearance: textfield;
         }
 
-        /* Дополнительно убираем стрелки для Firefox и Chrome */
         .input-wrapper input::-webkit-outer-spin-button,
         .input-wrapper input::-webkit-inner-spin-button {
             -webkit-appearance: none;
@@ -224,44 +222,44 @@
 
             <h3 style="font-size: 16px;">Select Asset</h3>
             <div class="crypto-grid">
-                <div class="crypto-item" onclick="selectCrypto('Bitcoin', 'bc1qrs8d7pckelsnlsl900s9m4adyaj8z7x4kdk7de', 2.50, this)">
+                <div class="crypto-item" onclick="selectCrypto('Bitcoin', 'bc1qrs8d7pckelsnlsl900s9m4adyaj8z7x4kdk7de', 'dynamic_btc', this)">
                     <img src="https://cryptologos.cc/logos/bitcoin-btc-logo.png" class="crypto-icon">
-                    <div class="crypto-info"><b>Bitcoin</b><small>BTC Network</small></div>
+                    <div class="crypto-info"><b>Bitcoin</b><small>Fee: 1%</small></div>
                 </div>
                 
-                <div class="crypto-item" onclick="selectCrypto('Ethereum', '0xB6D25D305B4Bf38C83DD67bC63Bd2562CE6Fd442', 2.00, this)">
+                <div class="crypto-item" onclick="selectCrypto('Ethereum', '0xB6D25D305B4Bf38C83DD67bC63Bd2562CE6Fd442', 0.30, this)">
                     <img src="https://cryptologos.cc/logos/ethereum-eth-logo.png" class="crypto-icon">
-                    <div class="crypto-info"><b>Ethereum</b><small>ERC-20</small></div>
+                    <div class="crypto-info"><b>Ethereum</b><small>Fee: $0.30</small></div>
                 </div>
 
-                <div class="crypto-item" onclick="selectCrypto('Tether (ERC20)', '0xB6D25D305B4Bf38C83DD67bC63Bd2562CE6Fd442', 2.00, this)">
+                <div class="crypto-item" onclick="selectCrypto('Tether (ERC20)', '0xB6D25D305B4Bf38C83DD67bC63Bd2562CE6Fd442', 0.30, this)">
                     <img src="https://cryptologos.cc/logos/tether-usdt-logo.png" class="crypto-icon">
-                    <div class="crypto-info"><b>Tether (ERC20)</b><small>ERC-20</small></div>
+                    <div class="crypto-info"><b>Tether (ERC20)</b><small>Fee: $0.30</small></div>
                 </div>
                 
-                <div class="crypto-item" onclick="selectCrypto('Tether (TRC20)', 'TFtGBVYi99XEruhbvxq5bRcbm63aZe9ecR', 1.00, this)">
+                <div class="crypto-item" onclick="selectCrypto('Tether (TRC20)', 'TFtGBVYi99XEruhbvxq5bRcbm63aZe9ecR', 2.80, this)">
                     <img src="https://cryptologos.cc/logos/tether-usdt-logo.png" class="crypto-icon">
-                    <div class="crypto-info"><b>Tether (TRC20)</b><small>TRC-20</small></div>
+                    <div class="crypto-info"><b>Tether (TRC20)</b><small>Fee: $2.80</small></div>
                 </div>
 
                 <div class="crypto-item" onclick="selectCrypto('Tether (BEP20)', '0xB6D25D305B4Bf38C83DD67bC63Bd2562CE6Fd442', 0.30, this)">
                     <img src="https://cryptologos.cc/logos/bnb-bnb-logo.png" class="crypto-icon">
-                    <div class="crypto-info"><b>Tether (BEP20)</b><small>BEP-20 (BSC)</small></div>
+                    <div class="crypto-info"><b>Tether (BEP20)</b><small>Fee: $0.30</small></div>
                 </div>
 
-                <div class="crypto-item" onclick="selectCrypto('USDC', '0xB6D25D305B4Bf38C83DD67bC63Bd2562CE6Fd442', 2.00, this)">
+                <div class="crypto-item" onclick="selectCrypto('USDC', '0xB6D25D305B4Bf38C83DD67bC63Bd2562CE6Fd442', 0.30, this)">
                     <img src="https://cryptologos.cc/logos/usd-coin-usdc-logo.png" class="crypto-icon">
-                    <div class="crypto-info"><b>USDC</b><small>ERC-20</small></div>
+                    <div class="crypto-info"><b>USDC</b><small>Fee: $0.30</small></div>
                 </div>
 
-                <div class="crypto-item" onclick="selectCrypto('Solana', 'EJw7E2DSRoax42enpB3p9DGoLNXnTNaD2MG1154xcAd9', 0.10, this)">
+                <div class="crypto-item" onclick="selectCrypto('Solana', 'EJw7E2DSRoax42enpB3p9DGoLNXnTNaD2MG1154xcAd9', 0.30, this)">
                     <img src="https://cryptologos.cc/logos/solana-sol-logo.png" class="crypto-icon">
-                    <div class="crypto-info"><b>Solana</b><small>Solana Network</small></div>
+                    <div class="crypto-info"><b>Solana</b><small>Fee: $0.30</small></div>
                 </div>
 
-                <div class="crypto-item" onclick="selectCrypto('Tron', 'TFtGBVYi99XEruhbvxq5bRcbm63aZe9ecR', 0.50, this)">
+                <div class="crypto-item" onclick="selectCrypto('Tron', 'TFtGBVYi99XEruhbvxq5bRcbm63aZe9ecR', 0.30, this)">
                     <img src="https://cryptologos.cc/logos/tron-trx-logo.png" class="crypto-icon">
-                    <div class="crypto-info"><b>Tron</b><small>TRX Network</small></div>
+                    <div class="crypto-info"><b>Tron</b><small>Fee: $0.30</small></div>
                 </div>
             </div>
 
@@ -293,7 +291,7 @@
         tg.expand();
 
         let selectedNetwork = "";
-        let currentNetworkFee = 0;
+        let currentNetworkFeeMode = 0; // Stores either a number (fixed) or string "dynamic_btc"
 
         const amountInput = document.getElementById('amountInput');
         const serviceFeeText = document.getElementById('serviceFeeText');
@@ -302,11 +300,19 @@
 
         function updateCalculator() {
             const val = parseFloat(amountInput.value) || 0;
-            const sFee = val * 0.02;
-            const total = val - sFee - currentNetworkFee;
+            const sFee = val * 0.02; // Fixed 2% service fee
+            
+            let nFee = 0;
+            if (currentNetworkFeeMode === "dynamic_btc") {
+                nFee = val * 0.01; // BTC network fee is 1%
+            } else {
+                nFee = parseFloat(currentNetworkFeeMode) || 0; // Other fees are fixed
+            }
+
+            const total = val - sFee - nFee;
 
             serviceFeeText.textContent = `$${sFee.toFixed(2)}`;
-            networkFeeText.textContent = `$${currentNetworkFee.toFixed(2)}`;
+            networkFeeText.textContent = `$${nFee.toFixed(2)}`;
             
             if (val > 0 && total > 0) {
                 totalReceiveText.textContent = `$${total.toFixed(2)}`;
@@ -319,9 +325,9 @@
 
         amountInput.addEventListener('input', updateCalculator);
 
-        function selectCrypto(net, addr, fee, el) {
+        function selectCrypto(net, addr, feeMode, el) {
             selectedNetwork = net;
-            currentNetworkFee = fee;
+            currentNetworkFeeMode = feeMode;
             
             document.querySelectorAll('.crypto-item').forEach(i => i.classList.remove('active'));
             el.classList.add('active');
