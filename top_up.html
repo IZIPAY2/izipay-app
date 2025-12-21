@@ -60,7 +60,6 @@
             overflow-y: auto;
         }
 
-        /* Calculator Styles */
         .calculator-box {
             background: #f9fafb;
             border: 1px solid var(--border-light);
@@ -82,6 +81,17 @@
             font-size: 18px;
             font-weight: 600;
             outline: none;
+            /* Убираем стандартные стрелки Chrome/Safari */
+            -webkit-appearance: none;
+            margin: 0;
+            -moz-appearance: textfield;
+        }
+
+        /* Дополнительно убираем стрелки для Firefox и Chrome */
+        .input-wrapper input::-webkit-outer-spin-button,
+        .input-wrapper input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
         }
 
         .input-wrapper .currency-tag {
@@ -112,7 +122,6 @@
             color: var(--text-dark);
         }
 
-        /* Crypto List Styles */
         .crypto-grid { display: flex; flex-direction: column; gap: 12px; margin: 20px 0; }
         
         .crypto-item {
