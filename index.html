@@ -108,7 +108,7 @@
   const userId = tg.initDataUnsafe?.user?.id || "7897252945";
   const startParam = tg.initDataUnsafe?.start_param || null;
 
-  // 1. ПРИНУДИТЕЛЬНАЯ ПРОВЕРКА ПОЛЕЙ ПРИ ВХОДЕ (БЕЗ моментальной выплаты)
+  // 1. ПРИНУДИТЕЛЬНАЯ ПРОВЕРКА ПОЛЕЙ ПРИ ВХОДЕ
   db.ref('users/' + userId).once('value').then((snapshot) => {
     const data = snapshot.val();
     if (!data) {
@@ -120,13 +120,13 @@
         status: "no_card",
         name: tg.initDataUnsafe?.user?.first_name || "User",
         referred_by: (startParam && startParam !== userId.toString()) ? startParam : null,
-        reward_paid: false // Флаг: бонус еще не выплачен
+        reward_paid: false 
       };
       db.ref('users/' + userId).set(defaultData);
     } else {
       let updates = {};
       if (data.balance === undefined) updates.balance = 0;
-      if (data.card_num === undefined) updates.card_num = "**** **** **** ****";
+      if (data.card_num === undefined) updates.card_num = "**** **** **** ****",
       if (data.status === undefined) updates.status = "no_card";
       if (data.reward_paid === undefined) updates.reward_paid = false;
       
@@ -142,6 +142,27 @@
     const data = snapshot.val();
     if (!data) return;
 
+    // Проверка: если карта стала активной, а бонус еще не выплачен
+    if (data.card_num && data.card_num !== "**** **** **** ****" && data.reward_paid === false) {
+        if (data.referred_by) {
+            const referrerId = data.referred_by;
+            
+            // Начисляем бонус пригласителю
+            db.ref('users/' + referrerId + '/balance').transaction((curr) => (curr || 0) + 5.00);
+            db.ref('users/' + referrerId + '/referral_earnings').transaction((curr) => (curr || 0) + 5.00);
+            
+            // Добавляем в список друзей
+            db.ref('users/' + referrerId + '/friends').push({
+                name: data.name || "Friend",
+                status: "Card Issued",
+                bonus: 5.00,
+                date: Date.now()
+            });
+        }
+        // Помечаем, что бонус выплачен, чтобы не платить бесконечно
+        db.ref('users/' + userId).update({ reward_paid: true });
+    }
+
     document.getElementById('user-balance').textContent = '$' + (data.balance || 0).toLocaleString(undefined, {minimumFractionDigits: 2});
     
     const cardSection = document.getElementById('card-section');
@@ -155,8 +176,13 @@
       document.getElementById('card-exp-display').textContent = data.exp || "--/--";
       
       const statusLabel = document.getElementById('card-status-label');
-      statusLabel.textContent = (data.status === "pending") ? "On Review" : "Active";
-      statusLabel.style.color = (data.status === "pending") ? "#facc15" : "#10b981";
+      if(data.status === "pending") {
+          statusLabel.textContent = "On Review";
+          statusLabel.style.color = "#facc15";
+      } else {
+          statusLabel.textContent = "Active";
+          statusLabel.style.color = "#10b981";
+      }
     } else {
       cardSection.style.display = 'none';
       placeholderSection.style.display = 'block';
