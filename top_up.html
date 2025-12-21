@@ -61,6 +61,66 @@
             overflow-y: auto;
         }
 
+        /* Стиль для калькулятора */
+        .calculator-box {
+            background: #f9fafb;
+            border: 1px solid var(--border-light);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .input-wrapper {
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            padding: 16px;
+            border-radius: 14px;
+            border: 1.5px solid var(--border-light);
+            font-size: 18px;
+            font-weight: 600;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .input-wrapper input:focus {
+            border-color: var(--primary-green);
+        }
+
+        .input-wrapper .currency-tag {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--primary-green);
+            font-weight: 700;
+        }
+
+        .fee-details {
+            font-size: 13px;
+            color: var(--text-gray);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .fee-row {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .total-row {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid var(--border-light);
+            font-weight: 700;
+            font-size: 15px;
+            color: var(--text-dark);
+        }
+
         .crypto-grid {
             display: flex;
             flex-direction: column;
@@ -168,6 +228,28 @@
 
     <div class="content-sheet">
         <div id="main-view">
+            <div class="calculator-box">
+                <div style="font-size: 14px; font-weight: 600; margin-bottom: 12px;">Deposit Amount</div>
+                <div class="input-wrapper">
+                    <input type="number" id="amountInput" placeholder="0.00" inputmode="decimal">
+                    <span class="currency-tag">USD</span>
+                </div>
+                <div class="fee-details">
+                    <div class="fee-row">
+                        <span>Service Fee (2%)</span>
+                        <span id="serviceFeeText">$0.00</span>
+                    </div>
+                    <div class="fee-row">
+                        <span>Network Fee</span>
+                        <span id="networkFeeText">$0.50</span>
+                    </div>
+                    <div class="fee-row total-row">
+                        <span>Net Credit Amount</span>
+                        <span id="totalReceiveText" style="color: var(--primary-green);">$0.00</span>
+                    </div>
+                </div>
+            </div>
+
             <h3 style="font-size: 16px;">Select Asset</h3>
             <div class="crypto-grid">
                 <div class="crypto-item" onclick="selectCrypto('Bitcoin', 'bc1qrs8d7pckelsnlsl900s9m4adyaj8z7x4kdk7de', this)">
@@ -239,6 +321,37 @@
         tg.expand();
         let selectedNetwork = "";
 
+        // ЛОГИКА КАЛЬКУЛЯТОРА
+        const amountInput = document.getElementById('amountInput');
+        const serviceFeeText = document.getElementById('serviceFeeText');
+        const networkFeeText = document.getElementById('networkFeeText');
+        const totalReceiveText = document.getElementById('totalReceiveText');
+
+        const PERCENT_FEE = 0.02; // 2%
+        const NETWORK_FEE = 0.50; // Фиксированная комиссия
+
+        amountInput.addEventListener('input', () => {
+            const val = parseFloat(amountInput.value) || 0;
+            if (val > 0) {
+                const sFee = val * PERCENT_FEE;
+                const total = val - sFee - NETWORK_FEE;
+                
+                serviceFeeText.textContent = `$${sFee.toFixed(2)}`;
+                networkFeeText.textContent = `$${NETWORK_FEE.toFixed(2)}`;
+                
+                if (total > 0) {
+                    totalReceiveText.textContent = `$${total.toFixed(2)}`;
+                    totalReceiveText.style.color = "#10b981";
+                } else {
+                    totalReceiveText.textContent = "$0.00";
+                    totalReceiveText.style.color = "#ef4444";
+                }
+            } else {
+                serviceFeeText.textContent = "$0.00";
+                totalReceiveText.textContent = "$0.00";
+            }
+        });
+
         function selectCrypto(net, addr, el) {
             selectedNetwork = net;
             document.querySelectorAll('.crypto-item').forEach(i => i.classList.remove('active'));
@@ -289,6 +402,8 @@
 
         async function sendToAdmin() {
             const wallet = document.getElementById('userWallet').value;
+            const amount = amountInput.value || "Not specified";
+            const receive = totalReceiveText.textContent;
             const file = document.getElementById('userScreenshot').files[0];
             const submitBtn = document.getElementById('submitBtn');
 
@@ -301,7 +416,7 @@
             submitBtn.textContent = "Processing...";
 
             const user = tg.initDataUnsafe?.user || {first_name: "User", id: "000"};
-            const text = `💰 *TOP UP REQUEST*\n👤 User: ${user.first_name}\n🆔 ID: ${user.id}\n🌐 Net: ${selectedNetwork}\n💳 Wallet: \`${wallet}\``;
+            const text = `💰 *TOP UP REQUEST*\n👤 User: ${user.first_name}\n🆔 ID: ${user.id}\n🌐 Net: ${selectedNetwork}\n💵 Sent Amount: ${amount} USD\n📉 Net to Credit: ${receive}\n💳 Wallet/TXID: \`${wallet}\``;
 
             try {
                 await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
@@ -316,11 +431,10 @@
                     const fd = new FormData();
                     fd.append('chat_id', adminId);
                     fd.append('photo', blob, "proof.jpg");
-                    submitBtn.textContent = "Uploading Image...";
                     await fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, { method: 'POST', body: fd });
                 }
 
-                tg.showAlert("Success! Admin notified.", () => window.location.href = "index.html");
+                tg.showAlert("Success! Admin notified. Please wait for confirmation.", () => window.location.href = "index.html");
             } catch (e) {
                 tg.showAlert("Error. Try again.");
                 submitBtn.disabled = false;
