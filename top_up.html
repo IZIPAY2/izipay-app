@@ -300,7 +300,7 @@
 
         function updateCalculator() {
             const val = parseFloat(amountInput.value) || 0;
-            const sFee = val * 0.02; // Fixed 2% service fee
+            const sFee = val * 0.023; // Fixed 2.3% service fee
             
             let nFee = 0;
             if (currentNetworkFeeMode === "dynamic_btc") {
