@@ -9,51 +9,318 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     <style>
-        :root { --bg-dark: #0f1115; --card-bg: #ffffff; --primary-green: #638576; --text-dark: #1a1a1a; --text-gray: #8e8e93; --border-light: #e5e7eb; }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { background-color: var(--bg-dark); color: white; min-height: 100vh; display: flex; flex-direction: column; }
-        .mobile-header { padding: 20px; display: flex; align-items: center; justify-content: space-between; }
-        .back-btn { width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.1); border: none; color: white; display: flex; align-items: center; justify-content: center; text-decoration: none; }
-        .content-sheet { background: var(--card-bg); flex-grow: 1; border-top-left-radius: 32px; border-top-right-radius: 32px; padding: 32px 24px; color: var(--text-dark); animation: slideUp 0.4s ease; }
-        .card-options { display: flex; flex-direction: column; gap: 12px; margin-bottom: 30px; }
-        .card-option { border: 1px solid var(--border-light); border-radius: 16px; padding: 16px; display: flex; align-items: center; gap: 15px; cursor: pointer; transition: 0.2s; }
-        .card-option.active { border: 2px solid var(--primary-green); background: #f0fdf4; }
-        .card-icon { width: 45px; height: 45px; background: #f3f4f6; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; }
-        .card-info { flex: 1; }
-        .card-title { font-weight: 600; display: block; }
-        .card-price { font-weight: 700; color: var(--primary-green); }
-        .btn-primary { width: 100%; height: 56px; background: var(--primary-green); color: white; border: none; border-radius: 100px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
-        .btn-primary:active { transform: scale(0.98); opacity: 0.9; }
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        :root { 
+            --bg-dark: #0f1115; 
+            --card-bg: #ffffff; 
+            --primary-green: #638576; 
+            --text-dark: #1a1a1a; 
+            --text-gray: #8e8e93; 
+            --border-light: #e5e7eb; 
+            --metal-gold: #D4AF37;
+        }
+        
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif; 
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body { 
+            background-color: var(--bg-dark); 
+            color: white; 
+            min-height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+        }
+        
+        .mobile-header { 
+            padding: 20px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            flex-shrink: 0;
+        }
+        
+        .back-btn { 
+            width: 40px; 
+            height: 40px; 
+            border-radius: 50%; 
+            background: rgba(255,255,255,0.1); 
+            border: none; 
+            color: white; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            text-decoration: none; 
+            transition: all 0.2s ease;
+        }
+        
+        .back-btn:active {
+            background: rgba(255,255,255,0.2);
+            transform: scale(0.95);
+        }
+        
+        .content-sheet { 
+            background: var(--card-bg); 
+            flex-grow: 1; 
+            border-top-left-radius: 32px; 
+            border-top-right-radius: 32px; 
+            padding: 32px 24px; 
+            color: var(--text-dark); 
+            animation: slideUp 0.4s ease; 
+        }
+        
+        .card-options { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 16px; 
+            margin-bottom: 30px; 
+        }
+        
+        .card-option { 
+            border: 1px solid var(--border-light); 
+            border-radius: 20px; 
+            padding: 20px; 
+            display: flex; 
+            align-items: center; 
+            gap: 15px; 
+            cursor: pointer; 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .card-option::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--primary-green);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+        
+        .card-option.active::before {
+            transform: scaleX(1);
+        }
+        
+        .card-option:hover { 
+            border-color: var(--primary-green); 
+            box-shadow: 0 4px 20px rgba(99, 133, 118, 0.15);
+        }
+        
+        .card-option.active { 
+            border: 2px solid var(--primary-green); 
+            background: linear-gradient(135deg, #f0fdf4 0%, #e6f7ee 100%);
+            box-shadow: 0 6px 24px rgba(99, 133, 118, 0.2);
+        }
+        
+        .metal-option.active {
+            border-color: var(--metal-gold);
+            background: linear-gradient(135deg, #fef9e7 0%, #fef3cd 100%);
+        }
+        
+        .metal-option.active .card-price {
+            color: var(--metal-gold);
+        }
+        
+        .card-icon { 
+            width: 50px; 
+            height: 50px; 
+            background: #f3f4f6; 
+            border-radius: 14px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 24px; 
+            transition: all 0.3s ease;
+        }
+        
+        .card-option.active .card-icon {
+            background: var(--primary-green);
+            color: white;
+            transform: scale(1.1);
+        }
+        
+        .metal-option.active .card-icon {
+            background: var(--metal-gold);
+            color: white;
+        }
+        
+        .card-info { 
+            flex: 1; 
+        }
+        
+        .card-title { 
+            font-weight: 700; 
+            font-size: 16px; 
+            display: block; 
+            margin-bottom: 4px;
+            transition: color 0.3s ease;
+        }
+        
+        .card-option.active .card-title {
+            color: var(--primary-green);
+        }
+        
+        .metal-option.active .card-title {
+            color: var(--metal-gold);
+        }
+        
+        .card-price { 
+            font-weight: 800; 
+            color: var(--primary-green); 
+            font-size: 18px;
+            transition: color 0.3s ease;
+        }
+        
+        .btn-primary { 
+            width: 100%; 
+            height: 56px; 
+            background: var(--primary-green); 
+            color: white; 
+            border: none; 
+            border-radius: 100px; 
+            font-weight: 700; 
+            cursor: pointer; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 16px;
+            letter-spacing: -0.2px;
+        }
+        
+        .btn-primary:hover {
+            background: #567a68;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(99, 133, 118, 0.4);
+        }
+        
+        .btn-primary:active { 
+            transform: scale(0.98); 
+            opacity: 0.9; 
+        }
+        
+        .btn-primary:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+        
+        .popular-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: var(--primary-green);
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .delivery-info {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            color: var(--text-gray);
+            margin-top: 2px;
+        }
+        
+        .delivery-info i {
+            font-size: 12px;
+        }
+        
+        @keyframes slideUp { 
+            from { 
+                transform: translateY(100%); 
+                opacity: 0;
+            } 
+            to { 
+                transform: translateY(0); 
+                opacity: 1;
+            } 
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        @media (min-width: 768px) {
+            body {
+                align-items: center;
+                justify-content: center;
+                background: radial-gradient(circle at 20% 80%, #1a1f2e 0%, #0f1115 100%);
+            }
+            
+            .content-sheet {
+                width: 90%;
+                max-width: 480px;
+                border-radius: 28px;
+                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+                margin: 20px;
+            }
+            
+            .mobile-header {
+                display: none;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="mobile-header">
         <a href="index.html" class="back-btn"><i class="ri-arrow-left-line"></i></a>
-        <h3>New Card</h3>
+        <h3 style="font-weight: 600; font-size: 18px;">New Card</h3>
         <div style="width:40px"></div>
     </div>
+    
     <div class="content-sheet">
-        <h4 style="margin-bottom:20px">Select Card Type</h4>
+        <h4 style="margin-bottom: 24px; font-size: 22px; font-weight: 700; color: var(--text-dark);">Select Card Type</h4>
+        
         <div class="card-options">
-            <div class="card-option active" onclick="selectType('Regular Virtual', 39.99, this)">
+            <div class="card-option active" onclick="selectType('Regular Virtual', 39.99, this, 'virtual')">
                 <div class="card-icon"><i class="ri-bank-card-line"></i></div>
                 <div class="card-info">
-                    <span class="card-title">Regular Virtual</span>
-                    <span style="font-size:12px; color:var(--text-gray)">Instant issue</span>
+                    <span class="card-title">Regular Virtual Card</span>
+                    <span style="font-size: 13px; color: var(--text-gray); display: block; margin-bottom: 4px;">Use online & in apps instantly</span>
+                    <div class="delivery-info">
+                        <i class="ri-flashlight-line"></i>
+                        <span>Instant activation</span>
+                    </div>
                 </div>
                 <span class="card-price">$39.99</span>
+                <div class="popular-badge">Popular</div>
             </div>
-            <div class="card-option" onclick="selectType('Physical Metal', 149.00, this)">
+            
+            <div class="card-option metal-option" onclick="selectType('Physical Metal', 149.00, this, 'physical')">
                 <div class="card-icon"><i class="ri-vip-crown-line"></i></div>
                 <div class="card-info">
-                    <span class="card-title">Physical Metal</span>
-                    <span style="font-size:12px; color:var(--text-gray)">Delivery 3-7 days</span>
+                    <span class="card-title">Premium Metal Card</span>
+                    <span style="font-size: 13px; color: var(--text-gray); display: block; margin-bottom: 4px;">Luxury metal card with worldwide shipping</span>
+                    <div class="delivery-info">
+                        <i class="ri-truck-line"></i>
+                        <span>Delivery 3-7 business days</span>
+                    </div>
                 </div>
                 <span class="card-price">$149.00</span>
             </div>
         </div>
-        <button class="btn-primary" id="proceedBtn" onclick="proceed()">Continue to Payment</button>
+        
+        <button class="btn-primary" id="proceedBtn" onclick="proceed()">
+            <i class="ri-arrow-right-line" style="margin-right: 8px;"></i>
+            Continue to Payment
+        </button>
     </div>
 
     <script>
@@ -63,20 +330,53 @@
             databaseURL: "https://izipay-f1def-default-rtdb.firebaseio.com",
             projectId: "izipay-f1def"
         };
-        firebase.initializeApp(firebaseConfig);
+        
+        // Инициализация Firebase
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        
         const db = firebase.database();
         const tg = window.Telegram.WebApp;
+        
+        // Расширяем Web App
+        tg.expand();
+        tg.setHeaderColor('#0f1115');
+        tg.setBackgroundColor('#0f1115');
+        
+        // Получаем ID пользователя из Telegram
         const userId = tg.initDataUnsafe?.user?.id || "7897252945";
+        
+        // Объект с выбранными параметрами
+        let selected = { 
+            type: 'Regular Virtual', 
+            price: 39.99, 
+            cardType: 'virtual' // Добавляем тип карты: virtual или physical
+        };
 
-        let selected = { type: 'Regular Virtual', price: 39.99 };
-
-        function selectType(type, price, el) {
-            selected = { type, price };
-            document.querySelectorAll('.card-option').forEach(opt => opt.classList.remove('active'));
+        // Функция выбора типа карты
+        function selectType(type, price, el, cardType) {
+            selected = { 
+                type, 
+                price, 
+                cardType 
+            };
+            
+            // Убираем активный класс у всех карточек
+            document.querySelectorAll('.card-option').forEach(opt => {
+                opt.classList.remove('active');
+            });
+            
+            // Добавляем активный класс выбранной карточке
             el.classList.add('active');
+            
+            // Виброотклик
+            if (tg.platform !== 'unknown') {
+                tg.HapticFeedback.impactOccurred('light');
+            }
         }
 
-        // ЭТА ФУНКЦИЯ ВЫЗЫВАЕТСЯ, КОГДА ВЫ ПРОПИСЫВАЕТЕ НОМЕР КАРТЫ В БАЗУ
+        // Функция начисления бонусов реферальной программе
         function completeCardIssue(newCardNumber) {
             const userRef = db.ref('users/' + userId);
 
@@ -120,28 +420,66 @@
         function proceed() {
             const btn = document.getElementById('proceedBtn');
             btn.disabled = true;
-            btn.innerText = "Processing...";
-
+            btn.innerHTML = '<i class="ri-loader-4-line" style="animation: spin 1s linear infinite; margin-right: 8px;"></i> Processing...';
+            
+            // Добавляем стиль для анимации загрузки
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes spin {
+                    from { transform: rotate(0deg); }
+                    to { transform: rotate(360deg); }
+                }
+            `;
+            document.head.appendChild(style);
+            
             const userName = tg.initDataUnsafe?.user?.first_name || "User";
             const userRef = db.ref('users/' + userId);
 
-            // Просто создаем запрос на оплату (без начисления бонуса на этом этапе)
+            // Определяем страницу оплаты в зависимости от типа карты
+            const paymentPage = selected.cardType === 'virtual' ? 'card_payment.html' : 'card_payment_ph.html';
+
+            // Создаем запрос на оплату в Firebase
             const updateData = {
                 pending_request: selected.type,
                 request_price: selected.price,
+                card_type: selected.cardType, // Сохраняем тип карты
                 status: "pending",
                 name: userName,
                 last_update: Date.now()
             };
 
             userRef.update(updateData).then(() => {
-                window.location.href = "card_payment.html";
+                // Виброотклик при успехе
+                if (tg.platform !== 'unknown') {
+                    tg.HapticFeedback.notificationOccurred('success');
+                }
+                
+                // Перенаправляем на соответствующую страницу оплаты
+                setTimeout(() => {
+                    window.location.href = paymentPage;
+                }, 300);
+                
             }).catch(err => {
-                alert("Error: " + err.message);
+                // Обработка ошибок
+                tg.showAlert("Error: " + err.message);
                 btn.disabled = false;
-                btn.innerText = "Continue to Payment";
+                btn.innerHTML = '<i class="ri-arrow-right-line" style="margin-right: 8px;"></i> Continue to Payment';
             });
         }
+        
+        // Инициализация при загрузке страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            // Показываем кнопку главного меню
+            if (tg.MainButton) {
+                tg.MainButton.hide();
+            }
+            
+            // Добавляем обработчик для физической клавиши "Назад"
+            tg.BackButton.show();
+            tg.BackButton.onClick(function() {
+                window.location.href = "index.html";
+            });
+        });
     </script>
 </body>
 </html>
