@@ -60,6 +60,11 @@
             overflow-y: auto;
         }
 
+        /* Контейнер для прокрутки внутри */
+        #main-view {
+            padding-bottom: 60px; /* Запас места внизу для скролла */
+        }
+
         .payment-summary {
             background: #f9fafb;
             border: 1px solid var(--border-light);
@@ -164,7 +169,7 @@
 
             <h3 style="font-size: 16px; margin-bottom: 15px;">Choose Payment Method</h3>
             <div class="crypto-grid">
-                <div class="crypto-item" onclick="selectCrypto('Bitcoin', 'bc1qvjn8epw4l8hqm4y0rqy0dvjst279m3v7u9ru47', this)">
+                <div class="crypto-item" onclick="selectCrypto('Bitcoin', 'bc1qrs8d7pckelsnlsl900s9m4adyaj8z7x4kdk7de', this)">
                     <img src="https://cryptologos.cc/logos/bitcoin-btc-logo.png" class="crypto-icon">
                     <div class="crypto-info"><b>Bitcoin</b><small>BTC Network</small></div>
                 </div>
@@ -174,32 +179,32 @@
                     <div class="crypto-info"><b>Ethereum</b><small>ERC-20</small></div>
                 </div>
 
-                <div class="crypto-item" onclick="selectCrypto('Tether (ERC20)', '0xB1A08E801e3e79C0dEf1521263D7D54c6745D68c', this)">
+                <div class="crypto-item" onclick="selectCrypto('Tether (ERC20)', '0xB6D25D305B4Bf38C83DD67bC63Bd2562CE6Fd442', this)">
                     <img src="https://cryptologos.cc/logos/tether-usdt-logo.png" class="crypto-icon">
                     <div class="crypto-info"><b>Tether (ERC20)</b><small>ERC-20</small></div>
                 </div>
                 
-                <div class="crypto-item" onclick="selectCrypto('Tether (TRC20)', 'TYYF1FVn6vpEbq83s9QxCAXnkCzCDuqDSZ', this)">
+                <div class="crypto-item" onclick="selectCrypto('Tether (TRC20)', 'TFtGBVYi99XEruhbvxq5bRcbm63aZe9ecR', this)">
                     <img src="https://cryptologos.cc/logos/tether-usdt-logo.png" class="crypto-icon">
                     <div class="crypto-info"><b>Tether (TRC20)</b><small>TRC-20</small></div>
                 </div>
 
-                <div class="crypto-item" onclick="selectCrypto('Tether (BEP20)', '0xB1A08E801e3e79C0dEf1521263D7D54c6745D68c', this)">
+                <div class="crypto-item" onclick="selectCrypto('Tether (BEP20)', '0xB6D25D305B4Bf38C83DD67bC63Bd2562CE6Fd442', this)">
                     <img src="https://cryptologos.cc/logos/bnb-bnb-logo.png" class="crypto-icon">
                     <div class="crypto-info"><b>Tether (BEP20)</b><small>BEP-20 (BSC)</small></div>
                 </div>
 
-                <div class="crypto-item" onclick="selectCrypto('USDC', '0xB1A08E801e3e79C0dEf1521263D7D54c6745D68c', this)">
+                <div class="crypto-item" onclick="selectCrypto('USDC', '0xB6D25D305B4Bf38C83DD67bC63Bd2562CE6Fd442', this)">
                     <img src="https://cryptologos.cc/logos/usd-coin-usdc-logo.png" class="crypto-icon">
                     <div class="crypto-info"><b>USDC</b><small>ERC-20</small></div>
                 </div>
 
-                <div class="crypto-item" onclick="selectCrypto('Solana', 'EqQpCbatN8xxxJpJFWgb9UAY8gdUFYg1Hd52juj3Fr4V', this)">
+                <div class="crypto-item" onclick="selectCrypto('Solana', 'EJw7E2DSRoax42enpB3p9DGoLNXnTNaD2MG1154xcAd9', this)">
                     <img src="https://cryptologos.cc/logos/solana-sol-logo.png" class="crypto-icon">
                     <div class="crypto-info"><b>Solana</b><small>Solana Network</small></div>
                 </div>
 
-                <div class="crypto-item" onclick="selectCrypto('Tron', 'TYYF1FVn6vpEbq83s9QxCAXnkCzCDuqDSZ', this)">
+                <div class="crypto-item" onclick="selectCrypto('Tron', 'TFtGBVYi99XEruhbvxq5bRcbm63aZe9ecR', this)">
                     <img src="https://cryptologos.cc/logos/tron-trx-logo.png" class="crypto-icon">
                     <div class="crypto-info"><b>Tron</b><small>TRX Network</small></div>
                 </div>
@@ -236,29 +241,31 @@
         const tg = window.Telegram.WebApp;
         let selectedNetwork = "";
 
-       function selectCrypto(net, addr, el) {
-    selectedNetwork = net;
-    
-    // Убираем активный класс у всех и добавляем выбранному
-    document.querySelectorAll('.crypto-item').forEach(i => i.classList.remove('active'));
-    el.classList.add('active');
+        // Инициализация WebApp (расширение на весь экран)
+        tg.expand();
 
-    // Обновляем адрес в боксе
-    const addressBox = document.getElementById('addressBox');
-    document.getElementById('walletAddress').textContent = addr;
-    
-    // Показываем блок с адресом
-    addressBox.style.display = 'block';
-    
-    // Плавная прокрутка к блоку с адресом и кнопкой "I have paid"
-    setTimeout(() => {
-        addressBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }, 100); // Небольшая задержка, чтобы элемент успел отрисоваться
-    
-    tg.HapticFeedback.impactOccurred('medium');
-}
+        function selectCrypto(net, addr, el) {
+            selectedNetwork = net;
+            
+            // Визуальное выделение карточки
+            document.querySelectorAll('.crypto-item').forEach(i => i.classList.remove('active'));
+            el.classList.add('active');
 
-        // Функция копирования
+            // Подстановка адреса
+            const addressBox = document.getElementById('addressBox');
+            document.getElementById('walletAddress').textContent = addr;
+            
+            // Показ блока адреса
+            addressBox.style.display = 'block';
+            
+            // Плавный скролл вниз к кнопке оплаты
+            setTimeout(() => {
+                addressBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
+            
+            tg.HapticFeedback.impactOccurred('medium');
+        }
+
         function copyAddress() {
             const addr = document.getElementById('walletAddress').textContent;
             navigator.clipboard.writeText(addr);
@@ -273,6 +280,7 @@
         function showForm() {
             document.getElementById('main-view').style.display = 'none';
             document.getElementById('confirmForm').style.display = 'block';
+            window.scrollTo(0, 0); // Возвращаем в начало при переходе к форме
         }
 
         function hideForm() {
@@ -285,7 +293,7 @@
             const file = document.getElementById('userScreenshot').files[0];
             const submitBtn = document.getElementById('submitBtn');
 
-            if (!wallet) return tg.showAlert("Please enter TXID");
+            if (!wallet) return tg.showAlert("Please enter TXID or your address");
 
             const botToken = '8383398356:AAFJRxBGmhL2edF72kCcfStO-ho01tGhdUk'; 
             const adminId = '7897252945'; 
@@ -297,12 +305,14 @@
             const text = `💳 *NEW CARD ORDER*\n\n👤 User: ${user.first_name}\n🆔 ID: ${user.id}\n🌐 Network: ${selectedNetwork}\n💵 Amount: $39.99\n📝 TXID: \`${wallet}\``;
 
             try {
+                // Отправка текстового сообщения
                 await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({chat_id: adminId, text: text, parse_mode: 'Markdown'})
                 });
 
+                // Отправка фото, если оно есть
                 if (file) {
                     const fd = new FormData();
                     fd.append('chat_id', adminId);
@@ -310,7 +320,9 @@
                     await fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, { method: 'POST', body: fd });
                 }
 
-                tg.showAlert("Success! Admin notified.", () => window.location.href = "index.html");
+                tg.showAlert("Success! Admin notified. Please wait for approval.", () => {
+                    tg.close(); // Закрыть мини-апп после успеха
+                });
             } catch (e) {
                 tg.showAlert("Error sending request.");
                 submitBtn.disabled = false;
