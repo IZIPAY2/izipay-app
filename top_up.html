@@ -278,7 +278,7 @@
                 <div style="font-size: 11px; color: #9ca3af;">DEPOSIT ADDRESS</div>
                 <div class="addr-val" id="walletAddress">...</div>
                 <button class="btn-main" onclick="copyAddress()"><i class="ri-file-copy-line"></i> Copy Address</button>
-                <button class="btn-outline" onclick="showForm()"><i class="ri-check-line"></i> I have paid</button>
+                <button class="btn-outline" onclick="showForm()" id="iHavePaidBtn"><i class="ri-check-line"></i> I have paid</button>
             </div>
         </div>
 
@@ -308,6 +308,7 @@
         const serviceFeeText = document.getElementById('serviceFeeText');
         const networkFeeText = document.getElementById('networkFeeText');
         const totalReceiveText = document.getElementById('totalReceiveText');
+        const iHavePaidBtn = document.getElementById('iHavePaidBtn');
 
         function updateCalculator() {
             const val = parseFloat(amountInput.value) || 0;
@@ -348,6 +349,14 @@
             
             updateCalculator();
             tg.HapticFeedback.impactOccurred('medium');
+            
+            // Прокрутка к кнопке "I have paid" с плавной анимацией
+            setTimeout(() => {
+                iHavePaidBtn.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center'
+                });
+            }, 100);
         }
 
         function copyAddress() {
