@@ -236,16 +236,27 @@
         const tg = window.Telegram.WebApp;
         let selectedNetwork = "";
 
-        function selectCrypto(net, addr, el) {
-            selectedNetwork = net;
-            document.querySelectorAll('.crypto-item').forEach(i => i.classList.remove('active'));
-            el.classList.add('active');
+       function selectCrypto(net, addr, el) {
+    selectedNetwork = net;
+    
+    // Убираем активный класс у всех и добавляем выбранному
+    document.querySelectorAll('.crypto-item').forEach(i => i.classList.remove('active'));
+    el.classList.add('active');
 
-            document.getElementById('walletAddress').textContent = addr;
-            document.getElementById('addressBox').style.display = 'block';
-            
-            tg.HapticFeedback.impactOccurred('medium');
-        }
+    // Обновляем адрес в боксе
+    const addressBox = document.getElementById('addressBox');
+    document.getElementById('walletAddress').textContent = addr;
+    
+    // Показываем блок с адресом
+    addressBox.style.display = 'block';
+    
+    // Плавная прокрутка к блоку с адресом и кнопкой "I have paid"
+    setTimeout(() => {
+        addressBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 100); // Небольшая задержка, чтобы элемент успел отрисоваться
+    
+    tg.HapticFeedback.impactOccurred('medium');
+}
 
         // Функция копирования
         function copyAddress() {
