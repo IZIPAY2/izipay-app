@@ -51,7 +51,11 @@ const bot = new TelegramBot(token, { polling: true });
 const adminId = '7897252945';  
 
 bot.onText(/\/start/, (msg) => { 
-    // Используем обратные апострофы (backticks) для многострочного текста
+    const chatId = msg.chat.id;
+    
+    // Прямая ссылка на вашу гифку в GitHub
+    const gifUrl = 'https://raw.githubusercontent.com/IZIPAY2/izipay-app/main/intro.gif'; 
+
     const welcomeMessage = `👋 Welcome to IZIPAY
 
 IZIPAY is a crypto-powered payment solution for fast, global spending.
@@ -65,20 +69,38 @@ Get instant virtual or physical cards and pay with your crypto anywhere.
 ✔ Secure payments at thousands of merchants
 ✔ Trusted by 10,000+ users
 
-No subscriptions. No hidden fees. Just freedom. 
+No subscriptions. No hidden fees. Just freedom.`;
 
-Website: izipay.me 
-Support: @izipay_sup`;
-
-    bot.sendMessage(msg.chat.id, welcomeMessage, { 
+    // Используем sendAnimation для отправки GIF
+    bot.sendAnimation(chatId, gifUrl, {
+        caption: welcomeMessage,
         reply_markup: { 
-            inline_keyboard: [[{ 
-                text: 'Open wallet', 
-                web_app: { url: 'https://izipay2.github.io/izipay-app/' }
-              }]]
+            inline_keyboard: [
+                // Первый ряд: Кнопка кошелька (Web App)
+                [{ text: 'Open wallet', web_app: { url: 'https://izipay2.github.io/izipay-app/' } }],
+                // Второй ряд: Две кнопки в одну строку под кошельком
+                [
+                    { text: 'Support', url: 'https://t.me/izipay_sup' },
+                    { text: 'Website', url: 'https://izipay.me' }
+                ]
+            ] 
         } 
-    }); 
-}); 
+    }).catch((error) => {
+        // Если гифка не загрузится (например, ошибка в ссылке), бот отправит просто текст с кнопками
+        console.error("Ошибка отправки GIF:", error.message);
+        bot.sendMessage(chatId, welcomeMessage, {
+            reply_markup: { 
+                inline_keyboard: [
+                    [{ text: 'Open wallet', web_app: { url: 'https://izipay2.github.io/izipay-app/' } }],
+                    [
+                        { text: 'Support', url: 'https://t.me/izipay_sup' },
+                        { text: 'Website', url: 'https://izipay.me' }
+                    ]
+                ] 
+            }
+        });
+    });
+});
 
 // 4. Уведомление КЛИЕНТА о транзакции
 db.ref('users').on('child_added', (userSnap) => { 
