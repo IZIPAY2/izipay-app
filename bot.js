@@ -51,7 +51,8 @@ const bot = new TelegramBot(token, { polling: true });
 const adminId = '7897252945';  
 
 bot.onText(/\/start/, (msg) => { 
-    bot.sendMessage(msg.chat.id, '👋 Welcome to IZIPAY
+    // Используем обратные апострофы (backticks) для многострочного текста
+    const welcomeMessage = `👋 Welcome to IZIPAY
 
 IZIPAY is a crypto-powered payment solution for fast, global spending.
 Get instant virtual or physical cards and pay with your crypto anywhere.
@@ -64,9 +65,17 @@ Get instant virtual or physical cards and pay with your crypto anywhere.
 ✔ Secure payments at thousands of merchants
 ✔ Trusted by 10,000+ users
 
-No subscriptions. No hidden fees. Just freedom. Website: izipay.me Support: @izipay_sup', { 
+No subscriptions. No hidden fees. Just freedom. 
+
+Website: izipay.me 
+Support: @izipay_sup`;
+
+    bot.sendMessage(msg.chat.id, welcomeMessage, { 
         reply_markup: { 
-            inline_keyboard: [[{ text: 'Open wallet', web_app: { url: 'https://izipay2.github.io/izipay-app/' } }]] 
+            inline_keyboard: [[{ 
+                text: 'Open wallet', 
+                web_app: { url: 'https://izipay2.github.io/izipay-app/' }
+              }]]
         } 
     }); 
 }); 
