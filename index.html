@@ -21,26 +21,48 @@
     body { background: var(--bg-dark); color: var(--text-white); padding: 20px; }
     .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
     .logo-text { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
+    
     .balance-section { text-align: center; margin-bottom: 35px; }
     .currency { font-size: 14px; color: var(--text-gray); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
     .balance-amount { font-size: 48px; font-weight: 700; background: linear-gradient(180deg, #fff 0%, #aaa 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    
+    /* Стили для плашки замороженного баланса */
+    .pending-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(251, 191, 36, 0.1);
+      color: var(--metal-gold);
+      padding: 6px 14px;
+      border-radius: 100px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-top: 12px;
+      border: 1px solid rgba(251, 191, 36, 0.2);
+    }
+
     .card-actions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 35px; }
     .action-btn { background: var(--card-bg); border: 1px solid var(--border-glass); border-radius: 18px; padding: 16px 8px; display: flex; flex-direction: column; align-items: center; gap: 10px; cursor: pointer; color: white; transition: transform 0.2s, background 0.2s; text-decoration: none; }
     .action-btn:active { transform: scale(0.95); background: var(--glass-surface); }
     .action-btn i { font-size: 28px; color: var(--primary-green); }
     .action-btn span { font-size: 11px; font-weight: 600; }
+    
     .card-visual-wrapper { width: 100%; border-radius: 20px; overflow: hidden; margin-bottom: 15px; box-shadow: 0 15px 35px rgba(0,0,0,0.6); position: relative; }
     .card-image { width: 100%; display: block; border-radius: 20px; }
+    
     .no-card-box { width: 100%; height: 200px; background: linear-gradient(135deg, #1a1d24 0%, #0f1115 100%); border: 2px dashed var(--border-glass); border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; color: var(--text-gray); cursor: pointer; text-align: center; padding: 20px; transition: 0.3s; }
     .no-card-box i { font-size: 40px; color: var(--primary-green); opacity: 0.8; }
+    
     .card-info-box { background: var(--card-bg); border: 1px solid var(--border-glass); border-radius: 16px; padding: 20px; margin-bottom: 12px; }
     .card-number-row { display: flex; justify-content: space-between; align-items: center; }
     .card-number-text { font-family: 'Courier New', monospace; font-size: 20px; letter-spacing: 2px; color: var(--text-white); font-weight: 600; }
     .copy-icon { color: var(--primary-green); cursor: pointer; padding: 5px; font-size: 20px; }
+    
     .toggle-details-btn { width: 100%; background: var(--glass-surface); border: 1px solid var(--border-glass); color: var(--primary-green); padding: 14px; border-radius: 14px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
     .card-details { margin-top: 10px; background: var(--glass-surface); border-radius: 14px; padding: 5px 20px; display: none; border: 1px solid var(--border-glass); }
     .card-details.active { display: block; animation: slideIn 0.3s ease; }
     .detail-row { display: flex; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14px; }
+    
     #loader { position: fixed; inset: 0; background: var(--bg-dark); display: flex; align-items: center; justify-content: center; z-index: 1000; font-weight: bold; letter-spacing: 2px; }
     @keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
   </style>
@@ -57,6 +79,11 @@
 <div class="balance-section">
   <div class="currency">Total Balance</div>
   <div class="balance-amount" id="user-balance">$0.00</div>
+  <div id="pending-container" style="display: none;">
+      <div class="pending-badge">
+        <i class="ri-time-line"></i> Pending: <span id="pending-amount">$0.00</span>
+      </div>
+  </div>
 </div>
 
 <div class="card-actions">
@@ -121,16 +148,27 @@
 
   function renderDashboard(data) {
     const cards = data.cards;
-    const issuedStatus = parseInt(data.issued_card_status); // Получаем статус заявки из API
+    const issuedStatus = parseInt(data.issued_card_status);
     
-    // Считаем общий баланс
     let totalBalance = 0;
+    let totalPending = 0;
+
     cards.forEach(card => {
         totalBalance += parseFloat(card.balance || 0);
+        totalPending += parseFloat(card.pending_topup || 0); // Сумма пополнения в ожидании
     });
 
     document.getElementById('user-balance').textContent = '$' + totalBalance.toLocaleString(undefined, {minimumFractionDigits: 2});
     
+    // Показываем плашку Pending пополнения
+    const pendingContainer = document.getElementById('pending-container');
+    if (totalPending > 0) {
+        pendingContainer.style.display = 'block';
+        document.getElementById('pending-amount').textContent = '$' + totalPending.toFixed(2);
+    } else {
+        pendingContainer.style.display = 'none';
+    }
+
     const cardSection = document.getElementById('card-section');
     const placeholderSection = document.getElementById('card-placeholder');
     const placeholderText = document.getElementById('placeholder-text');
@@ -148,17 +186,17 @@
       document.getElementById('card-status-label').textContent = "Active";
       document.getElementById('card-status-label').style.color = "#10b981";
     } else if (issuedStatus === 1) {
-      // КАРТА ОПЛАЧЕНА (СТАТУС PENDING)
+      // ОЖИДАНИЕ ВЫПУСКА КАРТЫ
       cardSection.style.display = 'none';
       placeholderSection.style.display = 'block';
-      placeholderSection.style.pointerEvents = 'none'; // Отключаем клик
+      placeholderSection.style.pointerEvents = 'none'; 
       placeholderSection.querySelector('.no-card-box').style.borderColor = 'var(--metal-gold)';
       
       placeholderIcon.className = "ri-time-line";
       placeholderIcon.style.color = "var(--metal-gold)";
-      placeholderText.innerHTML = "Payment Pending...<br><small style='font-size:11px; opacity:0.6; font-weight:400;'>Verification takes ~1-5 mins</small>";
+      placeholderText.innerHTML = "Card Issue Pending...<br><small style='font-size:11px; opacity:0.6; font-weight:400;'>Verification takes ~1-5 mins</small>";
     } else {
-      // КАРТЫ НЕТ И ЗАЯВКИ НЕТ
+      // КАРТЫ НЕТ
       cardSection.style.display = 'none';
       placeholderSection.style.display = 'block';
       placeholderSection.style.pointerEvents = 'auto';
