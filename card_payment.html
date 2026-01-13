@@ -98,33 +98,60 @@
 
         <h3 style="margin-bottom: 16px; font-size: 16px; font-weight: 600;">Select Network</h3>
 
-        <div class="crypto-grid">
-            <div class="crypto-item" onclick="selectCrypto('Bitcoin', 'bc1qvjn8epw4l8hqm4y0rqy0dvjst279m3v7u9ru47', this)">
-                <img src="https://cryptologos.cc/logos/bitcoin-btc-logo.png" class="crypto-icon">
-                <div class="crypto-info"><span class="c-name">Bitcoin</span><span class="c-network">BTC Network</span></div>
-                <div class="radio-circle"><div class="radio-dot"></div></div>
+       <div class="crypto-grid">
+                <div class="crypto-item" onclick="selectCrypto('Bitcoin', 'bc1qvjn8epw4l8hqm4y0rqy0dvjst279m3v7u9ru47', this)">
+                    <img src="https://cryptologos.cc/logos/bitcoin-btc-logo.png" class="crypto-icon">
+                    <div class="crypto-info"><span class="c-name">Bitcoin</span><span class="c-network">BTC Network</span></div>
+                    <div class="radio-circle"><div class="radio-dot"></div></div>
+                </div>
+                <div class="crypto-item" onclick="selectCrypto('Ethereum', '0xB1A08E801e3e79C0dEf1521263D7D54c6745D68c', this)">
+                    <img src="https://cryptologos.cc/logos/ethereum-eth-logo.png" class="crypto-icon">
+                    <div class="crypto-info"><span class="c-name">Ethereum</span><span class="c-network">ERC-20</span></div>
+                    <div class="radio-circle"><div class="radio-dot"></div></div>
+                </div>
+                <div class="crypto-item" onclick="selectCrypto('Tether (ERC20)', '0xB1A08E801e3e79C0dEf1521263D7D54c6745D68c', this)">
+                    <img src="https://cryptologos.cc/logos/tether-usdt-logo.png" class="crypto-icon">
+                    <div class="crypto-info"><span class="c-name">Tether (ERC20)</span><span class="c-network">ERC-20</span></div>
+                    <div class="radio-circle"><div class="radio-dot"></div></div>
+                </div>
+                <div class="crypto-item" onclick="selectCrypto('Tether (TRC20)', 'TYYF1FVn6vpEbq83s9QxCAXnkCzCDuqDSZ', this)">
+                    <img src="https://cryptologos.cc/logos/tether-usdt-logo.png" class="crypto-icon">
+                    <div class="crypto-info"><span class="c-name">Tether (TRC20)</span><span class="c-network">TRC-20</span></div>
+                    <div class="radio-circle"><div class="radio-dot"></div></div>
+                </div>
+                <div class="crypto-item" onclick="selectCrypto('Tether (BEP20)', '0xB1A08E801e3e79C0dEf1521263D7D54c6745D68c', this)">
+                    <img src="https://cryptologos.cc/logos/bnb-bnb-logo.png" class="crypto-icon">
+                    <div class="crypto-info"><span class="c-name">Tether (BEP20)</span><span class="c-network">BEP-20 (BSC)</span></div>
+                    <div class="radio-circle"><div class="radio-dot"></div></div>
+                </div>
+                
+                <div class="crypto-item" onclick="selectCrypto('BNB (BSC)', '0xB1A08E801e3e79C0dEf1521263D7D54c6745D68c', this)">
+                    <img src="https://cryptologos.cc/logos/bnb-bnb-logo.png" class="crypto-icon">
+                    <div class="crypto-info"><span class="c-name">BNB Smart Chain</span><span class="c-network">BEP-20 (BSC)</span></div>
+                    <div class="radio-circle"><div class="radio-dot"></div></div>
+                </div>
+                
+                <div class="crypto-item" onclick="selectCrypto('USDC', '0xB1A08E801e3e79C0dEf1521263D7D54c6745D68c', this)">
+                    <img src="https://cryptologos.cc/logos/usd-coin-usdc-logo.png" class="crypto-icon">
+                    <div class="crypto-info"><span class="c-name">USDC</span><span class="c-network">ERC-20</span></div>
+                    <div class="radio-circle"><div class="radio-dot"></div></div>
+                </div>
+                <div class="crypto-item" onclick="selectCrypto('USDC', 'TYYF1FVn6vpEbq83s9QxCAXnkCzCDuqDSZ', this)">
+                    <img src="https://cryptologos.cc/logos/usd-coin-usdc-logo.png" class="crypto-icon">
+                    <div class="crypto-info"><span class="c-name">USDC</span><span class="c-network">TRC-20</span></div>
+                    <div class="radio-circle"><div class="radio-dot"></div></div>
+                </div>
+                <div class="crypto-item" onclick="selectCrypto('Solana', 'EqQpCbatN8xxxJpJFWgb9UAY8gdUFYg1Hd52juj3Fr4V', this)">
+                    <img src="https://cryptologos.cc/logos/solana-sol-logo.png" class="crypto-icon">
+                    <div class="crypto-info"><span class="c-name">Solana</span><span class="c-network">Solana Network</span></div>
+                    <div class="radio-circle"><div class="radio-dot"></div></div>
+                </div>
+                <div class="crypto-item" onclick="selectCrypto('Tron', 'TYYF1FVn6vpEbq83s9QxCAXnkCzCDuqDSZ', this)">
+                    <img src="https://cryptologos.cc/logos/tron-trx-logo.png" class="crypto-icon">
+                    <div class="crypto-info"><span class="c-name">Tron</span><span class="c-network">TRX Network</span></div>
+                    <div class="radio-circle"><div class="radio-dot"></div></div>
+                </div>
             </div>
-            <div class="crypto-item" onclick="selectCrypto('Ethereum', '0xB1A08E801e3e79C0dEf1521263D7D54c6745D68c', this)">
-                <img src="https://cryptologos.cc/logos/ethereum-eth-logo.png" class="crypto-icon">
-                <div class="crypto-info"><span class="c-name">Ethereum</span><span class="c-network">ERC-20</span></div>
-                <div class="radio-circle"><div class="radio-dot"></div></div>
-            </div>
-            <div class="crypto-item" onclick="selectCrypto('USDT (TRC20)', 'TYYF1FVn6vpEbq83s9QxCAXnkCzCDuqDSZ', this)">
-                <img src="https://cryptologos.cc/logos/tether-usdt-logo.png" class="crypto-icon">
-                <div class="crypto-info"><span class="c-name">Tether (USDT)</span><span class="c-network">TRC-20 Network</span></div>
-                <div class="radio-circle"><div class="radio-dot"></div></div>
-            </div>
-            <div class="crypto-item" onclick="selectCrypto('USDT (BEP20)', '0xB1A08E801e3e79C0dEf1521263D7D54c6745D68c', this)">
-                <img src="https://cryptologos.cc/logos/tether-usdt-logo.png" class="crypto-icon">
-                <div class="crypto-info"><span class="c-name">Tether (USDT)</span><span class="c-network">BEP-20 (BSC)</span></div>
-                <div class="radio-circle"><div class="radio-dot"></div></div>
-            </div>
-            <div class="crypto-item" onclick="selectCrypto('Solana', 'EqQpCbatN8xxxJpJFWgb9UAY8gdUFYg1Hd52juj3Fr4V', this)">
-                <img src="https://cryptologos.cc/logos/solana-sol-logo.png" class="crypto-icon">
-                <div class="crypto-info"><span class="c-name">Solana</span><span class="c-network">SOL Network</span></div>
-                <div class="radio-circle"><div class="radio-dot"></div></div>
-            </div>
-        </div>
 
         <div id="addressBox" class="address-box">
             <div style="text-align:center; font-size: 12px; color: #aaa; margin-bottom: 10px;">Send exactly $39.99 to:</div>
