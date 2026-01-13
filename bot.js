@@ -1,84 +1,63 @@
 const TelegramBot = require('node-telegram-bot-api'); 
 const http = require('http'); 
-const admin = require('firebase-admin'); 
 
-// 1. Настройка Firebase
-const serviceAccount = { 
-  "type": "service_account", 
-  "project_id": process.env.FIREBASE_PROJECT_ID, 
-  "private_key_id": process.env.FIREBASE_PRIVATE_KEY_ID, 
-  "private_key": process.env.FIREBASE_PRIVATE_KEY ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n').replace(/"/g, '') : undefined, 
-  "client_email": process.env.FIREBASE_CLIENT_EMAIL, 
-  "client_id": process.env.FIREBASE_CLIENT_ID, 
-  "auth_uri": process.env.FIREBASE_AUTH_URI, 
-  "token_uri": process.env.FIREBASE_TOKEN_URI, 
-  "auth_provider_x509_cert_url": process.env.FIREBASE_AUTH_PROVIDER_CERT_URL, 
-  "client_x509_cert_url": process.env.FIREBASE_CLIENT_CERT_URL, 
-  "universe_domain": process.env.FIREBASE_UNIVERSE_DOMAIN 
-}; 
-
-if (!admin.apps.length) { 
-    admin.initializeApp({ 
-        credential: admin.credential.cert(serviceAccount), 
-        databaseURL: "https://izipay-f1def-default-rtdb.firebaseio.com" 
-    }); 
-} 
-const db = admin.database(); 
-
-// 2. Веб-сервер для CRON-JOB.ORG и Само-пинг
+// --- НАСТРОЙКИ ---
+const token = '8383398356:AAFJRxBGmhL2edF72kCcfStO-ho01tGhdUk'; 
+const adminId = '7897252945'; 
 const PORT = process.env.PORT || 3000; 
 const MY_URL = "https://izipay-app.onrender.com"; 
 
-const server = http.createServer((req, res) => { 
-  console.log(`[${new Date().toISOString()}] Cron-job.org ping received`);
-  res.writeHead(200, {'Content-Type': 'text/plain'});
-  res.end('IZIPAY Bot is Active'); 
-}); 
+const bot = new TelegramBot(token, { polling: true });
 
-server.listen(PORT, () => { 
+// --- 1. ВЕБ-СЕРВЕР (Для Cron-job и предотвращения сна) ---
+const server = http.createServer((req, res) => {
+  // Логика для приема уведомлений от твоего PHP-сайта
+  if (req.method === 'POST') {
+    let body = '';
+    req.on('data', chunk => { body += chunk.toString(); });
+    req.on('end', () => {
+      try {
+        const data = JSON.parse(body);
+        if (data.message) {
+          bot.sendMessage(adminId, data.message, { parse_mode: 'Markdown' });
+        }
+        res.writeHead(200);
+        res.end('OK');
+      } catch (e) {
+        res.writeHead(400);
+        res.end('Invalid JSON');
+      }
+    });
+  } else {
+    console.log(`[${new Date().toISOString()}] Ping received`);
+    res.writeHead(200, {'Content-Type': 'text/plain'});
+    res.end('IZIPAY Bot is Active');
+  }
+});
+
+server.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`); 
-}); 
+});
 
+// Само-пинг каждые 10 минут
 setInterval(() => { 
   http.get(MY_URL, (res) => { 
     console.log('Self-ping successful'); 
   }).on('error', (e) => console.log('Self-ping failed:', e.message)); 
 }, 600000); 
 
-// 3. Настройка Telegram бота 
-const token = '8383398356:AAFJRxBGmhL2edF72kCcfStO-ho01tGhdUk'; 
-const bot = new TelegramBot(token, { polling: true }); 
-const adminId = '7897252945';  
-
+// --- 2. КОМАНДА /START (Вход в Mini App) ---
 bot.onText(/\/start/, (msg) => { 
     const chatId = msg.chat.id;
-    
-    // Прямая ссылка на вашу гифку в GitHub
     const gifUrl = 'https://raw.githubusercontent.com/IZIPAY2/izipay-app/main/intro.gif'; 
 
-    const welcomeMessage = `👋 Welcome to IZIPAY
+    const welcomeMessage = `👋 Welcome to IZIPAY\n\nIZIPAY is a crypto-powered payment solution for fast, global spending.\nGet instant virtual or physical cards and pay with your crypto anywhere.\n\n⚡ Cards issued in minutes\n🌍 Accepted worldwide\n🪙 Top up directly with crypto\n\n✔ Apple Pay & Google Pay\n✔ Secure payments at thousands of merchants\n✔ Trusted by 10,000+ users\n\nNo subscriptions. No hidden fees. Just freedom.`;
 
-IZIPAY is a crypto-powered payment solution for fast, global spending.
-Get instant virtual or physical cards and pay with your crypto anywhere.
-
-⚡ Cards issued in minutes
-🌍 Accepted worldwide
-🪙 Top up directly with crypto
-
-✔ Apple Pay & Google Pay
-✔ Secure payments at thousands of merchants
-✔ Trusted by 10,000+ users
-
-No subscriptions. No hidden fees. Just freedom.`;
-
-    // Используем sendAnimation для отправки GIF
     bot.sendAnimation(chatId, gifUrl, {
         caption: welcomeMessage,
         reply_markup: { 
             inline_keyboard: [
-                // Первый ряд: Кнопка кошелька (Web App)
                 [{ text: 'Open wallet', web_app: { url: 'https://izipay2.github.io/izipay-app/' } }],
-                // Второй ряд: Две кнопки в одну строку под кошельком
                 [
                     { text: 'Support', url: 'https://t.me/izipay_sup' },
                     { text: 'Website', url: 'https://izipay.me' }
@@ -86,8 +65,7 @@ No subscriptions. No hidden fees. Just freedom.`;
             ] 
         } 
     }).catch((error) => {
-        // Если гифка не загрузится (например, ошибка в ссылке), бот отправит просто текст с кнопками
-        console.error("Ошибка отправки GIF:", error.message);
+        console.error("Error sending GIF:", error.message);
         bot.sendMessage(chatId, welcomeMessage, {
             reply_markup: { 
                 inline_keyboard: [
@@ -102,44 +80,9 @@ No subscriptions. No hidden fees. Just freedom.`;
     });
 });
 
-// 4. Уведомление КЛИЕНТА о транзакции
-db.ref('users').on('child_added', (userSnap) => { 
-    const userId = userSnap.key; 
-    db.ref(`users/${userId}/history`).on('child_added', (histSnap) => { 
-        const tx = histSnap.val(); 
-        if (tx && tx.notified === false) { 
-            bot.sendMessage(userId, `🔔 New Transaction!\n\n${tx.details}`) 
-                .then(() => db.ref(`users/${userId}/history/${histSnap.key}`).update({ notified: true })) 
-                .catch(e => console.log("Notify error:", e.message)); 
-        } 
-    }); 
-}); 
-
-// 5. Уведомления АДМИНУ (БЕЗ МЕТОК - приходят всегда при изменениях)
-db.ref('users').on('child_changed', (snapshot) => {
-    const user = snapshot.val();
-    const userId = snapshot.key;
-    if (!user) return;
-
-    // Уведомление о карте (придет, если статус pending)
-    if (user.status === 'pending' && user.pending_request) {
-        const cardText = `💳 **НОВАЯ ЗАЯВКА НА КАРТУ**\n\n👤 Имя: ${user.name || 'User'}\n🆔 ID: \`${userId}\`\n💰 Цена: $${user.request_price}`;
-        bot.sendMessage(adminId, cardText, { parse_mode: 'Markdown' })
-            .catch(e => console.error("Admin card notify error:", e.message));
-    }
-
-    // Уведомление о выводе (придет, если статус pending)
-    if (user.withdraw_request && user.withdraw_request.status === 'pending') {
-        const w = user.withdraw_request;
-        const wText = `💰 **ЗАПРОС НА ВЫВОД**\n\n👤 Имя: ${user.name}\n🆔 ID: \`${userId}\`\n💵 Сумма: **$${w.amount}**\n💳 Кошелек: \`${w.wallet}\``;
-        bot.sendMessage(adminId, wText, { parse_mode: 'Markdown' })
-            .catch(e => console.error("Admin withdraw notify error:", e.message));
-    }
-});
-
 // Глушим ошибку 409 Conflict 
 bot.on('polling_error', (err) => { 
-    if (!err.message.includes('409')) console.error("TG:", err.message); 
+    if (!err.message.includes('409')) console.error("TG Error:", err.message); 
 }); 
 
-console.log('🚀 Бот запущен. Уведомления админу приходят без ограничений.');
+console.log('🚀 Бот запущен на MySQL логике (без Firebase).');
