@@ -9,7 +9,6 @@
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     
     <style>
-        /* Оставляем твои стили без изменений, они отличные */
         :root {
             --bg-dark: #0f1115; --card-bg: #ffffff; --primary-green: #638576; 
             --text-dark: #1a1a1a; --text-gray: #8e8e93; --border-light: #e5e7eb;
@@ -17,25 +16,55 @@
         }
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Inter', sans-serif; background-color: var(--bg-dark); color: white; min-height: 100vh; display: flex; flex-direction: column; }
-        .mobile-header { padding: 24px; display: flex; align-items: center; justify-content: space-between; }
-        .back-btn { width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.1); color: white; display: flex; align-items: center; justify-content: center; text-decoration: none; }
-        .content-sheet { background: var(--card-bg); flex-grow: 1; border-top-left-radius: 32px; border-top-right-radius: 32px; padding: 32px 24px; color: var(--text-dark); }
+        
+        .mobile-header { padding: 24px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+        .back-btn { width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.1); color: white; display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 20px; }
+        
+        .content-sheet { background: var(--card-bg); flex-grow: 1; border-top-left-radius: 32px; border-top-right-radius: 32px; padding: 32px 24px; color: var(--text-dark); overflow-y: auto; animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+        
+        .sheet-intro { margin-bottom: 24px; }
+        .sheet-intro h1 { font-size: 24px; font-weight: 700; color: var(--text-dark); margin-bottom: 8px; }
+        .sheet-intro p { font-size: 14px; color: var(--text-gray); line-height: 1.5; }
+
         .payment-summary { background: var(--toggle-bg); border-radius: 20px; padding: 24px; margin-bottom: 16px; text-align: center; border-left: 4px solid var(--primary-green); }
-        .price-main { font-size: 32px; font-weight: 700; color: var(--text-dark); }
+        .price-label { font-size: 13px; color: var(--text-gray); font-weight: 500; }
+        .price-main { font-size: 32px; font-weight: 700; color: var(--text-dark); margin-top: 4px; }
+
+        .compliance-notice { background: #fffbeb; border: 1px solid #fde68a; border-radius: 16px; padding: 14px; margin-bottom: 24px; display: flex; gap: 12px; }
+        .compliance-notice i { color: var(--warning-amber); font-size: 20px; }
+        .compliance-text { font-size: 12px; color: #92400e; line-height: 1.4; }
+
         .crypto-grid { display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 30px; }
-        .crypto-item { background: white; border: 1px solid var(--border-light); border-radius: 16px; padding: 16px; display: flex; align-items: center; gap: 16px; cursor: pointer; }
+        .crypto-item { background: white; border: 1px solid var(--border-light); border-radius: 16px; padding: 16px; display: flex; align-items: center; gap: 16px; cursor: pointer; transition: 0.2s; }
+        .crypto-item:hover { border-color: var(--primary-green); background: #f0fdf4; }
         .crypto-item.active { border: 2px solid var(--primary-green); background: #f0fdf4; }
-        .crypto-icon { width: 32px; height: 32px; }
-        .address-box { background: var(--bg-dark); color: white; border-radius: 20px; padding: 24px; display: none; margin-top: 20px; }
+        .crypto-icon { width: 36px; height: 36px; object-fit: contain; }
+        .crypto-info { flex: 1; }
+        .c-name { font-size: 15px; font-weight: 600; color: var(--text-dark); }
+        .c-network { font-size: 12px; color: var(--text-gray); }
+        
+        .radio-circle { width: 20px; height: 20px; border: 2px solid var(--border-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+        .crypto-item.active .radio-circle { border-color: var(--primary-green); }
+        .radio-dot { width: 10px; height: 10px; background: var(--primary-green); border-radius: 50%; display: none; }
+        .crypto-item.active .radio-dot { display: block; }
+
+        .address-box { background: var(--bg-dark); color: white; border-radius: 20px; padding: 24px; margin-top: 20px; display: none; animation: fadeIn 0.3s; }
         .address-box.show { display: block; }
-        .addr-val { font-family: monospace; font-size: 13px; word-break: break-all; background: rgba(255,255,255,0.1); padding: 12px; border-radius: 12px; margin: 15px 0; }
-        .copy-btn { width: 100%; background: var(--primary-green); color: white; border: none; padding: 14px; border-radius: 12px; font-weight: 600; }
-        .btn-paid { width: 100%; background: transparent; color: var(--primary-green); border: 1.5px solid var(--primary-green); padding: 14px; border-radius: 12px; margin-top: 10px; }
-        .confirm-view { display: none; }
+        .addr-val { font-family: monospace; font-size: 14px; word-break: break-all; background: rgba(255,255,255,0.1); padding: 12px; border-radius: 12px; margin-bottom: 20px; color: #f3f4f6; text-align: center; }
+        
+        .copy-btn { width: 100%; background: var(--primary-green); color: white; border: none; padding: 14px; border-radius: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-paid { width: 100%; background: transparent; color: var(--primary-green); border: 1.5px solid var(--primary-green); padding: 14px; border-radius: 12px; font-weight: 600; cursor: pointer; margin-top: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+
+        .confirm-form-container { display: none; animation: fadeIn 0.3s; }
         .input-group { margin-bottom: 20px; }
-        .input-group input { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #ddd; }
-        #toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px); background: white; padding: 12px 24px; border-radius: 50px; transition: 0.3s; z-index: 9999; color: black; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .input-group label { display: block; font-size: 12px; color: var(--text-gray); margin-bottom: 8px; font-weight: 600; }
+        .input-group input { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--border-light); background: var(--toggle-bg); outline: none; }
+        
+        #toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px); background: white; color: black; padding: 12px 24px; border-radius: 50px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); font-size: 14px; z-index: 9999; transition: 0.3s; }
         #toast.show { transform: translateX(-50%) translateY(0); }
+
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -44,94 +73,132 @@
 
 <div class="mobile-header">
     <a href="index.html" class="back-btn"><i class="ri-arrow-left-line"></i></a>
-    <h1 style="font-size: 18px;">Order Card</h1>
+    <div style="font-weight: 600;">Order Card</div>
     <div style="width:40px;"></div>
 </div>
 
 <div class="content-sheet">
     <div id="selection-view">
+        <div class="sheet-intro">
+            <h1>Virtual Card Payment</h1>
+            <p>Complete the payment to activate your card instantly.</p>
+        </div>
+
         <div class="payment-summary">
-            <div style="color: #888; font-size: 12px;">Issuance Fee</div>
+            <div class="price-label">Issuance Fee</div>
             <div class="price-main">$39.99</div>
         </div>
 
-        <h3 style="margin-bottom: 16px; font-size: 16px;">Select Network</h3>
+        <div class="compliance-notice">
+            <i class="ri-information-line"></i>
+            <div class="compliance-text">
+                Send exactly the amount shown. Activation starts automatically after blockchain confirmation.
+            </div>
+        </div>
+
+        <h3 style="margin-bottom: 16px; font-size: 16px; font-weight: 600;">Select Network</h3>
 
         <div class="crypto-grid">
+            <div class="crypto-item" onclick="selectCrypto('Bitcoin', 'bc1qvjn8epw4l8hqm4y0rqy0dvjst279m3v7u9ru47', this)">
+                <img src="https://cryptologos.cc/logos/bitcoin-btc-logo.png" class="crypto-icon">
+                <div class="crypto-info"><span class="c-name">Bitcoin</span><span class="c-network">BTC Network</span></div>
+                <div class="radio-circle"><div class="radio-dot"></div></div>
+            </div>
+            <div class="crypto-item" onclick="selectCrypto('Ethereum', '0xB1A08E801e3e79C0dEf1521263D7D54c6745D68c', this)">
+                <img src="https://cryptologos.cc/logos/ethereum-eth-logo.png" class="crypto-icon">
+                <div class="crypto-info"><span class="c-name">Ethereum</span><span class="c-network">ERC-20</span></div>
+                <div class="radio-circle"><div class="radio-dot"></div></div>
+            </div>
             <div class="crypto-item" onclick="selectCrypto('USDT (TRC20)', 'TYYF1FVn6vpEbq83s9QxCAXnkCzCDuqDSZ', this)">
                 <img src="https://cryptologos.cc/logos/tether-usdt-logo.png" class="crypto-icon">
-                <div style="flex:1"><b>Tether</b><br><small style="color:#888">TRC-20 Network</small></div>
-                <i class="ri-checkbox-blank-circle-line"></i>
+                <div class="crypto-info"><span class="c-name">Tether (USDT)</span><span class="c-network">TRC-20 Network</span></div>
+                <div class="radio-circle"><div class="radio-dot"></div></div>
             </div>
             <div class="crypto-item" onclick="selectCrypto('USDT (BEP20)', '0xB1A08E801e3e79C0dEf1521263D7D54c6745D68c', this)">
                 <img src="https://cryptologos.cc/logos/tether-usdt-logo.png" class="crypto-icon">
-                <div style="flex:1"><b>Tether</b><br><small style="color:#888">BEP-20 (BSC)</small></div>
-                <i class="ri-checkbox-blank-circle-line"></i>
+                <div class="crypto-info"><span class="c-name">Tether (USDT)</span><span class="c-network">BEP-20 (BSC)</span></div>
+                <div class="radio-circle"><div class="radio-dot"></div></div>
             </div>
             <div class="crypto-item" onclick="selectCrypto('Solana', 'EqQpCbatN8xxxJpJFWgb9UAY8gdUFYg1Hd52juj3Fr4V', this)">
                 <img src="https://cryptologos.cc/logos/solana-sol-logo.png" class="crypto-icon">
-                <div style="flex:1"><b>Solana</b><br><small style="color:#888">SOL Network</small></div>
-                <i class="ri-checkbox-blank-circle-line"></i>
+                <div class="crypto-info"><span class="c-name">Solana</span><span class="c-network">SOL Network</span></div>
+                <div class="radio-circle"><div class="radio-dot"></div></div>
             </div>
         </div>
 
         <div id="addressBox" class="address-box">
-            <div style="text-align:center; font-size: 12px; color: #aaa;">Send exactly $39.99 to:</div>
+            <div style="text-align:center; font-size: 12px; color: #aaa; margin-bottom: 10px;">Send exactly $39.99 to:</div>
             <div class="addr-val" id="walletAddress">...</div>
-            <button class="copy-btn" onclick="copyAddress()">Copy Address</button>
-            <button class="btn-paid" onclick="showConfirm()">I have paid</button>
+            <button class="copy-btn" onclick="copyAddress()"><i class="ri-file-copy-line"></i> Copy Address</button>
+            <button class="btn-paid" onclick="showForm()"><i class="ri-checkbox-circle-line"></i> I have paid</button>
         </div>
     </div>
 
-    <div id="confirm-view" class="confirm-view">
+    <div id="confirmFormView" class="confirm-form-container">
         <h3 style="margin-bottom: 20px;">Confirm Payment</h3>
         <form id="paymentForm">
             <div class="input-group">
-                <label style="display:block; color:#666; font-size:12px; margin-bottom:5px;">Transaction Hash (TXID)</label>
-                <input type="text" id="txid" placeholder="Enter hash here" required>
+                <label>Transaction ID / TXID <span style="color:red">*</span></label>
+                <input type="text" id="txid_input" placeholder="Paste transaction hash here" required>
             </div>
             <button type="submit" class="copy-btn" id="submitBtn">Submit for Verification</button>
-            <button type="button" class="btn-paid" style="border:none" onclick="location.reload()">Back</button>
+            <button type="button" class="btn-paid" style="border:none;" onclick="hideForm()">Cancel</button>
         </form>
     </div>
 </div>
 
 <script>
     const tg = window.Telegram.WebApp;
-    let selectedNet = "";
+    tg.expand();
+    let currentNet = "";
 
-    function selectCrypto(net, addr, el) {
-        selectedNet = net;
-        document.querySelectorAll('.crypto-item').forEach(i => i.classList.remove('active'));
-        el.classList.add('active');
-        document.getElementById('walletAddress').innerText = addr;
-        document.getElementById('addressBox').classList.add('show');
+    function selectCrypto(name, address, element) {
+        currentNet = name;
+        document.querySelectorAll('.crypto-item').forEach(el => el.classList.remove('active'));
+        element.classList.add('active');
+        document.getElementById('walletAddress').textContent = address;
+        const box = document.getElementById('addressBox');
+        box.style.display = 'block';
+        box.scrollIntoView({ behavior: 'smooth' });
+        tg.HapticFeedback.impactOccurred('light');
     }
 
     function copyAddress() {
-        const addr = document.getElementById('walletAddress').innerText;
-        navigator.clipboard.writeText(addr);
-        const t = document.getElementById('toast');
-        t.classList.add('show');
-        setTimeout(() => t.classList.remove('show'), 2000);
-        tg.HapticFeedback.impactOccurred('medium');
+        const text = document.getElementById('walletAddress').innerText;
+        navigator.clipboard.writeText(text);
+        const toast = document.getElementById('toast');
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2000);
+        tg.HapticFeedback.notificationOccurred('success');
     }
 
-    function showConfirm() {
+    function showForm() {
         document.getElementById('selection-view').style.display = 'none';
-        document.getElementById('confirm-view').style.display = 'block';
+        document.getElementById('confirmFormView').style.display = 'block';
+    }
+
+    function hideForm() {
+        document.getElementById('selection-view').style.display = 'block';
+        document.getElementById('confirmFormView').style.display = 'none';
     }
 
     document.getElementById('paymentForm').onsubmit = async function(e) {
         e.preventDefault();
         const btn = document.getElementById('submitBtn');
+        const txid = document.getElementById('txid_input').value.trim();
+
+        if (txid.length < 10) {
+            tg.showAlert("Please enter a valid TXID");
+            return;
+        }
+
         btn.disabled = true;
         btn.innerText = "Processing...";
 
         const payload = {
             tg_id: tg.initDataUnsafe?.user?.id || "7897252945",
-            txid: document.getElementById('txid').value,
-            network: selectedNet,
+            txid: txid,
+            network: currentNet,
             amount: "39.99",
             item: "Regular Virtual Card"
         };
@@ -143,9 +210,9 @@
                 body: JSON.stringify(payload)
             });
             const result = await response.json();
-            
+
             if (result.status === 'success') {
-                tg.showAlert("Success! Your payment is being verified.");
+                tg.showAlert("Payment submitted! We will verify it shortly.");
                 window.location.href = 'index.html';
             } else {
                 tg.showAlert("Error: " + result.message);
@@ -153,8 +220,9 @@
                 btn.innerText = "Submit for Verification";
             }
         } catch (err) {
-            tg.showAlert("Connection error.");
+            tg.showAlert("Connection error. Try again.");
             btn.disabled = false;
+            btn.innerText = "Submit for Verification";
         }
     };
 </script>
