@@ -50,7 +50,7 @@
 
 <header class="header">
   <div class="logo-text">IZIPAY</div>
-  <i class="ri-user-3-line" style="font-size: 26px; color: var(--primary-green);"></i>
+  <i class="ri-user-3-line" onclick="openProfile()" style="font-size: 26px; color: var(--primary-green); cursor: pointer;"></i>
 </header>
 
 <div class="balance-section">
@@ -175,6 +175,12 @@
 
     tg.HapticFeedback.notificationOccurred('success');
     tg.showAlert("Card number copied!");
+  }
+
+  // Новая функция для открытия профиля
+  function openProfile() {
+    // Перенаправляем на страницу профиля
+    window.location.href = 'profile.html';
   }
 
   // Запуск
