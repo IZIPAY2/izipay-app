@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Profile | IZIPAY</title>
+    <title>Settings | IZIPAY</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
@@ -15,40 +15,34 @@
         }
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Inter', sans-serif; background-color: var(--bg-dark); color: white; min-height: 100vh; display: flex; flex-direction: column; }
-        
         .header { padding: 24px; display: flex; justify-content: space-between; align-items: center; }
         .back-btn { width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.1); color: white; display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 20px; }
-        
         .content-sheet { background: var(--card-bg); flex-grow: 1; border-top-left-radius: 32px; border-top-right-radius: 32px; padding: 32px 24px; color: var(--text-dark); animation: slideUp 0.5s ease; }
-        
         .avatar-section { text-align: center; margin-bottom: 25px; }
         .avatar-circle { width: 70px; height: 70px; background: var(--toggle-bg); border-radius: 50%; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; font-size: 28px; color: var(--primary-green); font-weight: 700; border: 2px solid var(--border-light); }
         
         /* Referral Card */
-        .referral-card { background: var(--bg-dark); color: white; border-radius: 20px; padding: 20px; margin-bottom: 30px; position: relative; overflow: hidden; }
+        .referral-card { background: var(--bg-dark); color: white; border-radius: 20px; padding: 20px; margin-bottom: 30px; }
         .referral-card h4 { font-size: 14px; opacity: 0.7; font-weight: 500; margin-bottom: 15px; }
         .ref-stats { display: flex; gap: 20px; margin-bottom: 20px; }
         .stat-item b { display: block; font-size: 20px; }
         .stat-item span { font-size: 11px; opacity: 0.6; text-transform: uppercase; }
-        
-        .ref-link-box { background: rgba(255,255,255,0.1); padding: 12px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; font-family: monospace; font-size: 13px; }
+        .ref-link-box { background: rgba(255,255,255,0.1); padding: 12px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; font-family: monospace; font-size: 12px; }
         .copy-icon { color: var(--primary-green); cursor: pointer; font-size: 18px; }
 
         .form-group { margin-bottom: 20px; }
-        .input-label { font-size: 12px; font-weight: 600; color: var(--text-gray); margin-bottom: 8px; display: block; text-transform: uppercase; }
+        .input-label { font-size: 12px; font-weight: 600; color: var(--text-gray); margin-bottom: 8px; display: block; }
         .custom-input { width: 100%; padding: 14px; border: 1px solid var(--border-light); border-radius: 12px; background: var(--toggle-bg); font-size: 15px; outline: none; }
-        
         .btn-primary { width: 100%; padding: 16px; background: var(--primary-green); color: white; border: none; border-radius: 100px; font-size: 15px; font-weight: 600; cursor: pointer; }
         
         #toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px); background: white; color: black; padding: 12px 24px; border-radius: 50px; transition: 0.3s; z-index: 9999; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
         #toast.show { transform: translateX(-50%) translateY(0); }
-
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
     </style>
 </head>
 <body>
 
-<div id="toast">Copied to clipboard!</div>
+<div id="toast">Address copied!</div>
 
 <div class="header">
     <a href="index.html" class="back-btn"><i class="ri-arrow-left-line"></i></a>
@@ -78,15 +72,15 @@
     <form id="profileForm">
         <div class="form-group">
             <label class="input-label">Full Name</label>
-            <input type="text" id="fullNameInput" class="custom-input" placeholder="Enter your name">
+            <input type="text" id="fullNameInput" class="custom-input" placeholder="Your Name">
         </div>
         <div class="form-group">
             <label class="input-label">Phone Number</label>
             <input type="tel" id="phoneInput" class="custom-input" placeholder="+1...">
         </div>
         <div class="form-group">
-            <label class="input-label">Saved Wallet</label>
-            <input type="text" id="walletInput" class="custom-input" placeholder="Your USDT Address">
+            <label class="input-label">Saved Wallet Address</label>
+            <input type="text" id="walletInput" class="custom-input" placeholder="Your crypto address">
         </div>
         <button type="submit" class="btn-primary" id="saveBtn">Save Changes</button>
     </form>
@@ -112,12 +106,12 @@
                 document.getElementById('phoneInput').value = u.phone || '';
                 document.getElementById('walletInput').value = u.wallet_address || '';
                 
-                // Реферальные данные
-                document.getElementById('refCount').innerText = u.ref_count;
-                document.getElementById('refEarned').innerText = '$' + parseFloat(u.ref_earned).toFixed(2);
+                // Статистика рефералов
+                document.getElementById('refCount').innerText = u.ref_count || 0;
+                document.getElementById('refEarned').innerText = '$' + parseFloat(u.ref_earned || 0).toFixed(2);
                 document.getElementById('refLinkText').innerText = `izipay.me/r/${u.referral_code}`;
             }
-        } catch (e) { console.error(e); }
+        } catch (e) { console.error("Error loading profile", e); }
     }
 
     function copyRef() {
@@ -149,7 +143,7 @@
             });
             const res = await response.json();
             if(res.status === 'success') {
-                tg.showAlert("Profile updated!");
+                tg.showAlert("Profile updated successfully!");
                 loadProfile();
             }
         } catch (e) { tg.showAlert("Update failed"); }
