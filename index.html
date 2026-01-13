@@ -15,6 +15,7 @@
       --text-gray: #9ca3af;
       --border-glass: rgba(255, 255, 255, 0.12);
       --glass-surface: rgba(255, 255, 255, 0.05);
+      --metal-gold: #fbbf24;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
     body { background: var(--bg-dark); color: var(--text-white); padding: 20px; }
@@ -30,7 +31,7 @@
     .action-btn span { font-size: 11px; font-weight: 600; }
     .card-visual-wrapper { width: 100%; border-radius: 20px; overflow: hidden; margin-bottom: 15px; box-shadow: 0 15px 35px rgba(0,0,0,0.6); position: relative; }
     .card-image { width: 100%; display: block; border-radius: 20px; }
-    .no-card-box { width: 100%; height: 200px; background: linear-gradient(135deg, #1a1d24 0%, #0f1115 100%); border: 2px dashed var(--border-glass); border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; color: var(--text-gray); cursor: pointer; }
+    .no-card-box { width: 100%; height: 200px; background: linear-gradient(135deg, #1a1d24 0%, #0f1115 100%); border: 2px dashed var(--border-glass); border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; color: var(--text-gray); cursor: pointer; text-align: center; padding: 20px; transition: 0.3s; }
     .no-card-box i { font-size: 40px; color: var(--primary-green); opacity: 0.8; }
     .card-info-box { background: var(--card-bg); border: 1px solid var(--border-glass); border-radius: 16px; padding: 20px; margin-bottom: 12px; }
     .card-number-row { display: flex; justify-content: space-between; align-items: center; }
@@ -67,8 +68,8 @@
 
 <div id="card-placeholder" style="display: none;" onclick="window.location.href='issue_card.html'">
     <div class="no-card-box">
-        <i class="ri-bank-card-line"></i>
-        <span>Get your New Virtual Card</span>
+        <i id="placeholder-icon" class="ri-bank-card-line"></i>
+        <span id="placeholder-text">Get your New Virtual Card</span>
     </div>
 </div>
   
@@ -98,10 +99,8 @@
 
   const userId = tg.initDataUnsafe?.user?.id || "7897252945";
 
-  // Основная функция загрузки данных из MySQL
   async function loadData() {
     try {
-      // Добавляем timestamp для обхода кэша
       const response = await fetch(`https://izipay.me/api/get_dashboard.php?tg_id=${userId}&t=${Date.now()}`);
       const result = await response.json();
 
@@ -110,7 +109,6 @@
       if (result.status === 'success') {
         renderDashboard(result);
       } else if (result.status === 'not_linked') {
-        // Если аккаунт не привязан, отправляем на логин
         window.location.replace('login_tg.html');
       } else {
         tg.showAlert("Error: " + result.message);
@@ -123,6 +121,7 @@
 
   function renderDashboard(data) {
     const cards = data.cards;
+    const issuedStatus = parseInt(data.issued_card_status); // Получаем статус заявки из API
     
     // Считаем общий баланс
     let totalBalance = 0;
@@ -134,23 +133,37 @@
     
     const cardSection = document.getElementById('card-section');
     const placeholderSection = document.getElementById('card-placeholder');
+    const placeholderText = document.getElementById('placeholder-text');
+    const placeholderIcon = document.getElementById('placeholder-icon');
 
     if (cards.length > 0) {
-      // Показываем первую активную карту из базы MySQL
-      const activeCard = cards[0];
+      // КАРТА ВЫДАНА
       placeholderSection.style.display = 'none';
       cardSection.style.display = 'block';
 
+      const activeCard = cards[0];
       document.getElementById('card-num-display').textContent = activeCard.card_number;
       document.getElementById('card-cvv-display').textContent = activeCard.card_cvv;
       document.getElementById('card-exp-display').textContent = activeCard.card_exp;
-      
-      const statusLabel = document.getElementById('card-status-label');
-      statusLabel.textContent = "Active";
-      statusLabel.style.color = "#10b981";
-    } else {
+      document.getElementById('card-status-label').textContent = "Active";
+      document.getElementById('card-status-label').style.color = "#10b981";
+    } else if (issuedStatus === 1) {
+      // КАРТА ОПЛАЧЕНА (СТАТУС PENDING)
       cardSection.style.display = 'none';
       placeholderSection.style.display = 'block';
+      placeholderSection.style.pointerEvents = 'none'; // Отключаем клик
+      placeholderSection.querySelector('.no-card-box').style.borderColor = 'var(--metal-gold)';
+      
+      placeholderIcon.className = "ri-time-line";
+      placeholderIcon.style.color = "var(--metal-gold)";
+      placeholderText.innerHTML = "Payment Pending...<br><small style='font-size:11px; opacity:0.6; font-weight:400;'>Verification takes ~15-30 mins</small>";
+    } else {
+      // КАРТЫ НЕТ И ЗАЯВКИ НЕТ
+      cardSection.style.display = 'none';
+      placeholderSection.style.display = 'block';
+      placeholderSection.style.pointerEvents = 'auto';
+      placeholderIcon.className = "ri-bank-card-line";
+      placeholderText.textContent = "Get your New Virtual Card";
     }
   }
 
@@ -177,13 +190,10 @@
     tg.showAlert("Card number copied!");
   }
 
-  // Новая функция для открытия профиля
   function openProfile() {
-    // Перенаправляем на страницу профиля
     window.location.href = 'profile.html';
   }
 
-  // Запуск
   loadData();
 </script>
 
