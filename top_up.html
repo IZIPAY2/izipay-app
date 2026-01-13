@@ -4,418 +4,247 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Top Up | IZIPAY</title>
-    
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
-    
     <style>
         :root {
-            --bg-dark: #0f1115;      
-            --card-bg: #ffffff;      
-            --primary-green: #638576; 
-            --text-dark: #1a1a1a;
-            --text-gray: #8e8e93;
-            --border-light: #e5e7eb;
+            --bg-dark: #0f1115; --card-bg: #ffffff; --primary-green: #638576; 
+            --text-dark: #1a1a1a; --text-gray: #8e8e93; --border-light: #e5e7eb;
+            --toggle-bg: #f3f4f6;
         }
-
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-dark);
-            color: white;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .mobile-header {
-            padding: 20px 24px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .back-btn {
-            width: 40px; height: 40px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.1);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-decoration: none;
-            font-size: 20px;
-        }
-
-        .content-sheet {
-            background: var(--card-bg);
-            flex-grow: 1;
-            border-top-left-radius: 32px;
-            border-top-right-radius: 32px;
-            padding: 24px;
-            color: var(--text-dark);
-            overflow-y: auto;
-        }
-
-        .calculator-box {
-            background: #f9fafb;
-            border: 1px solid var(--border-light);
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 24px;
-        }
-
-        .input-wrapper {
-            position: relative;
-            margin-bottom: 15px;
-        }
-
-        .input-wrapper input {
-            width: 100%;
-            padding: 16px;
-            border-radius: 14px;
-            border: 1.5px solid var(--border-light);
-            font-size: 18px;
-            font-weight: 600;
-            outline: none;
-            -webkit-appearance: none;
-            margin: 0;
-            -moz-appearance: textfield;
-        }
-
-        .input-wrapper input::-webkit-outer-spin-button,
-        .input-wrapper input::-webkit-inner-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-
-        .input-wrapper .currency-tag {
-            position: absolute;
-            right: 16px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--primary-green);
-            font-weight: 700;
-        }
-
-        .fee-details {
-            font-size: 13px;
-            color: var(--text-gray);
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-dark); color: white; min-height: 100vh; display: flex; flex-direction: column; }
+        .mobile-header { padding: 24px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+        .back-btn { width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.1); color: white; display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 20px; }
+        .content-sheet { background: var(--card-bg); flex-grow: 1; border-top-left-radius: 32px; border-top-right-radius: 32px; padding: 32px 24px; color: var(--text-dark); overflow-y: auto; animation: slideUp 0.5s ease; }
+        .card-selector-box { margin-bottom: 20px; }
+        .card-selector-box label { display: block; font-size: 13px; font-weight: 600; color: var(--text-gray); margin-bottom: 8px; }
+        .styled-select { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--border-light); background: var(--toggle-bg); font-size: 15px; font-weight: 600; color: var(--text-dark); outline: none; }
+        .calculator-box { background: var(--toggle-bg); border: 1px solid var(--border-light); border-radius: 20px; padding: 20px; margin-bottom: 24px; }
+        .input-wrapper { position: relative; margin-bottom: 15px; }
+        .input-wrapper input { width: 100%; padding: 16px; border-radius: 14px; border: 1px solid var(--border-light); font-size: 18px; font-weight: 600; outline: none; }
+        .currency-tag { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: var(--primary-green); font-weight: 700; }
+        .fee-details { font-size: 13px; color: var(--text-gray); display: flex; flex-direction: column; gap: 8px; }
         .fee-row { display: flex; justify-content: space-between; }
-        
-        .total-row {
-            margin-top: 8px;
-            padding-top: 8px;
-            border-top: 1px solid var(--border-light);
-            font-weight: 700;
-            font-size: 15px;
-            color: var(--text-dark);
-        }
-
-        .crypto-grid { display: flex; flex-direction: column; gap: 12px; margin: 20px 0; }
-        
-        .crypto-item {
-            background: #fff;
-            border: 1px solid var(--border-light);
-            border-radius: 18px;
-            padding: 16px;
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
+        .total-row { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border-light); font-weight: 700; font-size: 15px; color: var(--text-dark); }
+        .crypto-grid { display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 30px; }
+        .crypto-item { background: white; border: 1px solid var(--border-light); border-radius: 16px; padding: 16px; display: flex; align-items: center; gap: 16px; cursor: pointer; transition: 0.2s; }
         .crypto-item.active { border: 2px solid var(--primary-green); background: #f0fdf4; }
-        .crypto-icon { width: 32px; height: 32px; }
-        .crypto-info b { display: block; font-size: 15px; }
-        .crypto-info small { color: var(--text-gray); font-size: 12px; }
-
-        .address-box {
-            background: var(--bg-dark);
-            color: white;
-            border-radius: 20px;
-            padding: 24px;
-            display: none;
-            margin-top: 10px;
-            margin-bottom: 30px;
-            animation: fadeIn 0.3s ease;
-        }
-
-        .addr-val {
-            word-break: break-all;
-            background: rgba(255,255,255,0.08);
-            padding: 14px;
-            border-radius: 12px;
-            margin: 12px 0 20px 0;
-            font-size: 13px;
-            font-family: monospace;
-        }
-
-        .btn-main {
-            width: 100%; background: var(--primary-green); color: white; border: none;
-            padding: 15px; border-radius: 14px; font-weight: 600; cursor: pointer;
-            display: flex; align-items: center; justify-content: center; gap: 8px;
-        }
-
-        .btn-outline {
-            width: 100%; background: transparent; color: var(--primary-green);
-            border: 1.5px solid var(--primary-green); padding: 14px;
-            border-radius: 14px; margin-top: 12px; font-weight: 600;
-        }
-
-        .confirm-form { display: none; animation: fadeIn 0.3s ease; }
-        .input-group { margin-bottom: 18px; }
+        .crypto-icon { width: 36px; height: 36px; }
+        .address-box { background: var(--bg-dark); color: white; border-radius: 20px; padding: 24px; margin-top: 20px; display: none; animation: fadeIn 0.3s; }
+        .address-box.show { display: block; }
+        .addr-val { font-family: monospace; font-size: 14px; word-break: break-all; background: rgba(255,255,255,0.1); padding: 12px; border-radius: 12px; margin-bottom: 20px; text-align: center; }
+        .btn-primary { width: 100%; background: var(--primary-green); color: white; border: none; padding: 14px; border-radius: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-outline { width: 100%; background: transparent; color: white; border: 1px solid rgba(255,255,255,0.2); padding: 14px; border-radius: 12px; font-weight: 600; margin-bottom: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .confirm-form-container { display: none; }
+        .input-group { margin-bottom: 20px; }
         .input-group label { display: block; font-size: 12px; color: var(--text-gray); margin-bottom: 8px; font-weight: 600; }
-        .input-group input { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--border-light); background: #f9fafb; }
-
-        #toast {
-            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-            background: #000; color: #fff; padding: 10px 24px; border-radius: 50px;
-            font-size: 13px; z-index: 9999; display: none;
-        }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .input-group input { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--border-light); background: var(--toggle-bg); outline: none; }
+        #toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px); background: white; color: black; padding: 12px 24px; border-radius: 50px; transition: 0.3s; z-index: 9999; }
+        #toast.show { transform: translateX(-50%) translateY(0); }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
 
-    <div id="toast">Copied!</div>
+<div id="toast">Address copied!</div>
 
-    <div class="mobile-header">
-        <a href="index.html" class="back-btn"><i class="ri-arrow-left-line"></i></a>
-        <h1 style="font-size: 18px;">Deposit</h1>
-        <div style="width:40px"></div>
-    </div>
+<div class="mobile-header">
+    <a href="index.html" class="back-btn"><i class="ri-arrow-left-line"></i></a>
+    <div style="font-weight: 600;">Top Up Balance</div>
+    <div style="width:40px;"></div>
+</div>
 
-    <div class="content-sheet">
-        <div id="main-view">
-            <div class="calculator-box">
-                <div style="font-size: 14px; font-weight: 600; margin-bottom: 12px;">Amount to Send</div>
-                <div class="input-wrapper">
-                    <input type="number" id="amountInput" placeholder="0.00" inputmode="decimal">
-                    <span class="currency-tag">USD</span>
-                </div>
-                <div class="fee-details">
-                    <div class="fee-row">
-                        <span>Service Fee (2.3%)</span>
-                        <span id="serviceFeeText">$0.00</span>
-                    </div>
-                    <div class="fee-row">
-                        <span>Network Fee</span>
-                        <span id="networkFeeText">$0.00</span>
-                    </div>
-                    <div class="fee-row total-row">
-                        <span>Net to Credit</span>
-                        <span id="totalReceiveText">$0.00</span>
-                    </div>
-                </div>
+<div class="content-sheet">
+    <div id="selection-view">
+        <div class="card-selector-box">
+            <label>Select Target Card</label>
+            <select id="cardSelect" class="styled-select">
+                <option value="">Loading cards...</option>
+            </select>
+        </div>
+
+        <div class="calculator-box">
+            <div style="font-size: 14px; font-weight: 600; margin-bottom: 12px;">Amount to Send</div>
+            <div class="input-wrapper">
+                <input type="number" id="amountInput" placeholder="0.00" inputmode="decimal">
+                <span class="currency-tag">USD</span>
             </div>
-
-            <h3 style="font-size: 16px;">Select Asset</h3>
-            <div class="crypto-grid">
-                <div class="crypto-item" onclick="selectCrypto('Bitcoin', 'bc1qrs8d7pckelsnlsl900s9m4adyaj8z7x4kdk7de', 'dynamic_btc', this)">
-                    <img src="https://cryptologos.cc/logos/bitcoin-btc-logo.png" class="crypto-icon">
-                    <div class="crypto-info"><b>Bitcoin</b><small>Fee: 1%</small></div>
-                </div>
-                
-                <div class="crypto-item" onclick="selectCrypto('Ethereum', '0xB6D25D305B4Bf38C83DD67bC63Bd2562CE6Fd442', 3.30, this)">
-                    <img src="https://cryptologos.cc/logos/ethereum-eth-logo.png" class="crypto-icon">
-                    <div class="crypto-info"><b>Ethereum</b><small>Fee: $3.30</small></div>
-                </div>
-
-                <div class="crypto-item" onclick="selectCrypto('Tether (ERC20)', '0x21531681f2d0b04a6d0d79f965e5eb72d9792d29', 0.0, this)">
-                    <img src="https://cryptologos.cc/logos/tether-usdt-logo.png" class="crypto-icon">
-                    <div class="crypto-info"><b>Tether (ERC20)</b><small>Fee: $0.0</small></div>
-                </div>
-                
-                <div class="crypto-item" onclick="selectCrypto('Tether (TRC20)', 'TMD9WXT4daoi47BponT8amafBERNqkQmEP', 0.0, this)">
-                    <img src="https://cryptologos.cc/logos/tether-usdt-logo.png" class="crypto-icon">
-                    <div class="crypto-info"><b>Tether (TRC20)</b><small>Fee: $0.0</small></div>
-                </div>
-
-                <div class="crypto-item" onclick="selectCrypto('Tether (BEP20)', '0x1583a470dd576e8a4880cf846db877dd451fb8ee', 0.0, this)">
-                    <img src="https://cryptologos.cc/logos/bnb-bnb-logo.png" class="crypto-icon">
-                    <div class="crypto-info"><b>Tether (BEP20)</b><small>Fee: $0.0</small></div>
-                </div>
-
-                <!-- Добавлены USDC кошельки -->
-                <div class="crypto-item" onclick="selectCrypto('USDC (ERC20)', '0x21531681f2d0b04a6d0d79f965e5eb72d9792d29', 0.0, this)">
-                    <img src="https://cryptologos.cc/logos/usd-coin-usdc-logo.png" class="crypto-icon">
-                    <div class="crypto-info"><b>USDC (ERC20)</b><small>Fee: $0.0</small></div>
-                </div>
-                
-                <div class="crypto-item" onclick="selectCrypto('USDC (TRC20)', 'TMD9WXT4daoi47BponT8amafBERNqkQmEP', 0.0, this)">
-                    <img src="https://cryptologos.cc/logos/usd-coin-usdc-logo.png" class="crypto-icon">
-                    <div class="crypto-info"><b>USDC (TRC20)</b><small>Fee: $0.0</small></div>
-                </div>
-
-                <div class="crypto-item" onclick="selectCrypto('USDC (BEP20)', '0x1583a470dd576e8a4880cf846db877dd451fb8ee', 0.0, this)">
-                    <img src="https://cryptologos.cc/logos/bnb-bnb-logo.png" class="crypto-icon">
-                    <div class="crypto-info"><b>USDC (BEP20)</b><small>Fee: $0.0</small></div>
-                </div>
-
-                <div class="crypto-item" onclick="selectCrypto('Solana', 'EJw7E2DSRoax42enpB3p9DGoLNXnTNaD2MG1154xcAd9', 0.30, this)">
-                    <img src="https://cryptologos.cc/logos/solana-sol-logo.png" class="crypto-icon">
-                    <div class="crypto-info"><b>Solana</b><small>Fee: $0.30</small></div>
-                </div>
-
-                <div class="crypto-item" onclick="selectCrypto('Tron', 'TFtGBVYi99XEruhbvxq5bRcbm63aZe9ecR', 0.30, this)">
-                    <img src="https://cryptologos.cc/logos/tron-trx-logo.png" class="crypto-icon">
-                    <div class="crypto-info"><b>Tron</b><small>Fee: $0.30</small></div>
-                </div>
-            </div>
-
-            <div id="addressBox" class="address-box">
-                <div style="font-size: 11px; color: #9ca3af;">DEPOSIT ADDRESS</div>
-                <div class="addr-val" id="walletAddress">...</div>
-                <button class="btn-main" onclick="copyAddress()"><i class="ri-file-copy-line"></i> Copy Address</button>
-                <button class="btn-outline" onclick="showForm()" id="iHavePaidBtn"><i class="ri-check-line"></i> I have paid</button>
+            <div class="fee-details">
+                <div class="fee-row"><span>Service Fee (2.3%)</span><span id="serviceFeeText">$0.00</span></div>
+                <div class="fee-row"><span>Network Fee</span><span id="networkFeeText">$0.00</span></div>
+                <div class="fee-row total-row"><span>Net to Credit</span><span id="totalReceiveText">$0.00</span></div>
             </div>
         </div>
 
-        <div id="confirmForm" class="confirm-form">
-            <h3 style="margin-bottom: 20px;">Confirmation</h3>
-            <div class="input-group">
-                <label>Wallet Address / TXID</label>
-                <input type="text" id="userWallet" placeholder="Paste details here">
+        <h3 style="margin-bottom: 16px; font-size: 16px; font-weight: 600;">Select Network</h3>
+
+        <div class="crypto-grid">
+            <div class="crypto-item" onclick="selectCrypto('Bitcoin', 'bc1qvjn8epw4l8hqm4y0rqy0dvjst279m3v7u9ru47', 'dynamic_btc', this)">
+                <img src="https://cryptologos.cc/logos/bitcoin-btc-logo.png" class="crypto-icon">
+                <div class="crypto-info"><span class="c-name">Bitcoin</span><span class="c-network">BTC Network</span></div>
             </div>
-            <div class="input-group">
-                <label>Payment Screenshot</label>
-                <input type="file" id="userScreenshot" accept="image/*">
+            <div class="crypto-item" onclick="selectCrypto('Ethereum', '0xB1A08E801e3e79C0dEf1521263D7D54c6745D68c', 3.90, this)">
+                <img src="https://cryptologos.cc/logos/ethereum-eth-logo.png" class="crypto-icon">
+                <div class="crypto-info"><span class="c-name">Ethereum</span><span class="c-network">ERC-20</span></div>
             </div>
-            <button class="btn-main" id="submitBtn" onclick="sendToAdmin()" style="background: #111;">Submit Payment</button>
-            <button class="btn-outline" onclick="hideForm()" style="border-color: #ddd; color: #888;">Back</button>
+            <div class="crypto-item" onclick="selectCrypto('Tether (ERC20)', '0x37ba3cd9694fcd7dff4336cd64ecf8bbd818ed94', 0, this)">
+                <img src="https://cryptologos.cc/logos/tether-usdt-logo.png" class="crypto-icon">
+                <div class="crypto-info"><span class="c-name">Tether (ERC20)</span><span class="c-network">ERC-20</span></div>
+            </div>
+            <div class="crypto-item" onclick="selectCrypto('Tether (TRC20)', 'TXe38MSHTH69sUU6EnAB7D1ihujGYvBEfF', 0, this)">
+                <img src="https://cryptologos.cc/logos/tether-usdt-logo.png" class="crypto-icon">
+                <div class="crypto-info"><span class="c-name">Tether (TRC20)</span><span class="c-network">TRC-20</span></div>
+            </div>
+            <div class="crypto-item" onclick="selectCrypto('Tether (BEP20)', '0x0a74b0bffb30ea257e5c410de98c9fd3bf7d374c', 0, this)">
+                <img src="https://cryptologos.cc/logos/bnb-bnb-logo.png" class="crypto-icon">
+                <div class="crypto-info"><span class="c-name">Tether (BEP20)</span><span class="c-network">BEP-20 (BSC)</span></div>
+            </div>
+            <div class="crypto-item" onclick="selectCrypto('USDC (ERC20)', '0x37ba3cd9694fcd7dff4336cd64ecf8bbd818ed94', 0, this)">
+                <img src="https://cryptologos.cc/logos/usd-coin-usdc-logo.png" class="crypto-icon">
+                <div class="crypto-info"><span class="c-name">USDC (ERC20)</span><span class="c-network">ERC-20</span></div>
+            </div>
+            <div class="crypto-item" onclick="selectCrypto('Solana', 'EqQpCbatN8xxxJpJFWgb9UAY8gdUFYg1Hd52juj3Fr4V', 3.67, this)">
+                <img src="https://cryptologos.cc/logos/solana-sol-logo.png" class="crypto-icon">
+                <div class="crypto-info"><span class="c-name">Solana</span><span class="c-network">Solana Network</span></div>
+            </div>
+            <div class="crypto-item" onclick="selectCrypto('Tron', 'TYYF1FVn6vpEbq83s9QxCAXnkCzCDuqDSZ', 3.90, this)">
+                <img src="https://cryptologos.cc/logos/tron-trx-logo.png" class="crypto-icon">
+                <div class="crypto-info"><span class="c-name">Tron</span><span class="c-network">TRX Network</span></div>
+            </div>
+        </div>
+
+        <div id="addressBox" class="address-box">
+            <div class="addr-label" style="text-align:center; font-size: 12px; color: #aaa; margin-bottom: 10px;">Deposit Address</div>
+            <div class="addr-val" id="walletAddress">...</div>
+            <button class="btn-outline" onclick="copyAddress()"><i class="ri-file-copy-line"></i> Copy Address</button>
+            <button class="btn-primary" onclick="showForm()"><i class="ri-checkbox-circle-line"></i> I have paid</button>
         </div>
     </div>
 
-    <script>
-        const tg = window.Telegram.WebApp;
-        tg.expand();
+    <div id="confirmFormView" class="confirm-form-container">
+        <h3 style="margin-bottom: 20px;">Confirm Payment</h3>
+        <form id="paymentForm">
+            <div class="input-group">
+                <label>Transaction ID / TXID</label>
+                <input type="text" id="txid_input" placeholder="Paste TXID here" required>
+            </div>
+            <button type="submit" class="btn-primary" id="submitBtn">Submit Confirmation</button>
+            <button type="button" class="btn-primary" style="background:transparent; color:var(--text-gray); margin-top: 10px;" onclick="hideForm()">Cancel</button>
+        </form>
+    </div>
+</div>
 
-        let selectedNetwork = "";
-        let currentNetworkFeeMode = 0; // Stores either a number (fixed) or string "dynamic_btc"
+<script>
+    const tg = window.Telegram.WebApp;
+    const userId = tg.initDataUnsafe?.user?.id || "7897252945";
+    tg.expand();
 
-        const amountInput = document.getElementById('amountInput');
-        const serviceFeeText = document.getElementById('serviceFeeText');
-        const networkFeeText = document.getElementById('networkFeeText');
-        const totalReceiveText = document.getElementById('totalReceiveText');
-        const iHavePaidBtn = document.getElementById('iHavePaidBtn');
+    let currentNet = "";
+    let currentFeeMode = 0;
 
-        function updateCalculator() {
-            const val = parseFloat(amountInput.value) || 0;
-            const sFee = val * 0.023; // Fixed 2.3% service fee
+    // 1. Загрузка карт из MySQL
+    async function loadUserCards() {
+        try {
+            const response = await fetch(`https://izipay.me/api/get_dashboard.php?tg_id=${userId}`);
+            const data = await response.json();
+            const select = document.getElementById('cardSelect');
+            select.innerHTML = '';
             
-            let nFee = 0;
-            if (currentNetworkFeeMode === "dynamic_btc") {
-                nFee = val * 0.01; // BTC network fee is 1%
-            } else {
-                nFee = parseFloat(currentNetworkFeeMode) || 0; // Other fees are fixed
-            }
-
-            const total = val - sFee - nFee;
-
-            serviceFeeText.textContent = `$${sFee.toFixed(2)}`;
-            networkFeeText.textContent = `$${nFee.toFixed(2)}`;
-            
-            if (val > 0 && total > 0) {
-                totalReceiveText.textContent = `$${total.toFixed(2)}`;
-                totalReceiveText.style.color = "#10b981";
-            } else {
-                totalReceiveText.textContent = "$0.00";
-                totalReceiveText.style.color = (val > 0) ? "#ef4444" : "#1a1a1a";
-            }
-        }
-
-        amountInput.addEventListener('input', updateCalculator);
-
-        function selectCrypto(net, addr, feeMode, el) {
-            selectedNetwork = net;
-            currentNetworkFeeMode = feeMode;
-            
-            document.querySelectorAll('.crypto-item').forEach(i => i.classList.remove('active'));
-            el.classList.add('active');
-            
-            document.getElementById('walletAddress').textContent = addr;
-            document.getElementById('addressBox').style.display = 'block';
-            
-            updateCalculator();
-            tg.HapticFeedback.impactOccurred('medium');
-            
-            // Прокрутка к кнопке "I have paid" с плавной анимацией
-            setTimeout(() => {
-                iHavePaidBtn.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'center'
+            if (data.status === 'success' && data.cards.length > 0) {
+                data.cards.forEach(card => {
+                    const option = document.createElement('option');
+                    option.value = card.card_number;
+                    option.textContent = `${card.card_number.slice(0,4)} **** ${card.card_number.slice(-4)} ($${card.balance})`;
+                    select.appendChild(option);
                 });
-            }, 100);
-        }
-
-        function copyAddress() {
-            navigator.clipboard.writeText(document.getElementById('walletAddress').textContent);
-            document.getElementById('toast').style.display = 'block';
-            setTimeout(() => document.getElementById('toast').style.display = 'none', 2000);
-            tg.HapticFeedback.notificationOccurred('success');
-        }
-
-        function showForm() {
-            document.getElementById('main-view').style.display = 'none';
-            document.getElementById('confirmForm').style.display = 'block';
-        }
-
-        function hideForm() {
-            document.getElementById('main-view').style.display = 'block';
-            document.getElementById('confirmForm').style.display = 'none';
-        }
-
-        async function sendToAdmin() {
-            const wallet = document.getElementById('userWallet').value;
-            const totalSent = parseFloat(amountInput.value) || 0;
-            const netToCredit = totalReceiveText.textContent;
-            const file = document.getElementById('userScreenshot').files[0];
-            const submitBtn = document.getElementById('submitBtn');
-
-            if (totalSent <= 0) return tg.showAlert("Please enter amount");
-            if (!wallet) return tg.showAlert("Please fill TXID/Wallet");
-
-            const botToken = '8383398356:AAFJRxBGmhL2edF72kCcfStO-ho01tGhdUk'; 
-            const adminId = '7897252945'; 
-
-            submitBtn.disabled = true;
-            submitBtn.textContent = "Processing...";
-
-            const user = tg.initDataUnsafe?.user || {first_name: "User", id: "000"};
-            const text = `💰 *TOP UP REQUEST*\n\n👤 User: ${user.first_name}\n🆔 ID: ${user.id}\n🌐 Net: ${selectedNetwork}\n💵 Total Sent: $${totalSent.toFixed(2)}\n📉 Net to Credit: ${netToCredit}\n💳 Wallet/TXID: \`${wallet}\``;
-
-            try {
-                await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({chat_id: adminId, text: text, parse_mode: 'Markdown'})
-                });
-
-                if (file) {
-                    const fd = new FormData();
-                    fd.append('chat_id', adminId);
-                    fd.append('photo', file);
-                    await fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, { method: 'POST', body: fd });
-                }
-
-                tg.showAlert("Success! Admin notified.", () => window.location.href = "index.html");
-            } catch (e) {
-                tg.showAlert("Error. Try again.");
-                submitBtn.disabled = false;
-                submitBtn.textContent = "Submit Payment";
+            } else {
+                select.innerHTML = '<option value="NEW_CARD">No cards found</option>';
             }
+        } catch (e) {
+            console.error("Load cards error", e);
         }
-    </script>
+    }
+
+    // 2. Калькулятор
+    function updateCalculator() {
+        const val = parseFloat(document.getElementById('amountInput').value) || 0;
+        const sFee = val * 0.023; 
+        let nFee = (currentFeeMode === "dynamic_btc") ? (val * 0.01) : parseFloat(currentFeeMode || 0);
+        const total = val - sFee - nFee;
+
+        document.getElementById('serviceFeeText').textContent = `$${sFee.toFixed(2)}`;
+        document.getElementById('networkFeeText').textContent = `$${nFee.toFixed(2)}`;
+        document.getElementById('totalReceiveText').textContent = total > 0 ? `$${total.toFixed(2)}` : "$0.00";
+    }
+
+    document.getElementById('amountInput').addEventListener('input', updateCalculator);
+
+    function selectCrypto(name, address, feeMode, element) {
+        currentNet = name; currentFeeMode = feeMode;
+        document.querySelectorAll('.crypto-item').forEach(el => el.classList.remove('active'));
+        element.classList.add('active');
+        document.getElementById('walletAddress').textContent = address;
+        document.getElementById('addressBox').classList.add('show');
+        updateCalculator();
+        tg.HapticFeedback.impactOccurred('light');
+    }
+
+    function copyAddress() {
+        navigator.clipboard.writeText(document.getElementById('walletAddress').innerText);
+        const t = document.getElementById('toast'); t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 2000);
+        tg.HapticFeedback.notificationOccurred('success');
+    }
+
+    function showForm() {
+        if (!currentNet) return tg.showAlert("Please select a network");
+        document.getElementById('selection-view').style.display = 'none';
+        document.getElementById('confirmFormView').style.display = 'block';
+    }
+
+    function hideForm() {
+        document.getElementById('selection-view').style.display = 'block';
+        document.getElementById('confirmFormView').style.display = 'none';
+    }
+
+    document.getElementById('paymentForm').onsubmit = async function(e) {
+        e.preventDefault();
+        const btn = document.getElementById('submitBtn');
+        btn.disabled = true; btn.innerText = "Sending...";
+
+        const payload = {
+            tg_id: userId,
+            txid: document.getElementById('txid_input').value,
+            network: currentNet,
+            amount: document.getElementById('totalReceiveText').textContent.replace('$', ''),
+            card_number: document.getElementById('cardSelect').value,
+            item: "Balance Top Up"
+        };
+
+        try {
+            const response = await fetch('https://izipay.me/api/send_payment_tg.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const result = await response.json();
+            if (result.status === 'success') {
+                tg.showAlert("Top-up request sent! We will verify it shortly.");
+                window.location.href = 'index.html';
+            } else {
+                tg.showAlert("Error: " + result.message);
+                btn.disabled = false; btn.innerText = "Submit Confirmation";
+            }
+        } catch (err) {
+            tg.showAlert("Connection error.");
+            btn.disabled = false;
+        }
+    };
+
+    loadUserCards();
+</script>
 </body>
 </html>
