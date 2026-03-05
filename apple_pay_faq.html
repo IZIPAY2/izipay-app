@@ -1,1 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Apple Pay Guide | IZIPAY</title>
+    
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg: #000000;
+            --accent: #d4b56f;
+            --text-secondary: #8e8e93;
+            --btn-gray: #1c1c1e;
+            --dark-block: #0d0d0d;
+        }
 
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            -webkit-font-smoothing: antialiased; 
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body { 
+            background-color: var(--bg); 
+            color: white; 
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif; 
+            line-height: 1.6;
+        }
+
+        .article-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 16px;
+            padding-bottom: 60px;
+        }
+
+        /* Шапка статьи */
+        .article-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 0;
+            margin-bottom: 20px;
+        }
+
+        .back-btn {
+            background: var(--btn-gray);
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-decoration: none;
+            border: 1px solid #333;
+            transition: transform 0.2s;
+            cursor: pointer;
+        }
+        
+        .back-btn:active {
+            transform: scale(0.95);
+        }
+
+        .title-section h1 {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            color: white;
+            letter-spacing: -0.5px;
+        }
+
+        /* Блоки контента */
+        .content-card {
+            background: var(--dark-block);
+            border: 1px solid #1c1c1e;
+            border-radius: 28px;
+            padding: 24px;
+            margin-bottom: 16px;
+        }
+
+        .content-card h2 {
+            font-size: 14px;
+            text-transform: uppercase;
+            color: var(--accent);
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .content-card p {
+            font-size: 15px;
+            color: #ccc;
+            margin-bottom: 12px;
+        }
+
+        /* Предупреждающий блок */
+        .warning-box {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 24px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .warning-box h2 {
+            color: #ef4444;
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .warning-box p {
+            font-size: 14px;
+            color: #ff9b9b;
+        }
+
+        /* Список шагов */
+        .step-list {
+            list-style: none;
+        }
+
+        .step-item {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 16px;
+        }
+        
+        .step-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .step-num {
+            background: var(--btn-gray);
+            min-width: 32px;
+            height: 32px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--accent);
+            border: 1px solid rgba(212, 181, 111, 0.2);
+            flex-shrink: 0;
+        }
+
+        .step-text {
+            font-size: 14px;
+            color: #ccc;
+        }
+
+        .pro-tip {
+            border-left: 3px solid var(--accent);
+            padding-left: 15px;
+            margin-top: 20px;
+            font-style: italic;
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="article-container">
+        <header class="article-header">
+            <a href="index.html" class="back-btn" onclick="triggerHaptic()">
+                <i class="ri-arrow-left-s-line" style="font-size: 24px;"></i>
+            </a>
+            <div style="width: 42px;"></div> 
+        </header>
+
+        <div class="title-section">
+            <h1>Apple Pay Verification Guide</h1>
+        </div>
+
+        <div class="content-card">
+            <h2><i class="ri-shield-check-line"></i> Required Verification Method</h2>
+            <p>To add your card to Apple Pay, you must use Email Verification.</p>
+            <p><strong>The Code:</strong> Your verification code will be sent directly to your user dashboard.</p>
+            <p><strong>Regional Accuracy:</strong> Ensure your Apple account, payment address, and VPN all reflect a single, non-sanctioned region.</p>
+        </div>
+
+        <div class="warning-box">
+            <h2>⚠️ STRICT PROHIBITION:</h2>
+            <p>Do not call any phone number displayed by Apple Pay (such as "Call Bank"). If the system only offers a phone call for verification, it means your regional data is mismatched and the correct verification method has been blocked. Do not proceed with a call.</p>
+        </div>
+
+        <div class="content-card">
+            <h2><i class="ri-refresh-line"></i> Troubleshooting: Enabling the Email Option</h2>
+            <p>If the email verification option is missing and the system asks you to call, follow these steps to reset your regional data:</p>
+            
+            <div class="step-list">
+                <div class="step-item">
+                    <div class="step-num">1</div>
+                    <div class="step-text">Remove the card from your Apple Wallet.</div>
+                </div>
+                <div class="step-item">
+                    <div class="step-num">2</div>
+                    <div class="step-text"><strong>Update Device Region:</strong> In your Apple ID settings, change your region to UK, EU, Asia, or the specific region where the card was issued (e.g., Hong Kong).</div>
+                </div>
+                <div class="step-item">
+                    <div class="step-num">3</div>
+                    <div class="step-text"><strong>Align Connection:</strong> Use a VPN matching your chosen region and switch to a different Wi-Fi or mobile network.</div>
+                </div>
+                <div class="step-item">
+                    <div class="step-num">4</div>
+                    <div class="step-text"><strong>Re-add the Card:</strong> Once your IP, device region, and account settings all match, the Email option will become available.</div>
+                </div>
+            </div>
+
+            <p class="pro-tip">
+                <strong>Pro-Tip:</strong> If the iPhone continues to fail, try adding the card via an Apple Watch. It uses a different verification flow that often allows the Email method to appear.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+
+        function triggerHaptic() {
+            tg.HapticFeedback.impactOccurred('light');
+        }
+    </script>
+</body>
+</html>
