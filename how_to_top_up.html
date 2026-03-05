@@ -1,1 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Top Up Guide | IZIPAY</title>
+    
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg: #000000;
+            --accent: #d4b56f;
+            --text-secondary: #8e8e93;
+            --btn-gray: #1c1c1e;
+            --dark-block: #0d0d0d;
+        }
 
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            -webkit-font-smoothing: antialiased; 
+            -webkit-tap-highlight-color: transparent; 
+        }
+        
+        body { 
+            background-color: var(--bg); 
+            color: white; 
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif; 
+            line-height: 1.6;
+        }
+
+        .article-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 16px;
+            padding-bottom: 60px;
+        }
+
+        .article-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 0;
+            margin-bottom: 20px;
+        }
+
+        .back-btn {
+            background: var(--btn-gray);
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-decoration: none;
+            border: 1px solid #333;
+            transition: transform 0.2s;
+            cursor: pointer;
+        }
+        
+        .back-btn:active {
+            transform: scale(0.95);
+        }
+
+        .title-section h1 {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            color: white;
+            letter-spacing: -0.5px;
+        }
+
+        .content-card {
+            background: var(--dark-block);
+            border: 1px solid #1c1c1e;
+            border-radius: 28px;
+            padding: 24px;
+            margin-bottom: 16px;
+        }
+
+        .content-card h2 {
+            font-size: 14px;
+            text-transform: uppercase;
+            color: var(--accent);
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .step-list {
+            list-style: none;
+            margin-top: 20px;
+        }
+
+        .step-item {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 24px;
+            align-items: flex-start;
+        }
+        
+        .step-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .step-num {
+            background: var(--btn-gray);
+            min-width: 32px;
+            height: 32px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--accent);
+            border: 1px solid rgba(212, 181, 111, 0.2);
+            flex-shrink: 0;
+        }
+
+        .step-text {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .step-text strong {
+            display: block;
+            color: white;
+            margin-bottom: 4px;
+            font-size: 16px;
+        }
+
+        .info-box {
+            background: rgba(212, 181, 111, 0.05);
+            border: 1px solid rgba(212, 181, 111, 0.1);
+            border-radius: 20px;
+            padding: 16px;
+            margin-top: 24px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .info-box i {
+            font-size: 24px;
+            color: var(--accent);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="article-container">
+        <header class="article-header">
+            <a href="index.html" class="back-btn" onclick="triggerHaptic()">
+                <i class="ri-arrow-left-s-line" style="font-size: 24px;"></i>
+            </a>
+            <div style="width: 42px;"></div>
+        </header>
+
+        <div class="title-section">
+            <h1>How to Top Up Your Card</h1>
+        </div>
+
+        <div class="content-card">
+            <h2><i class="ri-coins-line"></i> Follow these steps:</h2>
+            
+            <div class="step-list">
+                <div class="step-item">
+                    <div class="step-num">1</div>
+                    <div class="step-text">
+                        <strong>Start Top Up</strong>
+                        Click the "Top Up" button on your dashboard.
+                    </div>
+                </div>
+
+                <div class="step-item">
+                    <div class="step-num">2</div>
+                    <div class="step-text">
+                        <strong>Select Your Card</strong>
+                        If you have multiple cards, choose the specific card you wish to fund.
+                    </div>
+                </div>
+
+                <div class="step-item">
+                    <div class="step-num">3</div>
+                    <div class="step-text">
+                        <strong>Choose Cryptocurrency</strong>
+                        Select the cryptocurrency you want to use for the top-up.
+                    </div>
+                </div>
+
+                <div class="step-item">
+                    <div class="step-num">4</div>
+                    <div class="step-text">
+                        <strong>Complete the Transaction</strong>
+                        Send the cryptocurrency to the wallet address displayed on the screen.
+                    </div>
+                </div>
+
+                <div class="step-item">
+                    <div class="step-num">5</div>
+                    <div class="step-text">
+                        <strong>Confirm Payment</strong>
+                        Once the transaction is sent, press the "I have paid" button and enter your TXID (Transaction ID) to finalize the process.
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <i class="ri-time-line"></i>
+                <div>Funds are credited to the card balance after 2-3 network confirmations.</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+
+        function triggerHaptic() {
+            tg.HapticFeedback.impactOccurred('light');
+        }
+    </script>
+</body>
+</html>
